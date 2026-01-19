@@ -1,0 +1,121 @@
+{
+ "name":"project",
+ "version":2,
+ "type":"Swerve",
+ "variables":{
+  "expressions":{
+   "PickupX":{
+    "dimension":"Length",
+    "var":{
+     "exp":"7.8 m",
+     "val":7.8
+    }
+   }
+  },
+  "poses":{
+   "LeftShoot":{
+    "x":{
+     "exp":"2.5 m",
+     "val":2.5
+    },
+    "y":{
+     "exp":"5.5 m",
+     "val":5.5
+    },
+    "heading":{
+     "exp":"-0.6 rad",
+     "val":-0.6
+    }
+   },
+   "RightShoot":{
+    "x":{
+     "exp":"2.5 m",
+     "val":2.5
+    },
+    "y":{
+     "exp":"2.4 m",
+     "val":2.4
+    },
+    "heading":{
+     "exp":"0.6 rad",
+     "val":0.6
+    }
+   }
+  }
+ },
+ "config":{
+  "frontLeft":{
+   "x":{
+    "exp":"13 in",
+    "val":0.3302
+   },
+   "y":{
+    "exp":"13 in",
+    "val":0.3302
+   }
+  },
+  "backLeft":{
+   "x":{
+    "exp":"-13 in",
+    "val":-0.3302
+   },
+   "y":{
+    "exp":"13 in",
+    "val":0.3302
+   }
+  },
+  "mass":{
+   "exp":"120 lbs",
+   "val":54.4310844
+  },
+  "inertia":{
+   "exp":"6 kg m ^ 2",
+   "val":6.0
+  },
+  "gearing":{
+   "exp":"5.79",
+   "val":5.79
+  },
+  "radius":{
+   "exp":"1.967 in",
+   "val":0.0499618
+  },
+  "vmax":{
+   "exp":"6000 RPM",
+   "val":628.3185307179587
+  },
+  "tmax":{
+   "exp":"1.2 N * m",
+   "val":1.2
+  },
+  "cof":{
+   "exp":"0.6",
+   "val":0.6
+  },
+  "bumper":{
+   "front":{
+    "exp":"14.5 in",
+    "val":0.3683
+   },
+   "side":{
+    "exp":"14.5 in",
+    "val":0.3683
+   },
+   "back":{
+    "exp":"14.5 in",
+    "val":0.3683
+   }
+  },
+  "differentialTrackWidth":{
+   "exp":"10 in",
+   "val":0.254
+  }
+ },
+ "generationFeatures":[],
+ "codegen":{
+  "root":"..\\..\\java\\frc\\robot\\constants\\setpoints",
+  "genVars":true,
+  "genTrajData":true,
+  "useChoreoLib":false
+ }
+}

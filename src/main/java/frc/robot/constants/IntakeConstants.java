@@ -1,0 +1,39 @@
+package frc.robot.constants;
+
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Volts;
+
+import edu.wpi.first.units.VoltageUnit;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.Velocity;
+import edu.wpi.first.units.measure.Voltage;
+
+public class IntakeConstants {
+  // left vs right is from the perspective of facing out from the robot's center
+  public static final int leftRollerId = 2;
+  public static final int rightRollerId = 1;
+
+  public static final double rollerGearRatio = 1;
+  public static final double rollerMaxOutput = 1;
+
+  public static final AngularVelocity rollerAbsoluteSpeed = RotationsPerSecond.of(55);
+  public static final AngularVelocity rollerOuttakeSpeed = RotationsPerSecond.of(40);
+
+  public static final Distance rollerRadius = Inches.of(1);
+
+  public static final double rollerKp = 0.0001;
+  public static final double rollerKi = 0;
+  public static final double rollerKd = 0.00006;
+  public static final double rollerKs = 0.0021594;
+  public static final double rollerKv = 0.0015389 * 2 * Math.PI / 60;
+  public static final double rollerKa = 0.0009369 * 2 * Math.PI / 60;
+
+  public static final Velocity<VoltageUnit> sysIdRampRate = Volts.per(Second).of(0.3);
+  public static final Voltage sysIdStepVoltage = Volts.of(1.5);
+  public static final Time sysIdTimeout = Seconds.of(8);
+}

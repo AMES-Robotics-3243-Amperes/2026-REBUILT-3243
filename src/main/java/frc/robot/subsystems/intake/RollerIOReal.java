@@ -19,11 +19,10 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.constants.IntakeConstants;
 
 public class RollerIOReal implements RollerIO {
-  SparkMax leaderSparkMax = new SparkMax(IntakeConstants.leftRollerId, MotorType.kBrushless);
-  SparkMax followerSparkMax = new SparkMax(IntakeConstants.rightRollerId, MotorType.kBrushless);
+  SparkMax rollerSparkMax = new SparkMax(IntakeConstants.RollerId, MotorType.kBrushless);
 
-  SparkClosedLoopController leaderController;
-  RelativeEncoder leaderEncoder;
+  SparkClosedLoopController rollerController;
+  RelativeEncoder rollerEncoder;
 
   public RollerIOReal() {
     SparkMaxConfig config = new SparkMaxConfig();
@@ -51,31 +50,28 @@ public class RollerIOReal implements RollerIO {
     //     IntakeConstants.rollerKa,
     //     ClosedLoopSlot.kSlot0);
 
-    leaderSparkMax.configure(
+    rollerSparkMax.configure(
         config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    config.follow(leaderSparkMax, true);
-    followerSparkMax.configure(
-        config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-    leaderController = leaderSparkMax.getClosedLoopController();
-    leaderEncoder = leaderSparkMax.getEncoder();
+    
+    rollerController = rollerSparkMax.getClosedLoopController();
+    rollerEncoder = rollerSparkMax.getEncoder();
   }
 
   @Override
   public void updateInputs(RollerIOInputs inputs) {
-    inputs.position = Rotations.of(leaderEncoder.getPosition());
-    inputs.velocity = RPM.of(leaderEncoder.getVelocity());
-    inputs.appliedVoltage = Volts.of(leaderSparkMax.getAppliedOutput());
+    inputs.position = Rotations.of(rollerEncoder.getPosition());
+    inputs.velocity = RPM.of(rollerEncoder.getVelocity());
+    inputs.appliedVoltage = Volts.of(rollerSparkMax.getAppliedOutput());
   }
 
   @Override
   public void runOpenLoop(double output) {
-    leaderSparkMax.setVoltage(output);
+    rollerSparkMax.setVoltage(output);
   }
 
   @Override
   public void setAngularVelocity(AngularVelocity velocity) {
-    leaderController.setSetpoint(velocity.in(RPM), ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+    rollerController.setSetpoint(velocity.in(RPM), ControlType.kVelocity, ClosedLoopSlot.kSlot0);
   }
 }

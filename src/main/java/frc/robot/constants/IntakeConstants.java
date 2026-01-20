@@ -15,10 +15,9 @@ import edu.wpi.first.units.measure.Voltage;
 
 public class IntakeConstants {
   // left vs right is from the perspective of facing out from the robot's center
-  public static final int leftRollerId = 2;
-  public static final int rightRollerId = 1;
+  public static final int RollerId = 2;
 
-  public static final double rollerGearRatio = 1;
+  public static final double rollerGearRatio = 2;
   public static final double rollerMaxOutput = 1;
 
   public static final AngularVelocity rollerAbsoluteSpeed = RotationsPerSecond.of(55);

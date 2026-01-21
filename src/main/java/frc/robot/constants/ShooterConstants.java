@@ -20,8 +20,8 @@ import edu.wpi.first.units.measure.Voltage;
 /** Add your docs here. */
 public class ShooterConstants {
 
-  public static final int shooterLeaderId = 3;
-  public static final int shooterFollowerId = 4;
+  public static final int flywheelLeaderId = 3;
+  public static final int flywheelFollowerId = 4;
 
   public static final int hoodId = 5;
 
@@ -30,12 +30,12 @@ public class ShooterConstants {
   public static final double hoodVelocityConversionFactor = 360 / hoodGearRatio / 60;
   public static final double hoodMaxOutput = 1;
 
-  public static final double shooterKp = 0.0;
-  public static final double shooterKi = 0;
-  public static final double shooterKd = 0.0;
-  public static final double shooterKs = 0.0;
-  public static final double shooterKv = 0.0;
-  public static final double shooterKa = 0.0;
+  public static final double flywheelKp = 0.0;
+  public static final double flywheelKi = 0;
+  public static final double flywheelKd = 0.0;
+  public static final double flywheelKs = 0.0;
+  public static final double flywheelKv = 0.0;
+  public static final double flywheelKa = 0.0;
 
   public static final double hoodKp = 0.0;
   public static final double hoodKi = 0;

@@ -27,7 +27,7 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public void setShooterVelocity(AngularVelocity velocity) {
-    shooterIO.setShooterAngularVelocity(velocity);
+    shooterIO.setFlywheelAngularVelocity(velocity);
     Logger.recordOutput("Shooter/SetpointVelocity", velocity);
   }
 
@@ -37,7 +37,7 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public void stopShooter() {
-    shooterIO.runShooterOpenLoop(0);
+    shooterIO.runFlywheelOpenLoop(0);
     Logger.recordOutput("Shooter/SetpointVelocity", RPM.of(0));
   }
 

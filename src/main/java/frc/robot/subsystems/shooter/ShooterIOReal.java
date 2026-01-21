@@ -37,39 +37,39 @@ import frc.robot.constants.ShooterConstants;
 
 /** Add your docs here. */
 public class ShooterIOReal implements ShooterIO {
-  TalonFX shooterLeader = new TalonFX(ShooterConstants.shooterLeaderId);
-  TalonFX shooterFollower = new TalonFX(ShooterConstants.shooterFollowerId);
+  TalonFX flywheelLeader = new TalonFX(ShooterConstants.flywheelLeaderId);
+  TalonFX flywheelFollower = new TalonFX(ShooterConstants.flywheelFollowerId);
 
   SparkMax hoodSparkMax = new SparkMax(ShooterConstants.hoodId, MotorType.kBrushless);
 
   SparkClosedLoopController hoodController;
   RelativeEncoder hoodEncoder;
 
-  VoltageOut shooterVoltageRequest = new VoltageOut(0);
-  VelocityVoltage shooterVelocityRequest = new VelocityVoltage(0);
+  VoltageOut flywheelVoltageRequest = new VoltageOut(0);
+  VelocityVoltage flywheelVelocityRequest = new VelocityVoltage(0);
 
   public ShooterIOReal() {
-    TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
+    TalonFXConfiguration flywheelConfig = new TalonFXConfiguration();
 
-    shooterConfig
+    flywheelConfig
         .MotorOutput
         .withInverted(InvertedValue.CounterClockwise_Positive)
         .withNeutralMode(NeutralModeValue.Coast);
-    shooterConfig.CurrentLimits.withSupplyCurrentLimit(70).withSupplyCurrentLimitEnable(true);
-    shooterConfig
+    flywheelConfig.CurrentLimits.withSupplyCurrentLimit(70).withSupplyCurrentLimitEnable(true);
+    flywheelConfig
         .Slot0
-        .withKS(ShooterConstants.shooterKs)
-        .withKV(ShooterConstants.shooterKv)
-        .withKA(ShooterConstants.shooterKa)
-        .withKP(ShooterConstants.shooterKp)
-        .withKI(ShooterConstants.shooterKi)
-        .withKD(ShooterConstants.shooterKd);
+        .withKS(ShooterConstants.flywheelKs)
+        .withKV(ShooterConstants.flywheelKv)
+        .withKA(ShooterConstants.flywheelKa)
+        .withKP(ShooterConstants.flywheelKp)
+        .withKI(ShooterConstants.flywheelKi)
+        .withKD(ShooterConstants.flywheelKd);
 
-    shooterLeader.getConfigurator().apply(shooterConfig);
-    shooterFollower.getConfigurator().apply(shooterConfig);
+    flywheelLeader.getConfigurator().apply(flywheelConfig);
+    flywheelFollower.getConfigurator().apply(flywheelConfig);
 
-    shooterFollower.setControl(
-        new Follower(ShooterConstants.shooterLeaderId, MotorAlignmentValue.Aligned));
+    flywheelFollower.setControl(
+        new Follower(ShooterConstants.flywheelLeaderId, MotorAlignmentValue.Aligned));
 
     SparkMaxConfig hoodConfig = new SparkMaxConfig();
 
@@ -103,11 +103,11 @@ public class ShooterIOReal implements ShooterIO {
 
   @Override
   public void updateInputs(ShooterIOInputs inputs) {
-    inputs.shooterPosition = Rotations.of(shooterLeader.getPosition().getValueAsDouble());
-    inputs.shooterVelocity = RPM.of(shooterLeader.getVelocity().getValueAsDouble() * 60);
-    inputs.shooterAppliedVoltage = Volts.of(shooterLeader.getMotorVoltage().getValueAsDouble());
-    inputs.shooterStatorCurrent = Amps.of(shooterLeader.getStatorCurrent().getValueAsDouble());
-    inputs.shooterSupplyCurrent = Amps.of(shooterLeader.getSupplyCurrent().getValueAsDouble());
+    inputs.flywheelPosition = Rotations.of(flywheelLeader.getPosition().getValueAsDouble());
+    inputs.flywheelVelocity = RPM.of(flywheelLeader.getVelocity().getValueAsDouble() * 60);
+    inputs.flywheelAppliedVoltage = Volts.of(flywheelLeader.getMotorVoltage().getValueAsDouble());
+    inputs.flywheelStatorCurrent = Amps.of(flywheelLeader.getStatorCurrent().getValueAsDouble());
+    inputs.flywheelSupplyCurrent = Amps.of(flywheelLeader.getSupplyCurrent().getValueAsDouble());
 
     inputs.hoodAngle = Degrees.of(hoodEncoder.getPosition());
     inputs.hoodAngularVelocity = DegreesPerSecond.of(hoodEncoder.getVelocity());
@@ -116,13 +116,13 @@ public class ShooterIOReal implements ShooterIO {
   }
 
   @Override
-  public void runShooterOpenLoop(double output) {
-    shooterLeader.setControl(shooterVoltageRequest.withOutput(output));
+  public void runFlywheelOpenLoop(double output) {
+    flywheelLeader.setControl(flywheelVoltageRequest.withOutput(output));
   }
 
   @Override
-  public void setShooterAngularVelocity(AngularVelocity velocity) {
-    shooterLeader.setControl(shooterVelocityRequest.withVelocity(velocity.in(RotationsPerSecond)));
+  public void setFlywheelAngularVelocity(AngularVelocity velocity) {
+    flywheelLeader.setControl(flywheelVelocityRequest.withVelocity(velocity.in(RotationsPerSecond)));
   }
 
   @Override

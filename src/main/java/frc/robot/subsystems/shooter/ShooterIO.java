@@ -22,11 +22,11 @@ public interface ShooterIO {
 
   @AutoLog
   class ShooterIOInputs {
-    public Angle shooterPosition = Rotations.of(0);
-    public AngularVelocity shooterVelocity = RPM.of(0);
-    public Voltage shooterAppliedVoltage = Volts.of(0);
-    public Current shooterStatorCurrent = Amps.of(0);
-    public Current shooterSupplyCurrent = Amps.of(0);
+    public Angle flywheelPosition = Rotations.of(0);
+    public AngularVelocity flywheelVelocity = RPM.of(0);
+    public Voltage flywheelAppliedVoltage = Volts.of(0);
+    public Current flywheelStatorCurrent = Amps.of(0);
+    public Current flywheelSupplyCurrent = Amps.of(0);
 
     public Angle hoodAngle = Degrees.of(0);
     public AngularVelocity hoodAngularVelocity = DegreesPerSecond.of(0);
@@ -38,10 +38,10 @@ public interface ShooterIO {
   default void updateInputs(ShooterIOInputs inputs) {}
 
   /** Run the motors at the specified open loop value. */
-  default void runShooterOpenLoop(double output) {}
+  default void runFlywheelOpenLoop(double output) {}
 
   /** Run the motors at the specified velocity. */
-  default void setShooterAngularVelocity(AngularVelocity velocity) {}
+  default void setFlywheelAngularVelocity(AngularVelocity velocity) {}
 
   /** Run the motors at the specified open loop value. */
   default void runHoodOpenLoop(double output) {}

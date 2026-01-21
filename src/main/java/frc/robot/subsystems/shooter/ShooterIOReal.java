@@ -65,6 +65,8 @@ public class ShooterIOReal implements ShooterIO {
         .withKI(ShooterConstants.flywheelKi)
         .withKD(ShooterConstants.flywheelKd);
 
+    flywheelConfig.Feedback.withSensorToMechanismRatio(ShooterConstants.shooterGearRatio);
+
     flywheelLeader.getConfigurator().apply(flywheelConfig);
     flywheelFollower.getConfigurator().apply(flywheelConfig);
 
@@ -73,8 +75,8 @@ public class ShooterIOReal implements ShooterIO {
 
     SparkMaxConfig hoodConfig = new SparkMaxConfig();
 
-    hoodConfig.encoder.positionConversionFactor(ShooterConstants.hoodPositionConversionFactor);
-    hoodConfig.encoder.velocityConversionFactor(ShooterConstants.hoodVelocityConversionFactor);
+    hoodConfig.encoder.positionConversionFactor(ShooterConstants.hoodGearRatio);
+    hoodConfig.encoder.velocityConversionFactor(ShooterConstants.hoodGearRatio);
     hoodConfig.idleMode(IdleMode.kCoast).inverted(true);
 
     hoodConfig
@@ -122,7 +124,8 @@ public class ShooterIOReal implements ShooterIO {
 
   @Override
   public void setFlywheelAngularVelocity(AngularVelocity velocity) {
-    flywheelLeader.setControl(flywheelVelocityRequest.withVelocity(velocity.in(RotationsPerSecond)));
+    flywheelLeader.setControl(
+        flywheelVelocityRequest.withVelocity(velocity.in(RotationsPerSecond)));
   }
 
   @Override

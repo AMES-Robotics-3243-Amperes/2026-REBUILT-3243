@@ -25,9 +25,9 @@ public class ShooterConstants {
 
   public static final int hoodId = 5;
 
-  public static final double hoodGearRatio = 5;
-  public static final double hoodPositionConversionFactor = 360 / hoodGearRatio;
-  public static final double hoodVelocityConversionFactor = 360 / hoodGearRatio / 60;
+  public static final double flywheelGearRatio = 1;
+
+  public static final double hoodGearRatio = 1 / 5;
   public static final double hoodMaxOutput = 1;
 
   public static final double flywheelKp = 0.0;

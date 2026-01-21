@@ -5,8 +5,6 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
@@ -28,8 +26,8 @@ public interface ShooterIO {
     public Current flywheelStatorCurrent = Amps.of(0);
     public Current flywheelSupplyCurrent = Amps.of(0);
 
-    public Angle hoodAngle = Degrees.of(0);
-    public AngularVelocity hoodAngularVelocity = DegreesPerSecond.of(0);
+    public Angle hoodAngle = Rotations.of(0);
+    public AngularVelocity hoodAngularVelocity = RPM.of(0);
     public Voltage hoodAppliedVoltage = Volts.of(0);
     public Current hoodCurrent = Amps.of(0);
   }

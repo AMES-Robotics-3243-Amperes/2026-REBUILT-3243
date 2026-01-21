@@ -5,8 +5,6 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -106,13 +104,13 @@ public class ShooterIOReal implements ShooterIO {
   @Override
   public void updateInputs(ShooterIOInputs inputs) {
     inputs.flywheelPosition = Rotations.of(flywheelLeader.getPosition().getValueAsDouble());
-    inputs.flywheelVelocity = RPM.of(flywheelLeader.getVelocity().getValueAsDouble() * 60);
+    inputs.flywheelVelocity = RPM.of(flywheelLeader.getVelocity().getValueAsDouble());
     inputs.flywheelAppliedVoltage = Volts.of(flywheelLeader.getMotorVoltage().getValueAsDouble());
     inputs.flywheelStatorCurrent = Amps.of(flywheelLeader.getStatorCurrent().getValueAsDouble());
     inputs.flywheelSupplyCurrent = Amps.of(flywheelLeader.getSupplyCurrent().getValueAsDouble());
 
-    inputs.hoodAngle = Degrees.of(hoodEncoder.getPosition());
-    inputs.hoodAngularVelocity = DegreesPerSecond.of(hoodEncoder.getVelocity());
+    inputs.hoodAngle = Rotations.of(hoodEncoder.getPosition());
+    inputs.hoodAngularVelocity = RPM.of(hoodEncoder.getVelocity());
     inputs.hoodAppliedVoltage = Volts.of(hoodSparkMax.getAppliedOutput());
     inputs.hoodCurrent = Amps.of(hoodSparkMax.getOutputCurrent());
   }
@@ -135,6 +133,6 @@ public class ShooterIOReal implements ShooterIO {
 
   @Override
   public void setHoodAngle(Angle angle) {
-    hoodController.setSetpoint(angle.in(Degrees), ControlType.kPosition, ClosedLoopSlot.kSlot0);
+    hoodController.setSetpoint(angle.in(Rotations), ControlType.kPosition, ClosedLoopSlot.kSlot0);
   }
 }

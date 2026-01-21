@@ -48,9 +48,9 @@ public class ShooterConstants {
   public static final Voltage sysIdStepVoltage = Volts.of(0);
   public static final Time sysIdTimeout = Seconds.of(0);
 
-  public static final Angle testHoodAngle = Degrees.of(25);
-  public static final AngularVelocity testShooterSpeed = RPM.of(4500);
+  public static final AngularVelocity flywheelBaseSpeed = RPM.of(4500);
+  public static final Angle hoodBaseAngle = Degrees.of(28);
 
+  public static final AngularVelocity flywheelTolerance = RPM.of(75);
   public static final Angle hoodTolerance = Degrees.of(1.0);
-  public static final AngularVelocity shooterTolerance = RPM.of(100);
 }

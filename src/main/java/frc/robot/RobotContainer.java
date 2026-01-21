@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
 import frc.robot.constants.ModeConstants;
+import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.constants.swerve.TunerConstants;
 import frc.robot.subsystems.drivetrain.GyroIO;
@@ -23,6 +24,9 @@ import frc.robot.subsystems.drivetrain.SwerveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.intake.RollerIO;
 import frc.robot.subsystems.intake.RollerIOReal;
+import frc.robot.subsystems.shooter.ShooterIO;
+import frc.robot.subsystems.shooter.ShooterIOReal;
+import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelightFour;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
@@ -37,6 +41,7 @@ public class RobotContainer {
 
   private final SwerveSubsystem drivetrain;
   private final IntakeSubsystem intake;
+  private final ShooterSubsystem shooter;
 
   @SuppressWarnings("unused")
   private final VisionSubsystem vision;
@@ -59,6 +64,8 @@ public class RobotContainer {
                 new ModuleIOTalonFXReal(TunerConstants.BackRight));
 
         intake = new IntakeSubsystem(new RollerIOReal());
+
+        shooter = new ShooterSubsystem(new ShooterIOReal());
 
         vision =
             new VisionSubsystem(
@@ -86,6 +93,8 @@ public class RobotContainer {
 
         intake = new IntakeSubsystem(new RollerIO() {});
 
+        shooter = new ShooterSubsystem(new ShooterIO() {});
+
         vision =
             new VisionSubsystem(
                 drivetrain::addVisionMeasurement,
@@ -110,6 +119,8 @@ public class RobotContainer {
                 new ModuleIO() {});
 
         intake = new IntakeSubsystem(new RollerIO() {});
+
+        shooter = new ShooterSubsystem(new ShooterIO() {});
 
         vision =
             new VisionSubsystem(
@@ -168,6 +179,13 @@ public class RobotContainer {
 
     primaryJoystick.rightTrigger().whileTrue(intake.runAtIntakeSpeedCommand(drivetrain::getSpeed));
     primaryJoystick.leftTrigger().whileTrue(intake.outtakeCommand());
+
+    primaryJoystick
+        .rightBumper()
+        .whileTrue(shooter.runFlywheelAtSpeedCommand(ShooterConstants.flywheelBaseSpeed));
+    primaryJoystick
+        .leftBumper()
+        .whileTrue(shooter.setHoodAngleCommand(ShooterConstants.hoodBaseAngle));
 
     primaryJoystick
         .a()

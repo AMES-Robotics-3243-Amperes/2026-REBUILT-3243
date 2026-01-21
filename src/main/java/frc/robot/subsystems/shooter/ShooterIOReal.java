@@ -65,7 +65,7 @@ public class ShooterIOReal implements ShooterIO {
         .withKI(ShooterConstants.flywheelKi)
         .withKD(ShooterConstants.flywheelKd);
 
-    flywheelConfig.Feedback.withSensorToMechanismRatio(ShooterConstants.shooterGearRatio);
+    flywheelConfig.Feedback.withSensorToMechanismRatio(ShooterConstants.flywheelGearRatio);
 
     flywheelLeader.getConfigurator().apply(flywheelConfig);
     flywheelFollower.getConfigurator().apply(flywheelConfig);

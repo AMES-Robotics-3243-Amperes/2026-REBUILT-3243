@@ -5,9 +5,12 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
@@ -26,22 +29,59 @@ public class ShooterSubsystem extends SubsystemBase {
     Logger.processInputs("Shooter", shooterInputs);
   }
 
-  public void setShooterVelocity(AngularVelocity velocity) {
-    shooterIO.setFlywheelAngularVelocity(velocity);
-    Logger.recordOutput("Shooter/SetpointVelocity", velocity);
+  public Command runFlywheelAtSpeedCommand(AngularVelocity velocity) {
+    return runEnd(
+        () -> {
+          shooterIO.setFlywheelAngularVelocity(velocity);
+          Logger.recordOutput("Shooter/SetpointVelocity", velocity);
+        },
+        () -> {
+          shooterIO.setFlywheelAngularVelocity(RPM.of(0));
+          Logger.recordOutput("Shooter/SetpointVelocity", RPM.of(0));
+        });
   }
 
-  public void setHoodAngle(Angle angle) {
-    shooterIO.setHoodAngle(angle);
-    Logger.recordOutput("Shooter/SetpointHoodAngle", angle);
+  public Command runFlywheelOpenLoopCommand(Voltage volts) {
+    return runEnd(
+        () -> {
+          shooterIO.runFlywheelOpenLoop(volts.in(Volts));
+          Logger.recordOutput("Shooter/FlywheelOpenLoopVolts", volts);
+        },
+        () -> {
+          shooterIO.runFlywheelOpenLoop(0);
+          Logger.recordOutput("Shooter/FlywheelOpenLoopVolts", Volts.of(0));
+        });
   }
 
-  public void stopShooter() {
-    shooterIO.runFlywheelOpenLoop(0);
-    Logger.recordOutput("Shooter/SetpointVelocity", RPM.of(0));
+  public Command setHoodAngleCommand(Angle angle) {
+    return runEnd(
+        () -> {
+          shooterIO.setHoodAngle(angle);
+          Logger.recordOutput("Shooter/HoodSetpointAngle", angle);
+        },
+        () -> {
+          shooterIO.runHoodOpenLoop(0);
+          Logger.recordOutput("Shooter/HoodSetpointAngle", angle);
+        });
   }
 
-  public void stopHood() {
-    shooterIO.runHoodOpenLoop(0);
+  public Command runHoodOpenLoopCommand(Voltage volts) {
+    return runEnd(
+        () -> {
+          shooterIO.runHoodOpenLoop(volts.in(Volts));
+          Logger.recordOutput("Shooter/HoodOpenLoopVolts", volts);
+        },
+        () -> {
+          shooterIO.runHoodOpenLoop(0);
+          Logger.recordOutput("Shooter/HoodOpenLoopVolts", Volts.of(0));
+        });
+  }
+
+  public Angle getHoodAngle() {
+    return shooterInputs.hoodAngle;
+  }
+
+  public AngularVelocity getFlywheelVelocity() {
+    return shooterInputs.flywheelVelocity;
   }
 }

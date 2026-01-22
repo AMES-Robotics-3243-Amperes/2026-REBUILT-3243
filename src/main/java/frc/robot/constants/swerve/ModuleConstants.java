@@ -23,17 +23,16 @@ public class ModuleConstants {
   // drive
   public static final ControlConstantsBuilder<AngleUnit, VoltageUnit> driveControl =
       ControlConstantsBuilder.fromUnits(Radians, Volts, Seconds)
-          .pid(0.021563, 0, 0)
-          .sva(0.02585, 0.12346, 0.010446);
+          .pid(0.11247, 0, 0)
+          .sva(0.12082, 0.09818, 0.0084962);
 
   // turn
   public static final ControlConstantsBuilder<AngleUnit, VoltageUnit> steerControl =
-      ControlConstantsBuilder.fromUnits(Radians, Volts, Seconds).pid(5, 1.5, 0.2).sva(0, 0.4, 0);
+      ControlConstantsBuilder.fromUnits(Radians, Volts, Seconds).pid(5, 0.6, 0.2).sva(0, 0.3, 0);
 
   public static final Current steerStatorCurrentLimit = Amps.of(60);
 
-  public static final AngularVelocity maxSetpointGeneratorModuleRotation =
-      RotationsPerSecond.of(10);
+  public static final AngularVelocity maxSetpointGeneratorModuleRotation = RotationsPerSecond.of(5);
 
   // physical properties. ids and other hardware-specific things go in tuner constants
   public static final double kCoupleRatio = 0;

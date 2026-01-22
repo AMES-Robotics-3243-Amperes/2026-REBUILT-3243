@@ -62,7 +62,7 @@ public class IntakeSubsystem extends SubsystemBase {
         },
         () -> {
           rollerIO.setAngularVelocity(RadiansPerSecond.of(0));
-          Logger.recordOutput("Intake/AbsoluteSetpointSpeed", 0);
+          Logger.recordOutput("Intake/AbsoluteSetpointSpeed", RadiansPerSecond.of(0));
         });
   }
 

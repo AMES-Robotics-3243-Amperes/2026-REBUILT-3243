@@ -330,7 +330,7 @@ public class SwerveSubsystem extends SubsystemBase {
   // Module Getters
   //
 
-  @AutoLogOutput(key = "Drivetrain/SwerveStates/Measured")
+  @AutoLogOutput(key = "Drivetrain/Modules/MeasuredStates")
   public SwerveModuleState[] getModuleStates() {
     return Arrays.stream(modules).map(SwerveModule::getState).toArray(SwerveModuleState[]::new);
   }

@@ -172,6 +172,8 @@ public class RobotContainer {
     primaryJoystick
         .a()
         .onTrue(DriveCommands.sysIdCharacterization(drivetrain, primaryJoystick.a()));
+
+    primaryJoystick.b().onTrue(intake.sysIdCommand(primaryJoystick.b()));
   }
 
   public Command getAutonomousCommand() {

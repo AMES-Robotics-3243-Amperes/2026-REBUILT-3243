@@ -1,5 +1,6 @@
 package frc.robot.subsystems.intake;
 
+import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
@@ -7,7 +8,6 @@ import static edu.wpi.first.units.Units.Volts;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
-import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
@@ -15,14 +15,16 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.units.PerUnit;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.constants.IntakeConstants;
+import frc.robot.util.ControlConstantsBuilder.ControlConstants;
 
 public class RollerIOReal implements RollerIO {
-  SparkMax rollerSparkMax = new SparkMax(IntakeConstants.RollerId, MotorType.kBrushless);
+  SparkMax sparkMax = new SparkMax(IntakeConstants.rollerId, MotorType.kBrushless);
 
-  SparkClosedLoopController rollerController;
-  RelativeEncoder rollerEncoder;
+  SparkClosedLoopController closedLoopController;
+  RelativeEncoder encoder;
 
   public RollerIOReal() {
     SparkMaxConfig config = new SparkMaxConfig();
@@ -31,47 +33,43 @@ public class RollerIOReal implements RollerIO {
     config.encoder.velocityConversionFactor(IntakeConstants.rollerGearRatio);
     config.idleMode(IdleMode.kCoast).inverted(true);
 
+    ControlConstants feedbackControl =
+        IntakeConstants.rollerControl.in(Rotations, Volts, Milliseconds);
+
     config
         .closedLoop
-        .outputRange(
-            -IntakeConstants.rollerMaxOutput,
-            IntakeConstants.rollerMaxOutput,
-            ClosedLoopSlot.kSlot0)
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .pid(
-            IntakeConstants.rollerKp,
-            IntakeConstants.rollerKi,
-            IntakeConstants.rollerKd,
-            ClosedLoopSlot.kSlot0);
-    // .feedForward
-    // .sva(
-    //     IntakeConstants.rollerKs,
-    //     IntakeConstants.rollerKv,
-    //     IntakeConstants.rollerKa,
-    //     ClosedLoopSlot.kSlot0);
+        .pid(feedbackControl.kP(), feedbackControl.kI(), feedbackControl.kD())
+        .feedForward
+        // .kS(IntakeConstants.rollerControl.kS.in(Volts))
+        .kV(IntakeConstants.rollerControl.kV.in(PerUnit.combine(Volts, RPM)))
+    // .kA(
+    //     IntakeConstants.rollerControl.kA.in(
+    //         PerUnit.combine(Volts, PerUnit.combine(RPM, Second))))
+    ;
 
-    rollerSparkMax.configure(
-        config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    config.closedLoop.maxMotion.maxAcceleration(10);
 
-    
-    rollerController = rollerSparkMax.getClosedLoopController();
-    rollerEncoder = rollerSparkMax.getEncoder();
+    sparkMax.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    closedLoopController = sparkMax.getClosedLoopController();
+    encoder = sparkMax.getEncoder();
   }
 
   @Override
   public void updateInputs(RollerIOInputs inputs) {
-    inputs.position = Rotations.of(rollerEncoder.getPosition());
-    inputs.velocity = RPM.of(rollerEncoder.getVelocity());
-    inputs.appliedVoltage = Volts.of(rollerSparkMax.getAppliedOutput());
+    inputs.position = Rotations.of(encoder.getPosition());
+    inputs.velocity = RPM.of(encoder.getVelocity());
+    inputs.appliedVoltage = Volts.of(sparkMax.getAppliedOutput() * sparkMax.getBusVoltage());
   }
 
   @Override
   public void runOpenLoop(double output) {
-    rollerSparkMax.setVoltage(output);
+    sparkMax.setVoltage(output);
   }
 
   @Override
   public void setAngularVelocity(AngularVelocity velocity) {
-    rollerController.setSetpoint(velocity.in(RPM), ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+    closedLoopController.setSetpoint(velocity.in(RPM), ControlType.kVelocity);
   }
 }

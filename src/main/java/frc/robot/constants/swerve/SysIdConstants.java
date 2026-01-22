@@ -11,7 +11,8 @@ import edu.wpi.first.units.measure.Voltage;
 import frc.robot.subsystems.drivetrain.SwerveSubsystem.SwerveSysIdRoutine;
 
 public class SysIdConstants {
-  public static final SwerveSysIdRoutine activeRoutine = SwerveSysIdRoutine.AZIMUTH_FEEDFORWARD;
+  public static final SwerveSysIdRoutine activeRoutine =
+      SwerveSysIdRoutine.DRIVE_LINEAR_FEEDFORWARD;
 
   public static final Velocity<VoltageUnit> sysIdRampRate(SwerveSysIdRoutine routine) {
     switch (routine) {

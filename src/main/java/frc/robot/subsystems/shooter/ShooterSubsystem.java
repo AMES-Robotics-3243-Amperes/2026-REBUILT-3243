@@ -4,84 +4,133 @@
 
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RPM;
-import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.constants.ShooterConstants;
+import frc.robot.util.FuelTrajectoryCalculator;
+import frc.robot.util.FuelTrajectoryCalculator.ShooterSetpoint;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class ShooterSubsystem extends SubsystemBase {
-  private final ShooterIO shooterIO;
+  private final FlywheelIO shooterIO;
   private final ShooterIOInputsAutoLogged shooterInputs = new ShooterIOInputsAutoLogged();
 
+  private final HoodIO hoodIO;
+  private final HoodIOInputsAutoLogged hoodInputs = new HoodIOInputsAutoLogged();
+
   /** Creates a new ShooterSubsystem. */
-  public ShooterSubsystem(ShooterIO shooterIO) {
+  public ShooterSubsystem(FlywheelIO shooterIO, HoodIO hoodIO) {
     this.shooterIO = shooterIO;
+    this.hoodIO = hoodIO;
   }
 
   @Override
   public void periodic() {
     shooterIO.updateInputs(shooterInputs);
-    Logger.processInputs("Shooter", shooterInputs);
+    Logger.processInputs("Shooter/Flywheel", shooterInputs);
+
+    hoodIO.updateInputs(hoodInputs);
+    Logger.processInputs("Shooter/Hood", hoodInputs);
   }
 
   public Command runFlywheelAtSpeedCommand(AngularVelocity velocity) {
     return runEnd(
         () -> {
-          shooterIO.setFlywheelAngularVelocity(velocity);
-          Logger.recordOutput("Shooter/SetpointVelocity", velocity);
+          shooterIO.setAngularVelocity(velocity);
+          Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", velocity);
         },
         () -> {
-          shooterIO.setFlywheelAngularVelocity(RPM.of(0));
-          Logger.recordOutput("Shooter/SetpointVelocity", RPM.of(0));
-        });
-  }
-
-  public Command runFlywheelOpenLoopCommand(Voltage volts) {
-    return runEnd(
-        () -> {
-          shooterIO.runFlywheelOpenLoop(volts.in(Volts));
-          Logger.recordOutput("Shooter/FlywheelOpenLoopVolts", volts);
-        },
-        () -> {
-          shooterIO.runFlywheelOpenLoop(0);
-          Logger.recordOutput("Shooter/FlywheelOpenLoopVolts", Volts.of(0));
+          shooterIO.setAngularVelocity(RPM.of(0));
+          Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", RotationsPerSecond.of(0));
         });
   }
 
   public Command setHoodAngleCommand(Angle angle) {
+    // safety mechanism for when someone inevitably puts 0 rotation without thinking
+    Angle clampedAngle =
+        Degrees.of(
+            MathUtil.clamp(
+                angle.abs(Degrees),
+                ShooterConstants.hoodMinRotation.in(Degrees),
+                ShooterConstants.hoodMaxRotation.in(Degrees)));
+
     return runEnd(
         () -> {
-          shooterIO.setHoodAngle(angle);
-          Logger.recordOutput("Shooter/HoodSetpointAngle", angle);
+          hoodIO.setAngle(clampedAngle);
+          Logger.recordOutput("Shooter/Hood/SetpointAngle", angle);
         },
         () -> {
-          shooterIO.runHoodOpenLoop(0);
-          Logger.recordOutput("Shooter/HoodSetpointAngle", angle);
+          hoodIO.setAngle(ShooterConstants.hoodMinRotation);
+          Logger.recordOutput("Shooter/Hood/SetpointAngle", ShooterConstants.hoodMinRotation);
         });
   }
 
-  public Command runHoodOpenLoopCommand(Voltage volts) {
+  public Command lowerHoodCommand() {
+    return setHoodAngleCommand(ShooterConstants.hoodMinRotation);
+  }
+
+  public Command prepareHoodForShootCommand(
+      Supplier<Pose2d> robotPoseSupplier, Supplier<ChassisSpeeds> chassisSpeedsSupplier) {
     return runEnd(
         () -> {
-          shooterIO.runHoodOpenLoop(volts.in(Volts));
-          Logger.recordOutput("Shooter/HoodOpenLoopVolts", volts);
+          ShooterSetpoint shooterSetpoint =
+              FuelTrajectoryCalculator.calcualteShooterSetpoint(
+                  robotPoseSupplier.get(), chassisSpeedsSupplier.get());
+
+          hoodIO.setAngle(shooterSetpoint.hoodAngle());
+          Logger.recordOutput("Shooter/Hood/SetpointAngle", shooterSetpoint.hoodAngle());
         },
         () -> {
-          shooterIO.runHoodOpenLoop(0);
-          Logger.recordOutput("Shooter/HoodOpenLoopVolts", Volts.of(0));
+          hoodIO.setAngle(ShooterConstants.hoodMinRotation);
+          Logger.recordOutput("Shooter/Hood/SetpointAngle", ShooterConstants.hoodMinRotation);
+        });
+  }
+
+  public Command shootCommand(
+      Supplier<Pose2d> robotPoseSupplier, Supplier<ChassisSpeeds> chassisSpeedsSupplier) {
+    return runEnd(
+        () -> {
+          ShooterSetpoint shooterSetpoint =
+              FuelTrajectoryCalculator.calcualteShooterSetpoint(
+                  robotPoseSupplier.get(), chassisSpeedsSupplier.get());
+          AngularVelocity flywheelVelocity =
+              RadiansPerSecond.of(
+                  shooterSetpoint.linearFlywheelSpeed().in(MetersPerSecond)
+                      / ShooterConstants.flywheelRadius.in(Meters));
+
+          shooterIO.setAngularVelocity(flywheelVelocity);
+          Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", flywheelVelocity);
+
+          hoodIO.setAngle(shooterSetpoint.hoodAngle());
+          Logger.recordOutput("Shooter/Hood/SetpointAngle", shooterSetpoint.hoodAngle());
+        },
+        () -> {
+          shooterIO.setAngularVelocity(RPM.of(0));
+          Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", RotationsPerSecond.of(0));
+
+          hoodIO.setAngle(ShooterConstants.hoodMinRotation);
+          Logger.recordOutput("Shooter/Hood/SetpointAngle", ShooterConstants.hoodMinRotation);
         });
   }
 
   public Angle getHoodAngle() {
-    return shooterInputs.hoodAngle;
+    return hoodInputs.angle;
   }
 
   public AngularVelocity getFlywheelVelocity() {
-    return shooterInputs.flywheelVelocity;
+    return shooterInputs.velocity;
   }
 }

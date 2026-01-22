@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -11,7 +13,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
 import frc.robot.constants.ModeConstants;
-import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.constants.swerve.TunerConstants;
 import frc.robot.subsystems.drivetrain.GyroIO;
@@ -24,8 +25,11 @@ import frc.robot.subsystems.drivetrain.SwerveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.intake.RollerIO;
 import frc.robot.subsystems.intake.RollerIOReal;
-import frc.robot.subsystems.shooter.ShooterIO;
-import frc.robot.subsystems.shooter.ShooterIOReal;
+import frc.robot.subsystems.shooter.FlywheelIO;
+import frc.robot.subsystems.shooter.FlywheelIOTalonFX;
+import frc.robot.subsystems.shooter.HoodIO;
+import frc.robot.subsystems.shooter.HoodIOReal;
+import frc.robot.subsystems.shooter.HoodIOSim;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelightFour;
@@ -65,7 +69,7 @@ public class RobotContainer {
 
         intake = new IntakeSubsystem(new RollerIOReal());
 
-        shooter = new ShooterSubsystem(new ShooterIOReal());
+        shooter = new ShooterSubsystem(new FlywheelIOTalonFX(), new HoodIOReal());
 
         vision =
             new VisionSubsystem(
@@ -93,7 +97,7 @@ public class RobotContainer {
 
         intake = new IntakeSubsystem(new RollerIO() {});
 
-        shooter = new ShooterSubsystem(new ShooterIO() {});
+        shooter = new ShooterSubsystem(new FlywheelIOTalonFX(), new HoodIOSim());
 
         vision =
             new VisionSubsystem(
@@ -120,7 +124,7 @@ public class RobotContainer {
 
         intake = new IntakeSubsystem(new RollerIO() {});
 
-        shooter = new ShooterSubsystem(new ShooterIO() {});
+        shooter = new ShooterSubsystem(new FlywheelIO() {}, new HoodIO() {});
 
         vision =
             new VisionSubsystem(
@@ -181,17 +185,12 @@ public class RobotContainer {
     primaryJoystick.leftTrigger().whileTrue(intake.outtakeCommand());
 
     primaryJoystick
-        .rightBumper()
-        .whileTrue(shooter.runFlywheelAtSpeedCommand(ShooterConstants.flywheelBaseSpeed));
-    primaryJoystick
-        .leftBumper()
-        .whileTrue(shooter.setHoodAngleCommand(ShooterConstants.hoodBaseAngle));
-
-    primaryJoystick
         .a()
         .onTrue(DriveCommands.sysIdCharacterization(drivetrain, primaryJoystick.a()));
 
     primaryJoystick.b().onTrue(intake.sysIdCommand(primaryJoystick.b()));
+
+    primaryJoystick.x().whileTrue(shooter.setHoodAngleCommand(Degrees.of(45)));
   }
 
   public Command getAutonomousCommand() {

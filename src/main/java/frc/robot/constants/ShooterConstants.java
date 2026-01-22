@@ -4,53 +4,57 @@
 
 package frc.robot.constants;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.RPM;
-import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.units.measure.Velocity;
-import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.MomentOfInertia;
+import frc.robot.util.ControlConstantsBuilder;
 
 /** Add your docs here. */
 public class ShooterConstants {
 
-  public static final int flywheelLeaderId = 3;
-  public static final int flywheelFollowerId = 4;
+  public static final int flywheelLeftId = 3;
+  public static final int flywheelRightId = 4;
 
   public static final int hoodId = 5;
 
-  public static final double flywheelGearRatio = 1;
+  public static final Current flywheelSupplyCurrentLimit = Amps.of(70);
 
-  public static final double hoodGearRatio = 1 / 5;
+  public static final Distance flywheelRadius = Inches.of(2);
+  public static final double flywheelGearReduction = 4.0 / 3.0;
+
+  public static final Angle hoodMinRotation = Degrees.of(28);
+  public static final Angle hoodMaxRotation = Degrees.of(45);
+
+  public static final double hoodGearReduction = 475.0 / 6.0;
   public static final double hoodMaxOutput = 1;
 
-  public static final double flywheelKp = 0.0;
-  public static final double flywheelKi = 0;
-  public static final double flywheelKd = 0.0;
-  public static final double flywheelKs = 0.0;
-  public static final double flywheelKv = 0.0;
-  public static final double flywheelKa = 0.0;
+  public static final ControlConstantsBuilder<AngleUnit, VoltageUnit> flywheelControl =
+      ControlConstantsBuilder.fromUnits(Radians, Volts, Seconds).pid(0.1, 0, 0).sva(0, 0, 0);
 
-  public static final double hoodKp = 0.0;
-  public static final double hoodKi = 0;
-  public static final double hoodKd = 0.0;
-  public static final double hoodKs = 0.0;
-  public static final double hoodKv = 0.0;
-  public static final double hoodKa = 0.0;
+  public static final ControlConstantsBuilder<AngleUnit, VoltageUnit> hoodControl =
+      ControlConstantsBuilder.fromUnits(Radians, Volts, Seconds).pid(0.01, 0, 0).sva(0, 0, 0);
 
-  public static final Velocity<VoltageUnit> sysIdRampRate = Volts.per(Second).of(0);
-  public static final Voltage sysIdStepVoltage = Volts.of(0);
-  public static final Time sysIdTimeout = Seconds.of(0);
+  // fuel trajectory calculation
+  public static final Distance extraPointHorizontalOffset = Inches.of(10);
+  public static final Distance extraPointVerticalOffset = Inches.of(10);
 
-  public static final AngularVelocity flywheelBaseSpeed = RPM.of(4500);
-  public static final Angle hoodBaseAngle = Degrees.of(28);
+  public static final Transform3d robotToShooter = new Transform3d(0, 0, 0, new Rotation3d());
 
-  public static final AngularVelocity flywheelTolerance = RPM.of(75);
-  public static final Angle hoodTolerance = Degrees.of(1.0);
+  public static final int extraLookaheadIterations = 2;
+
+  // only used for simulation
+  public static final MomentOfInertia hoodMomentOfIntertia = KilogramSquareMeters.of(0.5);
 }

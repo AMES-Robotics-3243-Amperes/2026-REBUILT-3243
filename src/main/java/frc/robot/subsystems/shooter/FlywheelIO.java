@@ -30,4 +30,7 @@ public interface FlywheelIO {
 
   /** Run the flywheel at the specified velocity. */
   default void setAngularVelocity(AngularVelocity velocity) {}
+
+  /** Coasts the flywheel. */
+  default void coast() {}
 }

@@ -33,8 +33,8 @@ public class PointOfInterestManager {
             : new Rotation3d(
                 pose.getRotation().getMeasureX(),
                 pose.getRotation().getMeasureY(),
-                Degrees.of(180).minus(pose.getRotation().getMeasureZ()));
+                pose.getRotation().getMeasureZ().plus(Degrees.of(180)));
 
-    return new Pose3d(newX, newY, pose.getZ(), pose.getRotation());
+    return new Pose3d(newX, newY, pose.getZ(), newRotation);
   }
 }

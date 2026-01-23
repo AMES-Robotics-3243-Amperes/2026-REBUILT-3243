@@ -25,27 +25,30 @@ import frc.robot.util.ControlConstantsBuilder;
 /** Add your docs here. */
 public class ShooterConstants {
 
-  public static final int flywheelLeftId = 3;
-  public static final int flywheelRightId = 4;
+  public static final int flywheelLeftId = 11;
+  public static final int flywheelRightId = 12;
 
-  public static final int hoodId = 5;
+  public static final int hoodId = 10;
 
   public static final Current flywheelSupplyCurrentLimit = Amps.of(70);
 
   public static final Distance flywheelRadius = Inches.of(2);
   public static final double flywheelGearReduction = 4.0 / 3.0;
 
-  public static final Angle hoodMinRotation = Degrees.of(28);
-  public static final Angle hoodMaxRotation = Degrees.of(45);
+  public static final Angle hoodPhysicalBottomOutRotation = Degrees.of(25);
+  public static final Angle hoodMinRotation = Degrees.of(26.5);
+  public static final Angle hoodMaxRotation = Degrees.of(48);
+
+  public static final Angle hoodToleranceWhenShooting = Degrees.of(5);
 
   public static final double hoodGearReduction = 475.0 / 6.0;
   public static final double hoodMaxOutput = 1;
 
   public static final ControlConstantsBuilder<AngleUnit, VoltageUnit> flywheelControl =
-      ControlConstantsBuilder.fromUnits(Radians, Volts, Seconds).pid(0.1, 0, 0).sva(0, 0, 0);
+      ControlConstantsBuilder.fromUnits(Radians, Volts, Seconds).pid(0.04, 0.15, 0).sva(0, 0, 0);
 
   public static final ControlConstantsBuilder<AngleUnit, VoltageUnit> hoodControl =
-      ControlConstantsBuilder.fromUnits(Radians, Volts, Seconds).pid(0.01, 0, 0).sva(0, 0, 0);
+      ControlConstantsBuilder.fromUnits(Radians, Volts, Seconds).pid(1, 0, 0.05).sva(0, 0, 0);
 
   // fuel trajectory calculation
   public static final Distance extraPointHorizontalOffset = Inches.of(10);

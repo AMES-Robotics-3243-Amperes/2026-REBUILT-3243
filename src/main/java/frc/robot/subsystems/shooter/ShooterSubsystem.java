@@ -7,7 +7,6 @@ package frc.robot.subsystems.shooter;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
@@ -35,6 +34,8 @@ public class ShooterSubsystem extends SubsystemBase {
   public ShooterSubsystem(FlywheelIO shooterIO, HoodIO hoodIO) {
     this.shooterIO = shooterIO;
     this.hoodIO = hoodIO;
+
+    hoodIO.resetPosition(ShooterConstants.hoodPhysicalBottomOutRotation);
   }
 
   @Override
@@ -53,7 +54,7 @@ public class ShooterSubsystem extends SubsystemBase {
           Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", velocity);
         },
         () -> {
-          shooterIO.setAngularVelocity(RPM.of(0));
+          shooterIO.coast();
           Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", RotationsPerSecond.of(0));
         });
   }
@@ -63,7 +64,7 @@ public class ShooterSubsystem extends SubsystemBase {
     Angle clampedAngle =
         Degrees.of(
             MathUtil.clamp(
-                angle.abs(Degrees),
+                angle.in(Degrees),
                 ShooterConstants.hoodMinRotation.in(Degrees),
                 ShooterConstants.hoodMaxRotation.in(Degrees)));
 
@@ -82,6 +83,37 @@ public class ShooterSubsystem extends SubsystemBase {
     return setHoodAngleCommand(ShooterConstants.hoodMinRotation);
   }
 
+  public Command runFlywheelAtHoodAngleCommand(AngularVelocity velocity, Angle angle) {
+    // safety mechanism for when someone inevitably puts 0 rotation without thinking
+    Angle clampedAngle =
+        Degrees.of(
+            MathUtil.clamp(
+                angle.abs(Degrees),
+                ShooterConstants.hoodMinRotation.in(Degrees),
+                ShooterConstants.hoodMaxRotation.in(Degrees)));
+
+    return runEnd(
+        () -> {
+          hoodIO.setAngle(clampedAngle);
+          Logger.recordOutput("Shooter/Hood/SetpointAngle", angle);
+
+          if (hoodInputs.angle.isNear(clampedAngle, ShooterConstants.hoodToleranceWhenShooting)) {
+            shooterIO.setAngularVelocity(velocity);
+            Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", velocity);
+          } else {
+            shooterIO.coast();
+            Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", RotationsPerSecond.of(0));
+          }
+        },
+        () -> {
+          hoodIO.setAngle(ShooterConstants.hoodMinRotation);
+          Logger.recordOutput("Shooter/Hood/SetpointAngle", ShooterConstants.hoodMinRotation);
+
+          shooterIO.coast();
+          Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", RotationsPerSecond.of(0));
+        });
+  }
+
   public Command prepareHoodForShootCommand(
       Supplier<Pose2d> robotPoseSupplier, Supplier<ChassisSpeeds> chassisSpeedsSupplier) {
     return runEnd(
@@ -90,8 +122,15 @@ public class ShooterSubsystem extends SubsystemBase {
               FuelTrajectoryCalculator.calcualteShooterSetpoint(
                   robotPoseSupplier.get(), chassisSpeedsSupplier.get());
 
-          hoodIO.setAngle(shooterSetpoint.hoodAngle());
-          Logger.recordOutput("Shooter/Hood/SetpointAngle", shooterSetpoint.hoodAngle());
+          Angle clampedAngle =
+              Degrees.of(
+                  MathUtil.clamp(
+                      shooterSetpoint.hoodAngle().abs(Degrees),
+                      ShooterConstants.hoodMinRotation.in(Degrees),
+                      ShooterConstants.hoodMaxRotation.in(Degrees)));
+
+          hoodIO.setAngle(clampedAngle);
+          Logger.recordOutput("Shooter/Hood/SetpointAngle", clampedAngle);
         },
         () -> {
           hoodIO.setAngle(ShooterConstants.hoodMinRotation);
@@ -106,19 +145,32 @@ public class ShooterSubsystem extends SubsystemBase {
           ShooterSetpoint shooterSetpoint =
               FuelTrajectoryCalculator.calcualteShooterSetpoint(
                   robotPoseSupplier.get(), chassisSpeedsSupplier.get());
+
+          Angle clampedAngle =
+              Degrees.of(
+                  MathUtil.clamp(
+                      shooterSetpoint.hoodAngle().in(Degrees),
+                      ShooterConstants.hoodMinRotation.in(Degrees),
+                      ShooterConstants.hoodMaxRotation.in(Degrees)));
+
+          hoodIO.setAngle(clampedAngle);
+          Logger.recordOutput("Shooter/Hood/SetpointAngle", clampedAngle);
+
           AngularVelocity flywheelVelocity =
               RadiansPerSecond.of(
                   shooterSetpoint.linearFlywheelSpeed().in(MetersPerSecond)
                       / ShooterConstants.flywheelRadius.in(Meters));
 
-          shooterIO.setAngularVelocity(flywheelVelocity);
-          Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", flywheelVelocity);
-
-          hoodIO.setAngle(shooterSetpoint.hoodAngle());
-          Logger.recordOutput("Shooter/Hood/SetpointAngle", shooterSetpoint.hoodAngle());
+          if (hoodInputs.angle.isNear(clampedAngle, ShooterConstants.hoodToleranceWhenShooting)) {
+            shooterIO.setAngularVelocity(flywheelVelocity);
+            Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", flywheelVelocity);
+          } else {
+            shooterIO.coast();
+            Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", RotationsPerSecond.of(0));
+          }
         },
         () -> {
-          shooterIO.setAngularVelocity(RPM.of(0));
+          shooterIO.coast();
           Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", RotationsPerSecond.of(0));
 
           hoodIO.setAngle(ShooterConstants.hoodMinRotation);

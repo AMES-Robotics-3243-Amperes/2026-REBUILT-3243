@@ -34,6 +34,11 @@ public class HoodIOSim implements HoodIO {
   }
 
   @Override
+  public void resetPosition(Angle angle) {
+    position = angle;
+  }
+
+  @Override
   public void setAngle(Angle angle) {
     goal = angle;
   }

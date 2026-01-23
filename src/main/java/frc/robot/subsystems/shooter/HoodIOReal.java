@@ -30,9 +30,7 @@ public class HoodIOReal implements HoodIO {
 
     hoodConfig.encoder.positionConversionFactor(1.0 / ShooterConstants.hoodGearReduction);
     hoodConfig.encoder.velocityConversionFactor(1.0 / ShooterConstants.hoodGearReduction);
-    hoodConfig
-        .idleMode(IdleMode.kCoast)
-        .inverted(true); // TODO: check if it's actually inverted (I beleive it here tho)
+    hoodConfig.idleMode(IdleMode.kCoast).inverted(false);
 
     ControlConstants feedbackConfig =
         ShooterConstants.hoodControl.in(Rotations, Volts, Millisecond);
@@ -60,6 +58,11 @@ public class HoodIOReal implements HoodIO {
     inputs.angle = Rotations.of(encoder.getPosition());
     inputs.angularVelocity = RPM.of(encoder.getVelocity());
     inputs.appliedVoltage = Volts.of(sparkMax.getAppliedOutput() * sparkMax.getBusVoltage());
+  }
+
+  @Override
+  public void resetPosition(Angle angle) {
+    encoder.setPosition(angle.in(Rotations));
   }
 
   @Override

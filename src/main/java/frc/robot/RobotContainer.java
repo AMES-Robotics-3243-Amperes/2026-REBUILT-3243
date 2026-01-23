@@ -4,27 +4,24 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Degrees;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
 import frc.robot.constants.ModeConstants;
+import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.constants.swerve.TunerConstants;
 import frc.robot.subsystems.drivetrain.GyroIO;
-import frc.robot.subsystems.drivetrain.GyroIOPigeon2;
 import frc.robot.subsystems.drivetrain.GyroIOSim;
 import frc.robot.subsystems.drivetrain.ModuleIO;
-import frc.robot.subsystems.drivetrain.ModuleIOTalonFXReal;
 import frc.robot.subsystems.drivetrain.ModuleIOTalonFXSim;
 import frc.robot.subsystems.drivetrain.SwerveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.intake.RollerIO;
-import frc.robot.subsystems.intake.RollerIOReal;
 import frc.robot.subsystems.shooter.FlywheelIO;
 import frc.robot.subsystems.shooter.FlywheelIOTalonFX;
 import frc.robot.subsystems.shooter.HoodIO;
@@ -32,9 +29,9 @@ import frc.robot.subsystems.shooter.HoodIOReal;
 import frc.robot.subsystems.shooter.HoodIOSim;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.subsystems.vision.VisionIO;
-import frc.robot.subsystems.vision.VisionIOLimelightFour;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.vision.VisionSubsystem;
+import java.util.List;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
@@ -61,23 +58,17 @@ public class RobotContainer {
         driveSimulation = null;
         drivetrain =
             new SwerveSubsystem(
-                new GyroIOPigeon2(),
-                new ModuleIOTalonFXReal(TunerConstants.FrontLeft),
-                new ModuleIOTalonFXReal(TunerConstants.FrontRight),
-                new ModuleIOTalonFXReal(TunerConstants.BackLeft),
-                new ModuleIOTalonFXReal(TunerConstants.BackRight));
+                new GyroIO() {},
+                new ModuleIO() {},
+                new ModuleIO() {},
+                new ModuleIO() {},
+                new ModuleIO() {});
 
-        intake = new IntakeSubsystem(new RollerIOReal());
+        intake = new IntakeSubsystem(new RollerIO() {});
 
         shooter = new ShooterSubsystem(new FlywheelIOTalonFX(), new HoodIOReal());
 
-        vision =
-            new VisionSubsystem(
-                drivetrain::addVisionMeasurement,
-                VisionConstants.cameras.stream()
-                    .<VisionIO>map(
-                        config -> new VisionIOLimelightFour(config, drivetrain::getRotation))
-                    .toList());
+        vision = new VisionSubsystem(drivetrain::addVisionMeasurement, List.of());
         break;
 
       case SIM:
@@ -190,7 +181,13 @@ public class RobotContainer {
 
     primaryJoystick.b().onTrue(intake.sysIdCommand(primaryJoystick.b()));
 
-    primaryJoystick.x().whileTrue(shooter.setHoodAngleCommand(Degrees.of(45)));
+    primaryJoystick
+        .y()
+        .whileTrue(
+            shooter.shootCommand(
+                () -> new Pose2d(-3.0, -3.0, new Rotation2d()), () -> new ChassisSpeeds()));
+
+    primaryJoystick.x().whileTrue(shooter.setHoodAngleCommand(ShooterConstants.hoodMaxRotation));
   }
 
   public Command getAutonomousCommand() {

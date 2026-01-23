@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
@@ -22,11 +23,12 @@ import frc.robot.util.ControlConstantsBuilder.ControlConstants;
 
 /** Add your docs here. */
 public class FlywheelIOTalonFX implements FlywheelIO {
-  private final TalonFX flywheelLeader = new TalonFX(ShooterConstants.flywheelLeftId);
-  private final TalonFX flywheelFollower = new TalonFX(ShooterConstants.flywheelRightId);
+  private final TalonFX leader = new TalonFX(ShooterConstants.flywheelLeftId);
+  private final TalonFX follower = new TalonFX(ShooterConstants.flywheelRightId);
 
-  private final VoltageOut flywheelVoltageRequest = new VoltageOut(0);
-  private final VelocityVoltage flywheelVelocityRequest = new VelocityVoltage(0);
+  private final VoltageOut voltageRequest = new VoltageOut(0);
+  private final VelocityVoltage velocityRequest = new VelocityVoltage(0);
+  private final CoastOut coastRequest = new CoastOut();
 
   public FlywheelIOTalonFX() {
     TalonFXConfiguration flywheelConfig = new TalonFXConfiguration();
@@ -51,33 +53,38 @@ public class FlywheelIOTalonFX implements FlywheelIO {
         .withKI(flywheelControl.kI())
         .withKD(flywheelControl.kD());
 
-    flywheelConfig.Feedback.withSensorToMechanismRatio(ShooterConstants.flywheelGearReduction);
+    flywheelConfig.Feedback.SensorToMechanismRatio = ShooterConstants.flywheelGearReduction;
 
-    flywheelLeader.getConfigurator().apply(flywheelConfig);
-    flywheelFollower.getConfigurator().apply(flywheelConfig);
+    leader.getConfigurator().apply(flywheelConfig);
+    follower.getConfigurator().apply(flywheelConfig);
 
-    flywheelFollower.setControl(
+    follower.setControl(
         new Follower(
             ShooterConstants.flywheelLeftId,
             MotorAlignmentValue
-                .Aligned)); // TODO: I think it should be inverted is wrong but check on the
+                .Opposed)); // TODO: I think it should be inverted is wrong but check on the
     // physical robot
   }
 
   @Override
   public void updateInputs(ShooterIOInputs inputs) {
-    inputs.position = flywheelLeader.getPosition().getValue();
-    inputs.velocity = flywheelLeader.getVelocity().getValue();
-    inputs.appliedVoltage = flywheelLeader.getMotorVoltage().getValue();
+    inputs.position = leader.getPosition().getValue();
+    inputs.velocity = leader.getVelocity().getValue();
+    inputs.appliedVoltage = leader.getMotorVoltage().getValue();
   }
 
   @Override
   public void runOpenLoop(double output) {
-    flywheelLeader.setControl(flywheelVoltageRequest.withOutput(output));
+    leader.setControl(voltageRequest.withOutput(output));
   }
 
   @Override
   public void setAngularVelocity(AngularVelocity velocity) {
-    flywheelLeader.setControl(flywheelVelocityRequest.withVelocity(velocity));
+    leader.setControl(velocityRequest.withVelocity(velocity));
+  }
+
+  @Override
+  public void coast() {
+    leader.setControl(coastRequest);
   }
 }

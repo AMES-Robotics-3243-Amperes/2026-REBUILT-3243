@@ -15,6 +15,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.ShooterConstants;
@@ -24,15 +25,15 @@ import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class ShooterSubsystem extends SubsystemBase {
-  private final FlywheelIO shooterIO;
-  private final ShooterIOInputsAutoLogged shooterInputs = new ShooterIOInputsAutoLogged();
+  private final FlywheelIO flywheelIO;
+  private final FlywheelIOInputsAutoLogged flywheelInputs = new FlywheelIOInputsAutoLogged();
 
   private final HoodIO hoodIO;
   private final HoodIOInputsAutoLogged hoodInputs = new HoodIOInputsAutoLogged();
 
   /** Creates a new ShooterSubsystem. */
   public ShooterSubsystem(FlywheelIO shooterIO, HoodIO hoodIO) {
-    this.shooterIO = shooterIO;
+    this.flywheelIO = shooterIO;
     this.hoodIO = hoodIO;
 
     hoodIO.resetPosition(ShooterConstants.hoodPhysicalBottomOutRotation);
@@ -40,27 +41,15 @@ public class ShooterSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    shooterIO.updateInputs(shooterInputs);
-    Logger.processInputs("Shooter/Flywheel", shooterInputs);
+    flywheelIO.updateInputs(flywheelInputs);
+    Logger.processInputs("Shooter/Flywheel", flywheelInputs);
 
     hoodIO.updateInputs(hoodInputs);
     Logger.processInputs("Shooter/Hood", hoodInputs);
   }
 
-  public Command runFlywheelAtSpeedCommand(AngularVelocity velocity) {
-    return runEnd(
-        () -> {
-          shooterIO.setAngularVelocity(velocity);
-          Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", velocity);
-        },
-        () -> {
-          shooterIO.coast();
-          Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", RotationsPerSecond.of(0));
-        });
-  }
-
-  public Command setHoodAngleCommand(Angle angle) {
-    // safety mechanism for when someone inevitably puts 0 rotation without thinking
+  /* Clamps the given angle to the allowed range, sets the hood to the clamped angle, and returns the clamped angle. */
+  private Angle setHoodAngle(Angle angle) {
     Angle clampedAngle =
         Degrees.of(
             MathUtil.clamp(
@@ -68,50 +57,59 @@ public class ShooterSubsystem extends SubsystemBase {
                 ShooterConstants.hoodMinRotation.in(Degrees),
                 ShooterConstants.hoodMaxRotation.in(Degrees)));
 
-    return runEnd(
-        () -> {
-          hoodIO.setAngle(clampedAngle);
-          Logger.recordOutput("Shooter/Hood/SetpointAngle", angle);
-        },
-        () -> {
-          hoodIO.setAngle(ShooterConstants.hoodMinRotation);
-          Logger.recordOutput("Shooter/Hood/SetpointAngle", ShooterConstants.hoodMinRotation);
-        });
+    hoodIO.setAngle(clampedAngle);
+    Logger.recordOutput("Shooter/Hood/SetpointAngle", ShooterConstants.hoodMinRotation);
+
+    return clampedAngle;
   }
 
-  public Command lowerHoodCommand() {
-    return setHoodAngleCommand(ShooterConstants.hoodMinRotation);
+  private void runFlywheelWithHood(AngularVelocity velocity, Angle targetHoodAngle) {
+    Angle clampedHoodTarget = setHoodAngle(targetHoodAngle);
+
+    if (hoodInputs.angle.isNear(clampedHoodTarget, ShooterConstants.hoodToleranceWhenShooting)) {
+      flywheelIO.setAngularVelocity(velocity);
+      Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", velocity);
+    } else {
+      flywheelIO.coast();
+      Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", RotationsPerSecond.of(0));
+    }
+  }
+
+  private void runFlywheelAtFuelSpeedWithHood(LinearVelocity fuelVelocity, Angle targetHoodAngle) {
+    AngularVelocity angularVelocity =
+        RadiansPerSecond.of(
+            fuelVelocity.div(ShooterConstants.fuelToFlywheelLinearSpeedRatio).in(MetersPerSecond)
+                / ShooterConstants.flywheelRadius.in(Meters));
+
+    runFlywheelWithHood(angularVelocity, targetHoodAngle);
+  }
+
+  private void coastFlywheel() {
+    flywheelIO.coast();
+    Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", RotationsPerSecond.of(0));
+  }
+
+  /* Lowers hood and sets shooter to coast. */
+  private void reset() {
+    setHoodAngle(ShooterConstants.hoodMinRotation);
+    coastFlywheel();
+  }
+
+  public Command setHoodAngleCommand(Angle angle) {
+    return runEnd(
+        () -> {
+          setHoodAngle(angle);
+        },
+        this::reset);
   }
 
   public Command runFlywheelAtHoodAngleCommand(AngularVelocity velocity, Angle angle) {
-    // safety mechanism for when someone inevitably puts 0 rotation without thinking
-    Angle clampedAngle =
-        Degrees.of(
-            MathUtil.clamp(
-                angle.abs(Degrees),
-                ShooterConstants.hoodMinRotation.in(Degrees),
-                ShooterConstants.hoodMaxRotation.in(Degrees)));
-
     return runEnd(
         () -> {
-          hoodIO.setAngle(clampedAngle);
-          Logger.recordOutput("Shooter/Hood/SetpointAngle", angle);
-
-          if (hoodInputs.angle.isNear(clampedAngle, ShooterConstants.hoodToleranceWhenShooting)) {
-            shooterIO.setAngularVelocity(velocity);
-            Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", velocity);
-          } else {
-            shooterIO.coast();
-            Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", RotationsPerSecond.of(0));
-          }
+          Angle clampedAngle = setHoodAngle(angle);
+          runFlywheelWithHood(velocity, clampedAngle);
         },
-        () -> {
-          hoodIO.setAngle(ShooterConstants.hoodMinRotation);
-          Logger.recordOutput("Shooter/Hood/SetpointAngle", ShooterConstants.hoodMinRotation);
-
-          shooterIO.coast();
-          Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", RotationsPerSecond.of(0));
-        });
+        this::reset);
   }
 
   public Command prepareHoodForShootCommand(
@@ -122,20 +120,9 @@ public class ShooterSubsystem extends SubsystemBase {
               FuelTrajectoryCalculator.calcualteShooterSetpoint(
                   robotPoseSupplier.get(), chassisSpeedsSupplier.get());
 
-          Angle clampedAngle =
-              Degrees.of(
-                  MathUtil.clamp(
-                      shooterSetpoint.hoodAngle().abs(Degrees),
-                      ShooterConstants.hoodMinRotation.in(Degrees),
-                      ShooterConstants.hoodMaxRotation.in(Degrees)));
-
-          hoodIO.setAngle(clampedAngle);
-          Logger.recordOutput("Shooter/Hood/SetpointAngle", clampedAngle);
+          setHoodAngle(shooterSetpoint.hoodAngle());
         },
-        () -> {
-          hoodIO.setAngle(ShooterConstants.hoodMinRotation);
-          Logger.recordOutput("Shooter/Hood/SetpointAngle", ShooterConstants.hoodMinRotation);
-        });
+        this::reset);
   }
 
   public Command shootCommand(
@@ -146,36 +133,10 @@ public class ShooterSubsystem extends SubsystemBase {
               FuelTrajectoryCalculator.calcualteShooterSetpoint(
                   robotPoseSupplier.get(), chassisSpeedsSupplier.get());
 
-          Angle clampedAngle =
-              Degrees.of(
-                  MathUtil.clamp(
-                      shooterSetpoint.hoodAngle().in(Degrees),
-                      ShooterConstants.hoodMinRotation.in(Degrees),
-                      ShooterConstants.hoodMaxRotation.in(Degrees)));
-
-          hoodIO.setAngle(clampedAngle);
-          Logger.recordOutput("Shooter/Hood/SetpointAngle", clampedAngle);
-
-          AngularVelocity flywheelVelocity =
-              RadiansPerSecond.of(
-                  shooterSetpoint.linearFlywheelSpeed().in(MetersPerSecond)
-                      / ShooterConstants.flywheelRadius.in(Meters));
-
-          if (hoodInputs.angle.isNear(clampedAngle, ShooterConstants.hoodToleranceWhenShooting)) {
-            shooterIO.setAngularVelocity(flywheelVelocity);
-            Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", flywheelVelocity);
-          } else {
-            shooterIO.coast();
-            Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", RotationsPerSecond.of(0));
-          }
+          Angle clampedAngle = setHoodAngle(shooterSetpoint.hoodAngle());
+          runFlywheelAtFuelSpeedWithHood(shooterSetpoint.linearFlywheelSpeed(), clampedAngle);
         },
-        () -> {
-          shooterIO.coast();
-          Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", RotationsPerSecond.of(0));
-
-          hoodIO.setAngle(ShooterConstants.hoodMinRotation);
-          Logger.recordOutput("Shooter/Hood/SetpointAngle", ShooterConstants.hoodMinRotation);
-        });
+        this::reset);
   }
 
   public Angle getHoodAngle() {
@@ -183,6 +144,13 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public AngularVelocity getFlywheelVelocity() {
-    return shooterInputs.velocity;
+    return flywheelInputs.velocity;
+  }
+
+  public LinearVelocity getFuelVelocity() {
+    return MetersPerSecond.of(
+        flywheelInputs.velocity.in(RadiansPerSecond)
+            * ShooterConstants.flywheelRadius.in(Meters)
+            * ShooterConstants.fuelToFlywheelLinearSpeedRatio);
   }
 }

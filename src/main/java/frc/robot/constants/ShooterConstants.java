@@ -35,11 +35,14 @@ public class ShooterConstants {
   public static final Distance flywheelRadius = Inches.of(2);
   public static final double flywheelGearReduction = 4.0 / 3.0;
 
+  public static final double fuelToFlywheelLinearSpeedRatio =
+      0.5; // a value < 1 means the fuel's linear speed is less than the flywheel's
+
   public static final Angle hoodPhysicalBottomOutRotation = Degrees.of(25);
   public static final Angle hoodMinRotation = Degrees.of(26.5);
   public static final Angle hoodMaxRotation = Degrees.of(48);
 
-  public static final Angle hoodToleranceWhenShooting = Degrees.of(5);
+  public static final Angle hoodToleranceWhenShooting = Degrees.of(500);
 
   public static final double hoodGearReduction = 475.0 / 6.0;
   public static final double hoodMaxOutput = 1;

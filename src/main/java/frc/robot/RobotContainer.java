@@ -4,11 +4,14 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCommands;
 import frc.robot.constants.ModeConstants;
@@ -34,6 +37,7 @@ import frc.robot.subsystems.vision.VisionSubsystem;
 import java.util.List;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnFly;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -187,7 +191,30 @@ public class RobotContainer {
             shooter.shootCommand(
                 () -> new Pose2d(-3.0, -3.0, new Rotation2d()), () -> new ChassisSpeeds()));
 
-    primaryJoystick.x().whileTrue(shooter.setHoodAngleCommand(ShooterConstants.hoodMaxRotation));
+    primaryJoystick
+        .x()
+        .whileTrue(shooter.shootCommand(drivetrain::getPose, drivetrain::getChassisSpeeds));
+
+    primaryJoystick
+        .leftBumper()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  RebuiltFuelOnFly fuel =
+                      new RebuiltFuelOnFly(
+                          driveSimulation.getSimulatedDriveTrainPose().getTranslation(),
+                          ShooterConstants.robotToShooter.getTranslation().toTranslation2d(),
+                          driveSimulation.getDriveTrainSimulatedChassisSpeedsRobotRelative(),
+                          driveSimulation
+                              .getSimulatedDriveTrainPose()
+                              .getRotation()
+                              .plus(ShooterConstants.robotToShooter.getRotation().toRotation2d()),
+                          ShooterConstants.robotToShooter.getMeasureZ(),
+                          shooter.getFuelVelocity(),
+                          Degrees.of(90).minus(shooter.getHoodAngle()));
+
+                  SimulatedArena.getInstance().addGamePieceProjectile(fuel);
+                }));
   }
 
   public Command getAutonomousCommand() {
@@ -201,8 +228,6 @@ public class RobotContainer {
     Logger.recordOutput(
         "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
     Logger.recordOutput(
-        "FieldSimulation/Coral", SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
-    Logger.recordOutput(
-        "FieldSimulation/Algae", SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
+        "FieldSimulation/Fuel", SimulatedArena.getInstance().getGamePiecesArrayByType("Fuel"));
   }
 }

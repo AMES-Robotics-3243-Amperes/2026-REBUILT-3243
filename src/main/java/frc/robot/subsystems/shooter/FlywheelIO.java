@@ -16,14 +16,14 @@ import org.littletonrobotics.junction.AutoLog;
 /** Add your docs here. */
 public interface FlywheelIO {
   @AutoLog
-  class ShooterIOInputs {
+  class FlywheelIOInputs {
     public Angle position = Rotations.of(0);
     public AngularVelocity velocity = RotationsPerSecond.of(0);
     public Voltage appliedVoltage = Volts.of(0);
   }
 
   /** Updates the set of loggable inputs. */
-  default void updateInputs(ShooterIOInputs inputs) {}
+  default void updateInputs(FlywheelIOInputs inputs) {}
 
   /** Run the flywheel at the specified open loop value. */
   default void runOpenLoop(double output) {}

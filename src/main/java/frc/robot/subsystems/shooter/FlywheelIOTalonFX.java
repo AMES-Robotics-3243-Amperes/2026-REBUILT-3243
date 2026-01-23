@@ -23,7 +23,7 @@ import frc.robot.util.ControlConstantsBuilder.ControlConstants;
 
 /** Add your docs here. */
 public class FlywheelIOTalonFX implements FlywheelIO {
-  private final TalonFX leader = new TalonFX(ShooterConstants.flywheelLeftId);
+  protected final TalonFX leader = new TalonFX(ShooterConstants.flywheelLeftId);
   private final TalonFX follower = new TalonFX(ShooterConstants.flywheelRightId);
 
   private final VoltageOut voltageRequest = new VoltageOut(0);
@@ -67,7 +67,7 @@ public class FlywheelIOTalonFX implements FlywheelIO {
   }
 
   @Override
-  public void updateInputs(ShooterIOInputs inputs) {
+  public void updateInputs(FlywheelIOInputs inputs) {
     inputs.position = leader.getPosition().getValue();
     inputs.velocity = leader.getVelocity().getValue();
     inputs.appliedVoltage = leader.getMotorVoltage().getValue();

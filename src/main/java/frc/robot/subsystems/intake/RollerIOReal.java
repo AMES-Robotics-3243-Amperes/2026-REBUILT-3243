@@ -1,6 +1,5 @@
 package frc.robot.subsystems.intake;
 
-import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
@@ -15,10 +14,8 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.units.PerUnit;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.constants.IntakeConstants;
-import frc.robot.util.ControlConstantsBuilder.ControlConstants;
 
 public class RollerIOReal implements RollerIO {
   SparkMax sparkMax = new SparkMax(IntakeConstants.rollerId, MotorType.kBrushless);
@@ -33,20 +30,10 @@ public class RollerIOReal implements RollerIO {
     config.encoder.velocityConversionFactor(IntakeConstants.rollerGearRatio);
     config.idleMode(IdleMode.kCoast).inverted(true);
 
-    ControlConstants feedbackControl =
-        IntakeConstants.rollerControl.in(Rotations, Volts, Milliseconds);
-
     config
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .pid(feedbackControl.kP(), feedbackControl.kI(), feedbackControl.kD())
-        .feedForward
-        // .kS(IntakeConstants.rollerControl.kS.in(Volts))
-        .kV(IntakeConstants.rollerControl.kV.in(PerUnit.combine(Volts, RPM)))
-    // .kA(
-    //     IntakeConstants.rollerControl.kA.in(
-    //         PerUnit.combine(Volts, PerUnit.combine(RPM, Second))))
-    ;
+        .apply(IntakeConstants.rollerControl.revClosedLoopConfig());
 
     config.closedLoop.maxMotion.maxAcceleration(10);
 

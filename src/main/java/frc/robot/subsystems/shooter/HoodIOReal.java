@@ -1,6 +1,5 @@
 package frc.robot.subsystems.shooter;
 
-import static edu.wpi.first.units.Units.Millisecond;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
@@ -17,7 +16,6 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.units.measure.Angle;
 import frc.robot.constants.ShooterConstants;
-import frc.robot.util.ControlConstantsBuilder.ControlConstants;
 
 public class HoodIOReal implements HoodIO {
   protected final SparkMax sparkMax = new SparkMax(ShooterConstants.hoodId, MotorType.kBrushless);
@@ -32,20 +30,10 @@ public class HoodIOReal implements HoodIO {
     hoodConfig.encoder.velocityConversionFactor(1.0 / ShooterConstants.hoodGearReduction);
     hoodConfig.idleMode(IdleMode.kCoast).inverted(false);
 
-    ControlConstants feedbackConfig =
-        ShooterConstants.hoodControl.in(Rotations, Volts, Millisecond);
-
     hoodConfig
         .closedLoop
-        .outputRange(-ShooterConstants.hoodMaxOutput, ShooterConstants.hoodMaxOutput)
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .pid(feedbackConfig.kP(), feedbackConfig.kI(), feedbackConfig.kD());
-    // .feedForward
-    // .sva(
-    //     IntakeConstants.hoodKs,
-    //     IntakeConstants.hoodKv,
-    //     IntakeConstants.hoodKa,
-    //     ClosedLoopSlot.kSlot0);
+        .apply(ShooterConstants.hoodControl.revClosedLoopConfig());
 
     sparkMax.configure(hoodConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 

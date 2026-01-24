@@ -5,8 +5,6 @@ import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.swerve.*;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.*;
-import edu.wpi.first.units.MultUnit;
-import edu.wpi.first.units.PerUnit;
 import edu.wpi.first.units.measure.*;
 
 public class TunerConstants {
@@ -31,31 +29,9 @@ public class TunerConstants {
               .withCouplingGearRatio(ModuleConstants.kCoupleRatio)
               .withWheelRadius(ModuleConstants.kWheelRadius)
               .withSteerMotorGains(
-                  new Slot0Configs()
-                      .withKP(ModuleConstants.steerControl.kP.in(Volts.per(Rotations)))
-                      .withKI(
-                          ModuleConstants.steerControl.kI.in(
-                              Volts.per(MultUnit.combine(Rotations, Seconds))))
-                      .withKD(ModuleConstants.steerControl.kD.in(Volts.per(RotationsPerSecond)))
-                      .withKS(ModuleConstants.steerControl.kS.in(Volts))
-                      .withKV(ModuleConstants.steerControl.kV.in(Volts.per(RotationsPerSecond)))
-                      .withKA(
-                          ModuleConstants.steerControl.kA.in(
-                              Volts.per(
-                                  PerUnit.combine(PerUnit.combine(Rotations, Seconds), Seconds)))))
+                  Slot0Configs.from(ModuleConstants.steerControl.talonFXSlotConfigs()))
               .withDriveMotorGains(
-                  new Slot0Configs()
-                      .withKP(ModuleConstants.driveControl.kP.in(Volts.per(Rotations)))
-                      .withKI(
-                          ModuleConstants.driveControl.kI.in(
-                              Volts.per(MultUnit.combine(Rotations, Seconds))))
-                      .withKD(ModuleConstants.driveControl.kD.in(Volts.per(RotationsPerSecond)))
-                      .withKS(ModuleConstants.driveControl.kS.in(Volts))
-                      .withKV(ModuleConstants.driveControl.kV.in(Volts.per(RotationsPerSecond)))
-                      .withKA(
-                          ModuleConstants.driveControl.kA.in(
-                              Volts.per(
-                                  PerUnit.combine(PerUnit.combine(Rotations, Seconds), Seconds)))))
+                  Slot0Configs.from(ModuleConstants.driveControl.talonFXSlotConfigs()))
               .withSteerMotorClosedLoopOutput(ModuleConstants.steerClosedLoopOutput)
               .withDriveMotorClosedLoopOutput(ModuleConstants.driveClosedLoopOutput)
               .withSlipCurrent(SwerveConstants.slipCurrent)

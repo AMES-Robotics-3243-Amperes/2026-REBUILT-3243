@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 
 import com.ctre.phoenix6.CANBus;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -19,7 +20,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Time;
-import frc.robot.util.PIDBuilder;
+import frc.robot.util.ControlConstantsBuilder;
 
 public class SwerveConstants {
   // teleop
@@ -29,12 +30,13 @@ public class SwerveConstants {
   public static final LinearVelocity linearTeleopSpeed = MetersPerSecond.of(2);
   public static final AngularVelocity angularTeleopSpeed = RotationsPerSecond.of(0.5);
 
-  // holonomic pid controllers. note that any configuration beyond kP, kI, and kD will NOT apply to
-  // pathplanner autos
-  public static final PIDBuilder drivePid = new PIDBuilder().pid(3, 0, 0).iZone(1);
-  public static final PIDBuilder rotationPidRadians =
-      new PIDBuilder().pid(8, 0, 0.05).constraints(12, 30).iZone(1);
-
+  // public static final ControlConstants drivePidConstants = new PIDBuilder().pid(3, 0,
+  // 0).iZone(1);
+  public static final ControlConstantsBuilder rotationControl =
+      ControlConstantsBuilder.fromRadiansAndSeconds()
+          .pid(7, 0.4, 0.1)
+          .iZone(1)
+          .constraints(RotationsPerSecond.of(3), RotationsPerSecondPerSecond.of(9));
   // physical properties
   public static final Distance driveBaseFrontLength = Inches.of(26);
   public static final Distance driveBaseSideLength = Inches.of(26);

@@ -3,15 +3,11 @@ package frc.robot.constants.swerve;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
-import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerFeedbackType;
-import edu.wpi.first.units.AngleUnit;
-import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
@@ -21,14 +17,14 @@ import frc.robot.util.ControlConstantsBuilder;
 
 public class ModuleConstants {
   // drive
-  public static final ControlConstantsBuilder<AngleUnit, VoltageUnit> driveControl =
-      ControlConstantsBuilder.fromUnits(Radians, Volts, Seconds)
+  public static final ControlConstantsBuilder driveControl =
+      ControlConstantsBuilder.fromRadiansAndSeconds()
           .pid(0.11247, 0, 0)
           .sva(0.12082, 0.09818, 0.0084962);
 
   // turn
-  public static final ControlConstantsBuilder<AngleUnit, VoltageUnit> steerControl =
-      ControlConstantsBuilder.fromUnits(Radians, Volts, Seconds).pid(5, 0.6, 0.2).sva(0, 0.3, 0);
+  public static final ControlConstantsBuilder steerControl =
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(5, 0.6, 0.2).sva(0, 0.3, 0);
 
   public static final Current steerStatorCurrentLimit = Amps.of(60);
 
@@ -50,6 +46,6 @@ public class ModuleConstants {
   public static final MomentOfInertia kSteerInertia = KilogramSquareMeters.of(0.01);
   public static final MomentOfInertia kDriveInertia = KilogramSquareMeters.of(0.01);
 
-  public static final Voltage driveFrictionVoltage = Volts.of(driveControl.kS.in(Volts));
-  public static final Voltage steerFrictionVoltage = Volts.of(steerControl.kS.in(Volts));
+  public static final Voltage driveFrictionVoltage = Volts.of(driveControl.kS);
+  public static final Voltage steerFrictionVoltage = Volts.of(steerControl.kS);
 }

@@ -1,13 +1,11 @@
 package frc.robot.constants;
 
 import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
-import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -27,8 +25,8 @@ public class IntakeConstants {
 
   public static final Distance rollerRadius = Inches.of(1);
 
-  public static final ControlConstantsBuilder<AngleUnit, VoltageUnit> rollerControl =
-      ControlConstantsBuilder.fromUnits(Radians, Volts, Seconds)
+  public static final ControlConstantsBuilder rollerControl =
+      ControlConstantsBuilder.fromRadiansAndSeconds()
           .pid(0.000002, 0, 0)
           .sva(0, 0.032867, 0.012696);
 

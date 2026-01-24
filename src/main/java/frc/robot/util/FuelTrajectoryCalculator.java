@@ -25,7 +25,6 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.setpoints.BluePointsOfInterest;
-import org.littletonrobotics.junction.Logger;
 
 public class FuelTrajectoryCalculator {
   public record ShooterSetpoint(
@@ -33,10 +32,6 @@ public class FuelTrajectoryCalculator {
 
   public record FuelShotData(ShooterSetpoint shooterSetpoint, Rotation2d drivetrainSetpoint) {}
 
-  // TODO: if the hood angle becomes unachievable, clamp it and calculate the new velocity that
-  // still makes it in
-
-  // TODO: use the chassis speeds
   private static ShooterSetpoint calcualteShooterSetpoint(Pose2d robotPose) {
     Translation3d shooterToHub =
         PointOfInterestManager.flipTranslation(BluePointsOfInterest.hubPosition)
@@ -91,7 +86,8 @@ public class FuelTrajectoryCalculator {
     // less a straight line from the shooter)
     a = Double.min(a, -1e-5);
 
-    // now that we have the final polynomial that our fuel will follow, we just coefficient match the t^2 term to get the speed
+    // now that we have the final polynomial that our fuel will follow, we just coefficient match
+    // the t^2 term to get the speed
     double gravity = 9.8;
     double fuelAngleCos = Math.cos(fuelAngle.in(Radians));
 
@@ -104,8 +100,7 @@ public class FuelTrajectoryCalculator {
         Meters.of(horizontalDistanceToHub).div(fuelSpeed.times(fuelAngleCos)));
   }
 
-  public static FuelShotData calcualteShooterSetpoint(
-      Pose2d robotPose, ChassisSpeeds chassisSpeeds) {
+  public static FuelShotData getFuelShot(Pose2d robotPose, ChassisSpeeds chassisSpeeds) {
     ShooterSetpoint setpoint = calcualteShooterSetpoint(robotPose);
 
     for (int i = 0; i < ShooterConstants.lookaheadIterations; i++) {

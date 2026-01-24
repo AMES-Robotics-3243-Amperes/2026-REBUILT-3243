@@ -3,10 +3,9 @@ package frc.robot.subsystems.shooter;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Value;
 import static edu.wpi.first.units.Units.Volts;
 
-import edu.wpi.first.units.PerUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.constants.ShooterConstants;
@@ -25,8 +24,7 @@ public class FlywheelIOSim implements FlywheelIO {
     inputs.velocity = velocity;
     inputs.appliedVoltage =
         Volts.of(
-            ShooterConstants.flywheelControl.kV.in(
-                    PerUnit.combine(Volts, PerUnit.combine(Radians, Second)))
+            ShooterConstants.flywheelControl.kV.in(Value.per(RadiansPerSecond))
                 * velocity.in(RadiansPerSecond));
   }
 
@@ -34,9 +32,7 @@ public class FlywheelIOSim implements FlywheelIO {
   public void runOpenLoop(double output) {
     velocity =
         RadiansPerSecond.of(
-            output
-                / ShooterConstants.flywheelControl.kV.in(
-                    PerUnit.combine(Volts, PerUnit.combine(Radians, Second))));
+            output / ShooterConstants.flywheelControl.kV.in(Value.per(RadiansPerSecond)));
   }
 
   @Override

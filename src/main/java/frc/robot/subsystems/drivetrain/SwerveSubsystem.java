@@ -13,7 +13,7 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.controllers.PPLTVController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.swerve.SwerveSetpoint;
@@ -163,9 +163,10 @@ public class SwerveSubsystem extends SubsystemBase {
         this::setPose,
         this::getChassisSpeeds,
         this::driveFeedforwards,
-        new PPHolonomicDriveController(
-            SwerveConstants.drivePid.buildConstants(),
-            SwerveConstants.rotationPidRadians.buildConstants()),
+        new PPLTVController(0.02),
+        // new PPHolonomicDriveController(
+        //     SwerveConstants.drivePid.buildConstants(),
+        //     SwerveConstants.rotationPidRadians.buildConstants()),
         pathPlannerConfig,
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this);
@@ -597,12 +598,25 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Supplier<AngularVelocity> rotateAtAngle(Supplier<Rotation2d> rotation) {
-    ProfiledPIDController pidController = SwerveConstants.rotationPidRadians.buildProfiled();
+    ProfiledPIDController pidController =
+        SwerveConstants.rotationControl.profiledPIDController(
+            Radians, Degrees.of(-180), Degrees.of(180));
     pidController.enableContinuousInput(-Math.PI, Math.PI);
+    pidController.reset(getRotation().getRadians());
+
+    Timer pidResetTimer = new Timer();
+    pidResetTimer.restart();
 
     return () -> {
+      if (pidResetTimer.hasElapsed(0.08)) pidController.reset(getRotation().getRadians());
+
+      pidResetTimer.restart();
+
       double output =
           pidController.calculate(getRotation().getRadians(), rotation.get().getRadians());
+
+      Logger.recordOutput("pid error radians", pidController.getPositionError());
+
       return RadiansPerSecond.of(output);
     };
   }

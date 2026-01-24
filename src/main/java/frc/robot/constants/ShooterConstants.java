@@ -8,7 +8,6 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
-import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
@@ -16,7 +15,6 @@ import static edu.wpi.first.units.Units.Volts;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
@@ -50,15 +48,14 @@ public class ShooterConstants {
   public static final Angle hoodToleranceWhenShooting = Degrees.of(5);
 
   public static final double hoodGearReduction = 475.0 / 6.0;
-  public static final double hoodMaxOutput = 1;
 
-  public static final ControlConstantsBuilder<AngleUnit, VoltageUnit> flywheelControl =
-      ControlConstantsBuilder.fromUnits(Radians, Volts, Seconds)
+  public static final ControlConstantsBuilder flywheelControl =
+      ControlConstantsBuilder.fromRadiansAndSeconds()
           .pid(0.1, 0, 0)
           .sva(0.13976, 0.023548, 0.0013083);
 
-  public static final ControlConstantsBuilder<AngleUnit, VoltageUnit> hoodControl =
-      ControlConstantsBuilder.fromUnits(Radians, Volts, Seconds).pid(1, 0, 0.05).sva(0, 0, 0);
+  public static final ControlConstantsBuilder hoodControl =
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(1, 0, 0.05).sva(0, 0, 0);
 
   public static final Velocity<VoltageUnit> sysIdRampRate = Volts.per(Second).of(0.8);
   public static final Voltage sysIdStepVoltage = Volts.of(4);

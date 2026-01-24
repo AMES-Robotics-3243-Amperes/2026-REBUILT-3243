@@ -169,7 +169,7 @@ public class RobotContainer {
     primaryJoystick
         .y()
         .whileTrue(
-            ShootingCommands.shootWithIndependentLinearDriveCommand(
+            ShootingCommands.shootHubWithIndependentLinearDriveCommand(
                 drivetrain.joystickDriveLinear(
                     primaryJoystick::getLeftX,
                     primaryJoystick::getLeftY,

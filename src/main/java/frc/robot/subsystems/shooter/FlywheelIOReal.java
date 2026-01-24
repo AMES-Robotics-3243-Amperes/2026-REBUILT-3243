@@ -4,12 +4,9 @@
 
 package frc.robot.subsystems.shooter;
 
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.Seconds;
-import static edu.wpi.first.units.Units.Volts;
-
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.VelocityVoltage;
@@ -22,7 +19,6 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.constants.ShooterConstants;
-import frc.robot.util.ControlConstantsBuilder.ControlConstants;
 
 /** Add your docs here. */
 public class FlywheelIOReal implements FlywheelIO {
@@ -40,9 +36,6 @@ public class FlywheelIOReal implements FlywheelIO {
   public FlywheelIOReal() {
     TalonFXConfiguration flywheelConfig = new TalonFXConfiguration();
 
-    ControlConstants flywheelControl =
-        ShooterConstants.flywheelControl.in(Rotations, Volts, Seconds);
-
     flywheelConfig
         .MotorOutput
         .withInverted(InvertedValue.CounterClockwise_Positive)
@@ -52,13 +45,8 @@ public class FlywheelIOReal implements FlywheelIO {
         .withSupplyCurrentLimit(ShooterConstants.flywheelSupplyCurrentLimit)
         .withSupplyCurrentLimitEnable(true);
     flywheelConfig
-        .Slot0
-        .withKS(flywheelControl.kS())
-        .withKV(flywheelControl.kV())
-        .withKA(flywheelControl.kA())
-        .withKP(flywheelControl.kP())
-        .withKI(flywheelControl.kI())
-        .withKD(flywheelControl.kD());
+        .withSlot0(Slot0Configs.from(ShooterConstants.flywheelControl.talonFXSlotConfigs()))
+        .withMotionMagic(ShooterConstants.flywheelControl.talonFXMotionMagicConfigs());
 
     flywheelConfig.Feedback.SensorToMechanismRatio = ShooterConstants.flywheelGearReduction;
 
@@ -70,7 +58,6 @@ public class FlywheelIOReal implements FlywheelIO {
     //         ShooterConstants.flywheelLeftId,
     //         MotorAlignmentValue
     //             .Opposed));
-    // physical robot
 
     position = leader.getPosition();
     velocity = leader.getVelocity();

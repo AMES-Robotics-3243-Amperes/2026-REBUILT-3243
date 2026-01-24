@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -20,6 +21,9 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.Velocity;
+import edu.wpi.first.units.measure.Voltage;
 import frc.robot.util.ControlConstantsBuilder;
 
 /** Add your docs here. */
@@ -39,23 +43,29 @@ public class ShooterConstants {
       0.5; // a value < 1 means the fuel's linear speed is less than the flywheel's
 
   public static final Angle hoodPhysicalBottomOutRotation = Degrees.of(25);
-  public static final Angle hoodMinRotation = Degrees.of(26.5);
+  public static final Angle hoodMinRotation = Degrees.of(26);
   public static final Angle hoodMaxRotation = Degrees.of(48);
 
-  public static final Angle hoodToleranceWhenShooting = Degrees.of(500);
+  public static final Angle hoodToleranceWhenShooting = Degrees.of(5);
 
   public static final double hoodGearReduction = 475.0 / 6.0;
   public static final double hoodMaxOutput = 1;
 
   public static final ControlConstantsBuilder<AngleUnit, VoltageUnit> flywheelControl =
-      ControlConstantsBuilder.fromUnits(Radians, Volts, Seconds).pid(0.04, 0.15, 0).sva(0, 0, 0);
+      ControlConstantsBuilder.fromUnits(Radians, Volts, Seconds)
+          .pid(0.1, 0, 0)
+          .sva(0.13976, 0.023548, 0.0013083);
 
   public static final ControlConstantsBuilder<AngleUnit, VoltageUnit> hoodControl =
       ControlConstantsBuilder.fromUnits(Radians, Volts, Seconds).pid(1, 0, 0.05).sva(0, 0, 0);
 
+  public static final Velocity<VoltageUnit> sysIdRampRate = Volts.per(Second).of(0.8);
+  public static final Voltage sysIdStepVoltage = Volts.of(4);
+  public static final Time sysIdTimeout = Seconds.of(8);
+
   // fuel trajectory calculation
   public static final Distance extraPointHorizontalOffset = Inches.of(10);
-  public static final Distance extraPointVerticalOffset = Inches.of(10);
+  public static final Distance extraPointVerticalOffset = Inches.of(12);
 
   public static final Transform3d robotToShooter = new Transform3d(0, 0, 0, new Rotation3d());
 

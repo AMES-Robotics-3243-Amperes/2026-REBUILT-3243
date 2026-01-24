@@ -10,12 +10,10 @@ import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.CoastOut;
-import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.constants.ShooterConstants;
@@ -24,7 +22,7 @@ import frc.robot.util.ControlConstantsBuilder.ControlConstants;
 /** Add your docs here. */
 public class FlywheelIOTalonFX implements FlywheelIO {
   protected final TalonFX leader = new TalonFX(ShooterConstants.flywheelLeftId);
-  private final TalonFX follower = new TalonFX(ShooterConstants.flywheelRightId);
+  // private final TalonFX follower = new TalonFX(ShooterConstants.flywheelRightId);
 
   private final VoltageOut voltageRequest = new VoltageOut(0);
   private final VelocityVoltage velocityRequest = new VelocityVoltage(0);
@@ -56,13 +54,13 @@ public class FlywheelIOTalonFX implements FlywheelIO {
     flywheelConfig.Feedback.SensorToMechanismRatio = ShooterConstants.flywheelGearReduction;
 
     leader.getConfigurator().apply(flywheelConfig);
-    follower.getConfigurator().apply(flywheelConfig);
+    // follower.getConfigurator().apply(flywheelConfig);
 
-    follower.setControl(
-        new Follower(
-            ShooterConstants.flywheelLeftId,
-            MotorAlignmentValue
-                .Opposed)); // TODO: I think it should be inverted is wrong but check on the
+    // follower.setControl(
+    //     new Follower(
+    //         ShooterConstants.flywheelLeftId,
+    //         MotorAlignmentValue
+    //             .Opposed));
     // physical robot
   }
 

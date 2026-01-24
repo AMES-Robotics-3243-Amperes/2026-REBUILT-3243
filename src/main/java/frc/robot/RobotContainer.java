@@ -183,17 +183,11 @@ public class RobotContainer {
         .a()
         .onTrue(DriveCommands.sysIdCharacterization(drivetrain, primaryJoystick.a()));
 
-    primaryJoystick.b().onTrue(intake.sysIdCommand(primaryJoystick.b()));
+    primaryJoystick.b().onTrue(shooter.sysIdCommand(primaryJoystick.b()));
 
     primaryJoystick
         .y()
-        .whileTrue(
-            shooter.shootCommand(
-                () -> new Pose2d(-3.0, -3.0, new Rotation2d()), () -> new ChassisSpeeds()));
-
-    primaryJoystick
-        .x()
-        .whileTrue(shooter.shootCommand(drivetrain::getPose, drivetrain::getChassisSpeeds));
+        .whileTrue(shooter.shootIntoHubCommand(() -> new Pose2d(), () -> new ChassisSpeeds()));
 
     primaryJoystick
         .leftBumper()

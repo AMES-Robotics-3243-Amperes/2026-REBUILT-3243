@@ -7,8 +7,10 @@ package frc.robot.subsystems.shooter;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -17,7 +19,10 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.util.FuelTrajectoryCalculator;
 import frc.robot.util.FuelTrajectoryCalculator.ShooterSetpoint;
@@ -103,7 +108,7 @@ public class ShooterSubsystem extends SubsystemBase {
         this::reset);
   }
 
-  public Command runFlywheelAtHoodAngleCommand(AngularVelocity velocity, Angle angle) {
+  public Command shootAtHoodAngleCommand(AngularVelocity velocity, Angle angle) {
     return runEnd(
         () -> {
           Angle clampedAngle = setHoodAngle(angle);
@@ -112,7 +117,7 @@ public class ShooterSubsystem extends SubsystemBase {
         this::reset);
   }
 
-  public Command prepareHoodForShootCommand(
+  public Command angleHoodForHubShootCommand(
       Supplier<Pose2d> robotPoseSupplier, Supplier<ChassisSpeeds> chassisSpeedsSupplier) {
     return runEnd(
         () -> {
@@ -125,7 +130,7 @@ public class ShooterSubsystem extends SubsystemBase {
         this::reset);
   }
 
-  public Command shootCommand(
+  public Command shootIntoHubCommand(
       Supplier<Pose2d> robotPoseSupplier, Supplier<ChassisSpeeds> chassisSpeedsSupplier) {
     return runEnd(
         () -> {
@@ -152,5 +157,50 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelInputs.velocity.in(RadiansPerSecond)
             * ShooterConstants.flywheelRadius.in(Meters)
             * ShooterConstants.fuelToFlywheelLinearSpeedRatio);
+  }
+
+  //
+  // SysId
+  //
+
+  public Command sysIdCommand(Trigger advanceRoutine) {
+    SysIdRoutine routine =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                ShooterConstants.sysIdRampRate,
+                ShooterConstants.sysIdStepVoltage,
+                ShooterConstants.sysIdTimeout,
+                (state) -> {
+                  Logger.recordOutput("Shooter/SysId/State", state.toString());
+
+                  Logger.recordOutput(
+                      "Shooter/SysId/FlywheelPositionRadians", flywheelInputs.position.in(Radians));
+                  Logger.recordOutput(
+                      "Shooter/SysId/FlywheelVelocityRadiansPerSecond",
+                      flywheelInputs.velocity.in(RadiansPerSecond));
+                  Logger.recordOutput(
+                      "Shooter/SysId/FlywheelAppliedVolts",
+                      flywheelInputs.appliedVoltage.in(Volts));
+                }),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> flywheelIO.runOpenLoop(voltage.in(Volts)), null, this));
+
+    Supplier<Command> waitCommand =
+        () ->
+            Commands.parallel(
+                Commands.waitUntil(advanceRoutine.negate()),
+                Commands.waitSeconds(4),
+                runOnce(flywheelIO::coast));
+
+    return Commands.sequence(
+        // TODO: the drivetrain sysid routine looks the exact same. remove code repetition
+        waitCommand.get(),
+        routine.dynamic(SysIdRoutine.Direction.kForward).until(advanceRoutine),
+        waitCommand.get(),
+        routine.dynamic(SysIdRoutine.Direction.kReverse).until(advanceRoutine),
+        waitCommand.get(),
+        routine.quasistatic(SysIdRoutine.Direction.kForward).until(advanceRoutine),
+        waitCommand.get(),
+        routine.quasistatic(SysIdRoutine.Direction.kReverse).until(advanceRoutine));
   }
 }

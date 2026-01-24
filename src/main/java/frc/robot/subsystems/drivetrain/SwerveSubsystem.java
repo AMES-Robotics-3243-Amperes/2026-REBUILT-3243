@@ -21,7 +21,11 @@ import com.pathplanner.lib.util.swerve.SwerveSetpointGenerator;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -32,6 +36,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Angle;
@@ -56,7 +61,10 @@ import frc.robot.constants.swerve.TunerConstants;
 import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 import org.ironmaple.simulation.drivesims.COTS;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
@@ -509,5 +517,93 @@ public class SwerveSubsystem extends SubsystemBase {
         .reduce(Voltage::plus)
         .orElseThrow()
         .div(4);
+  }
+
+  //
+  // Driving Strategies & Commands
+  //
+
+  public Command driveCommand(
+      Supplier<Translation2d> linearStrategy, Supplier<AngularVelocity> angularStrategy) {
+    return run(
+        () -> {
+          Translation2d linearSpeeds = linearStrategy.get();
+          AngularVelocity angularSpeed = angularStrategy.get();
+
+          ChassisSpeeds speeds =
+              new ChassisSpeeds(
+                  linearSpeeds.getX(), linearSpeeds.getY(), angularSpeed.in(RadiansPerSecond));
+          drive(speeds);
+        });
+  }
+
+  public Command driveSetpiontGeneratorCommand(
+      Supplier<Translation2d> linearStrategy, Supplier<AngularVelocity> angularStrategy) {
+    return run(
+        () -> {
+          Translation2d linearSpeeds = linearStrategy.get();
+          AngularVelocity angularSpeed = angularStrategy.get();
+
+          ChassisSpeeds speeds =
+              new ChassisSpeeds(
+                  linearSpeeds.getX(), linearSpeeds.getY(), angularSpeed.in(RadiansPerSecond));
+          driveSetpointGenerator(speeds);
+        });
+  }
+
+  public Supplier<Translation2d> joystickDriveLinear(
+      DoubleSupplier leftJoystickX, DoubleSupplier leftJoystickY, BooleanSupplier fieldRelative) {
+    return () -> {
+      double fieldX = -leftJoystickY.getAsDouble();
+      double fieldY = -leftJoystickX.getAsDouble();
+
+      Vector<N2> rawSpeeds =
+          MathUtil.applyDeadband(
+              VecBuilder.fill(fieldX, fieldY), SwerveConstants.teleopJoystickDeadband);
+
+      // Square magnitude for more precise control
+      rawSpeeds = rawSpeeds.times(rawSpeeds.norm());
+
+      // Convert to field relative speeds & send command
+      ChassisSpeeds speeds =
+          new ChassisSpeeds(
+              rawSpeeds.get(0) * SwerveConstants.linearTeleopSpeed.in(MetersPerSecond),
+              rawSpeeds.get(1) * SwerveConstants.linearTeleopSpeed.in(MetersPerSecond),
+              0);
+
+      if (fieldRelative.getAsBoolean()) {
+        boolean isFlipped =
+            DriverStation.getAlliance().isPresent()
+                && DriverStation.getAlliance().get() == Alliance.Red;
+
+        speeds =
+            ChassisSpeeds.fromFieldRelativeSpeeds(
+                speeds, isFlipped ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation());
+      }
+
+      return new Translation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
+    };
+  }
+
+  public Supplier<AngularVelocity> joystickDriveAngular(DoubleSupplier rightJoystickX) {
+    return () -> {
+      double withDeadband =
+          MathUtil.applyDeadband(
+              -rightJoystickX.getAsDouble(), SwerveConstants.teleopJoystickDeadband);
+
+      return SwerveConstants.angularTeleopSpeed.times(
+          Math.copySign(withDeadband * withDeadband, withDeadband));
+    };
+  }
+
+  public Supplier<AngularVelocity> rotateAtAngle(Supplier<Rotation2d> rotation) {
+    ProfiledPIDController pidController = SwerveConstants.rotationPidRadians.buildProfiled();
+    pidController.enableContinuousInput(-Math.PI, Math.PI);
+
+    return () -> {
+      double output =
+          pidController.calculate(getRotation().getRadians(), rotation.get().getRadians());
+      return RadiansPerSecond.of(output);
+    };
   }
 }

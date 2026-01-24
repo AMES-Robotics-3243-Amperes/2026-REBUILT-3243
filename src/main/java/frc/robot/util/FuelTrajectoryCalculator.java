@@ -7,6 +7,7 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
@@ -14,6 +15,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
@@ -23,13 +25,13 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.setpoints.BluePointsOfInterest;
+import org.littletonrobotics.junction.Logger;
 
 public class FuelTrajectoryCalculator {
   public record ShooterSetpoint(
       LinearVelocity linearFlywheelSpeed, Angle hoodAngle, Time fuelTravelTime) {}
 
-  // TODO: add some safety mechanisms for bad inputs, nans, and stuff like that. for example, speed
-  // becomes a nan if the shooter points down and a is positive
+  public record FuelShotData(ShooterSetpoint shooterSetpoint, Rotation2d drivetrainSetpoint) {}
 
   // TODO: if the hood angle becomes unachievable, clamp it and calculate the new velocity that
   // still makes it in
@@ -66,15 +68,34 @@ public class FuelTrajectoryCalculator {
     double a = coeffSolutions.get(0, 0);
     double b = coeffSolutions.get(1, 0);
 
-    // angle from horizon = tan^(-1) (f'(0)) = tan^(-1) (b)
-    Angle fuelAngle = Radians.of(Math.atan(b));
+    // angle from horizon = tan^(-1) (f'(0)) = tan^(-1) (b). the clamping is because the fuel angle
+    // is 0 at the horizon but the hood is 0 when shooting upwards
+    Angle fuelAngle =
+        Radians.of(
+            MathUtil.clamp(
+                Math.atan(b),
+                Degrees.of(90).minus(ShooterConstants.hoodMaxRotation).in(Radians),
+                Degrees.of(90).minus(ShooterConstants.hoodMinRotation).in(Radians)));
+
+    // the angle may have been clamped, so regenerate the polynomial. if we expand our y(x)
+    // polynomial as y(x(t)) = y(t (v cos theta)) and as -1 / 2 g t^2 + t (v sin theta) and match
+    // the t coefficients we get the new b value. the new a value comes from fitting to the goal
+    // spot with known b and c values.
+    b = Math.tan(fuelAngle.in(Radians));
+    a =
+        (shooterToHub.getZ() - b * horizontalDistanceToHub)
+            / (horizontalDistanceToHub * horizontalDistanceToHub);
+
+    // if a > 0, the hood's angle was clamped too low and it's impossible to make the shot. we'll
+    // follow through with the calculations with very very small a (i.e. the setpoint is more or
+    // less a straight line from the shooter)
+    a = Double.min(a, -1e-5);
+
+    // now that we have the final polynomial that our fuel will follow, we just coefficient match the t^2 term to get the speed
+    double gravity = 9.8;
     double fuelAngleCos = Math.cos(fuelAngle.in(Radians));
 
-    // if we expand our y(x) polynomial as y(x(t)) = y(t (v cos theta)) and as -1 / 2 g t^2 + t (v
-    // sin theta) and match the t^2 coeff we get the linear speed
-    double gravity = 9.8;
-    LinearVelocity fuelSpeed =
-        MetersPerSecond.of(Math.sqrt(-gravity / (2 * a * fuelAngleCos * fuelAngleCos)));
+    LinearVelocity fuelSpeed = MetersPerSecond.of(Math.sqrt(-gravity / (2 * a)) / fuelAngleCos);
 
     // the fuel angle is 0 at the horizon but the hood is 0 when shooting upwards
     return new ShooterSetpoint(
@@ -83,11 +104,11 @@ public class FuelTrajectoryCalculator {
         Meters.of(horizontalDistanceToHub).div(fuelSpeed.times(fuelAngleCos)));
   }
 
-  public static ShooterSetpoint calcualteShooterSetpoint(
+  public static FuelShotData calcualteShooterSetpoint(
       Pose2d robotPose, ChassisSpeeds chassisSpeeds) {
     ShooterSetpoint setpoint = calcualteShooterSetpoint(robotPose);
 
-    for (int i = 0; i < ShooterConstants.extraLookaheadIterations; i++) {
+    for (int i = 0; i < ShooterConstants.lookaheadIterations; i++) {
       setpoint =
           calcualteShooterSetpoint(
               robotPose.plus(
@@ -97,6 +118,21 @@ public class FuelTrajectoryCalculator {
                       new Rotation2d())));
     }
 
-    return setpoint;
+    Translation2d compensatedShootStart =
+        robotPose
+            .plus(
+                new Transform2d(
+                    chassisSpeeds.vxMetersPerSecond * setpoint.fuelTravelTime.in(Seconds),
+                    chassisSpeeds.vyMetersPerSecond * setpoint.fuelTravelTime.in(Seconds),
+                    new Rotation2d()))
+            .getTranslation();
+
+    return new FuelShotData(
+        setpoint,
+        PointOfInterestManager.flipTranslation(BluePointsOfInterest.hubPosition)
+            .toTranslation2d()
+            .minus(compensatedShootStart)
+            .getAngle()
+            .rotateBy(ShooterConstants.robotToShooter.getRotation().toRotation2d().unaryMinus()));
   }
 }

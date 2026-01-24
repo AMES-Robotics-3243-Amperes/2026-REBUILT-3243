@@ -15,6 +15,7 @@ import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Angle;
@@ -39,8 +40,8 @@ public class ShooterConstants {
   public static final Distance flywheelRadius = Inches.of(2);
   public static final double flywheelGearReduction = 4.0 / 3.0;
 
-  public static final double fuelToFlywheelLinearSpeedRatio =
-      0.5; // a value < 1 means the fuel's linear speed is less than the flywheel's
+  // the ratio of speed transferred into a fuel to linear speed of the flywheel
+  public static final double fuelToFlywheelLinearSpeedRatio = 0.5;
 
   public static final Angle hoodPhysicalBottomOutRotation = Degrees.of(25);
   public static final Angle hoodMinRotation = Degrees.of(26);
@@ -64,12 +65,13 @@ public class ShooterConstants {
   public static final Time sysIdTimeout = Seconds.of(8);
 
   // fuel trajectory calculation
-  public static final Distance extraPointHorizontalOffset = Inches.of(10);
-  public static final Distance extraPointVerticalOffset = Inches.of(12);
+  public static final Distance extraPointHorizontalOffset = Inches.of(4);
+  public static final Distance extraPointVerticalOffset = Inches.of(5);
 
-  public static final Transform3d robotToShooter = new Transform3d(0, 0, 0, new Rotation3d());
+  public static final Transform3d robotToShooter =
+      new Transform3d(Units.inchesToMeters(-8), 0, Units.inchesToMeters(20), new Rotation3d());
 
-  public static final int extraLookaheadIterations = 2;
+  public static final int lookaheadIterations = 3;
 
   // only used for simulation
   public static final MomentOfInertia hoodMomentOfIntertia = KilogramSquareMeters.of(0.5);

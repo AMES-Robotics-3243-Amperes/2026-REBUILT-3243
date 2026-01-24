@@ -11,29 +11,21 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Seconds;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -46,67 +38,8 @@ import frc.robot.subsystems.drivetrain.SwerveSubsystem;
 import frc.robot.subsystems.drivetrain.SwerveSubsystem.SwerveSysIdRoutine;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.function.DoubleSupplier;
 
-public class DriveCommands {
-  private DriveCommands() {}
-
-  private static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
-    // Apply deadband
-    Vector<N2> speeds =
-        MathUtil.applyDeadband(VecBuilder.fill(x, y), SwerveConstants.teleopJoystickDeadband);
-
-    // Square magnitude for more precise control
-    speeds = speeds.times(speeds.norm());
-
-    return new Translation2d(speeds.get(0, 0), speeds.get(1, 0));
-  }
-
-  /**
-   * Field relative drive command using two joysticks (controlling linear and angular velocities).
-   */
-  public static Command joystickDrive(
-      SwerveSubsystem drive,
-      DoubleSupplier xSupplier,
-      DoubleSupplier ySupplier,
-      DoubleSupplier omegaSupplier,
-      boolean fieldRelative) {
-    return Commands.run(
-        () -> {
-          Translation2d linearVelocity =
-              getLinearVelocityFromJoysticks(xSupplier.getAsDouble(), ySupplier.getAsDouble());
-
-          double omega =
-              MathUtil.applyDeadband(
-                  omegaSupplier.getAsDouble(), SwerveConstants.teleopJoystickDeadband);
-
-          // Square rotation value for more precise control
-          omega = Math.copySign(omega * omega, omega);
-
-          // Convert to field relative speeds & send command
-          ChassisSpeeds speeds =
-              new ChassisSpeeds(
-                  linearVelocity.getX() * SwerveConstants.linearTeleopSpeed.in(MetersPerSecond),
-                  linearVelocity.getY() * SwerveConstants.linearTeleopSpeed.in(MetersPerSecond),
-                  omega * SwerveConstants.angularTeleopSpeed.in(RadiansPerSecond));
-
-          if (fieldRelative) {
-            boolean isFlipped =
-                DriverStation.getAlliance().isPresent()
-                    && DriverStation.getAlliance().get() == Alliance.Red;
-            speeds =
-                ChassisSpeeds.fromFieldRelativeSpeeds(
-                    speeds,
-                    isFlipped
-                        ? drive.getRotation().plus(new Rotation2d(Math.PI))
-                        : drive.getRotation());
-          }
-
-          drive.driveSetpointGenerator(speeds);
-        },
-        drive);
-  }
-
+public class DriveCharacterizations {
   /** Measures the robot's wheel radius by spinning in a circle. */
   public static Command wheelRadiusCharacterization(SwerveSubsystem drive) {
     class CharacterizationState {

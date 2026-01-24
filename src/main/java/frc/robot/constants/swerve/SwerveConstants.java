@@ -32,7 +32,8 @@ public class SwerveConstants {
   // holonomic pid controllers. note that any configuration beyond kP, kI, and kD will NOT apply to
   // pathplanner autos
   public static final PIDBuilder drivePid = new PIDBuilder().pid(3, 0, 0).iZone(1);
-  public static final PIDBuilder rotationPidRadians = new PIDBuilder().pid(4, 0, 0.4).iZone(1);
+  public static final PIDBuilder rotationPidRadians =
+      new PIDBuilder().pid(8, 0, 0.05).constraints(12, 30).iZone(1);
 
   // physical properties
   public static final Distance driveBaseFrontLength = Inches.of(26);

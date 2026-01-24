@@ -27,6 +27,7 @@ import frc.robot.constants.ShooterConstants;
 import frc.robot.util.FuelTrajectoryCalculator;
 import frc.robot.util.FuelTrajectoryCalculator.ShooterSetpoint;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class ShooterSubsystem extends SubsystemBase {
@@ -63,7 +64,7 @@ public class ShooterSubsystem extends SubsystemBase {
                 ShooterConstants.hoodMaxRotation.in(Degrees)));
 
     hoodIO.setAngle(clampedAngle);
-    Logger.recordOutput("Shooter/Hood/SetpointAngle", ShooterConstants.hoodMinRotation);
+    Logger.recordOutput("Shooter/Hood/SetpointAngle", clampedAngle);
 
     return clampedAngle;
   }
@@ -95,7 +96,7 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   /* Lowers hood and sets shooter to coast. */
-  private void reset() {
+  public void reset() {
     setHoodAngle(ShooterConstants.hoodMinRotation);
     coastFlywheel();
   }
@@ -123,35 +124,30 @@ public class ShooterSubsystem extends SubsystemBase {
         () -> {
           ShooterSetpoint shooterSetpoint =
               FuelTrajectoryCalculator.calcualteShooterSetpoint(
-                  robotPoseSupplier.get(), chassisSpeedsSupplier.get());
+                      robotPoseSupplier.get(), chassisSpeedsSupplier.get())
+                  .shooterSetpoint();
 
           setHoodAngle(shooterSetpoint.hoodAngle());
         },
         this::reset);
   }
 
-  public Command shootIntoHubCommand(
-      Supplier<Pose2d> robotPoseSupplier, Supplier<ChassisSpeeds> chassisSpeedsSupplier) {
-    return runEnd(
-        () -> {
-          ShooterSetpoint shooterSetpoint =
-              FuelTrajectoryCalculator.calcualteShooterSetpoint(
-                  robotPoseSupplier.get(), chassisSpeedsSupplier.get());
-
-          Angle clampedAngle = setHoodAngle(shooterSetpoint.hoodAngle());
-          runFlywheelAtFuelSpeedWithHood(shooterSetpoint.linearFlywheelSpeed(), clampedAngle);
-        },
-        this::reset);
+  public void shootIntoHub(ShooterSetpoint setpoint) {
+    Angle clampedAngle = setHoodAngle(setpoint.hoodAngle());
+    runFlywheelAtFuelSpeedWithHood(setpoint.linearFlywheelSpeed(), clampedAngle);
   }
 
+  @AutoLogOutput(key = "Shooter/Hood/Angle")
   public Angle getHoodAngle() {
     return hoodInputs.angle;
   }
 
+  @AutoLogOutput(key = "Shooter/Flywheel/FlywheelVelocity")
   public AngularVelocity getFlywheelVelocity() {
     return flywheelInputs.velocity;
   }
 
+  @AutoLogOutput(key = "Shooter/Flywheel/FuelVelocity")
   public LinearVelocity getFuelVelocity() {
     return MetersPerSecond.of(
         flywheelInputs.velocity.in(RadiansPerSecond)

@@ -9,11 +9,11 @@ import static edu.wpi.first.units.Units.Degrees;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.DriveCommands;
+import frc.robot.commands.DriveCharacterizations;
+import frc.robot.commands.ShootingCommands;
 import frc.robot.constants.ModeConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.VisionConstants;
@@ -26,7 +26,8 @@ import frc.robot.subsystems.drivetrain.SwerveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.intake.RollerIO;
 import frc.robot.subsystems.shooter.FlywheelIO;
-import frc.robot.subsystems.shooter.FlywheelIOTalonFX;
+import frc.robot.subsystems.shooter.FlywheelIOReal;
+import frc.robot.subsystems.shooter.FlywheelIOSim;
 import frc.robot.subsystems.shooter.HoodIO;
 import frc.robot.subsystems.shooter.HoodIOReal;
 import frc.robot.subsystems.shooter.HoodIOSim;
@@ -70,7 +71,7 @@ public class RobotContainer {
 
         intake = new IntakeSubsystem(new RollerIO() {});
 
-        shooter = new ShooterSubsystem(new FlywheelIOTalonFX(), new HoodIOReal());
+        shooter = new ShooterSubsystem(new FlywheelIOReal(), new HoodIOReal());
 
         vision = new VisionSubsystem(drivetrain::addVisionMeasurement, List.of());
         break;
@@ -92,7 +93,7 @@ public class RobotContainer {
 
         intake = new IntakeSubsystem(new RollerIO() {});
 
-        shooter = new ShooterSubsystem(new FlywheelIOTalonFX(), new HoodIOSim());
+        shooter = new ShooterSubsystem(new FlywheelIOSim(), new HoodIOSim());
 
         vision =
             new VisionSubsystem(
@@ -139,7 +140,7 @@ public class RobotContainer {
     if (ModeConstants.robotMode == ModeConstants.Mode.SIM) {
       autoChooser.addOption(
           "Drive Wheel Radius Characterization",
-          DriveCommands.wheelRadiusCharacterization(drivetrain));
+          DriveCharacterizations.wheelRadiusCharacterization(drivetrain));
     }
 
     configureBindings();
@@ -147,32 +148,12 @@ public class RobotContainer {
 
   private void configureBindings() {
     drivetrain.setDefaultCommand(
-        DriveCommands.joystickDrive(
-            drivetrain,
-            () -> -primaryJoystick.getLeftY(),
-            () -> -primaryJoystick.getLeftX(),
-            () -> -primaryJoystick.getRightX(),
-            true));
-
-    primaryJoystick
-        .start()
-        .onTrue(
-            DriveCommands.joystickDrive(
-                drivetrain,
-                () -> -primaryJoystick.getLeftY(),
-                () -> -primaryJoystick.getLeftX(),
-                () -> -primaryJoystick.getRightX(),
-                false));
-
-    primaryJoystick
-        .back()
-        .onTrue(
-            DriveCommands.joystickDrive(
-                drivetrain,
-                () -> -primaryJoystick.getLeftY(),
-                () -> -primaryJoystick.getLeftX(),
-                () -> -primaryJoystick.getRightX(),
-                true));
+        drivetrain.driveSetpiontGeneratorCommand(
+            drivetrain.joystickDriveLinear(
+                primaryJoystick::getLeftX,
+                primaryJoystick::getLeftY,
+                primaryJoystick.start().negate()),
+            drivetrain.joystickDriveAngular(primaryJoystick::getRightX)));
 
     // primaryJoystick.a().whileTrue(DriveCommands.maxSpeedCharacterization(drivetrain));
 
@@ -181,13 +162,20 @@ public class RobotContainer {
 
     primaryJoystick
         .a()
-        .onTrue(DriveCommands.sysIdCharacterization(drivetrain, primaryJoystick.a()));
+        .onTrue(DriveCharacterizations.sysIdCharacterization(drivetrain, primaryJoystick.a()));
 
     primaryJoystick.b().onTrue(shooter.sysIdCommand(primaryJoystick.b()));
 
     primaryJoystick
         .y()
-        .whileTrue(shooter.shootIntoHubCommand(() -> new Pose2d(), () -> new ChassisSpeeds()));
+        .whileTrue(
+            ShootingCommands.shootWithIndependentLinearDriveCommand(
+                drivetrain.joystickDriveLinear(
+                    primaryJoystick::getLeftX,
+                    primaryJoystick::getLeftY,
+                    primaryJoystick.start().negate()),
+                drivetrain,
+                shooter));
 
     primaryJoystick
         .leftBumper()
@@ -198,7 +186,7 @@ public class RobotContainer {
                       new RebuiltFuelOnFly(
                           driveSimulation.getSimulatedDriveTrainPose().getTranslation(),
                           ShooterConstants.robotToShooter.getTranslation().toTranslation2d(),
-                          driveSimulation.getDriveTrainSimulatedChassisSpeedsRobotRelative(),
+                          driveSimulation.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
                           driveSimulation
                               .getSimulatedDriveTrainPose()
                               .getRotation()

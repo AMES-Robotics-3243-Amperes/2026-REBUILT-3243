@@ -68,7 +68,7 @@ public class ShooterConstants {
   public static final Transform3d robotToShooter =
       new Transform3d(Units.inchesToMeters(-8), 0, Units.inchesToMeters(20), new Rotation3d());
 
-  public static final int lookaheadIterations = 3;
+  public static final int secantMethodIterations = 3;
 
   // only used for simulation
   public static final MomentOfInertia hoodMomentOfIntertia = KilogramSquareMeters.of(0.5);

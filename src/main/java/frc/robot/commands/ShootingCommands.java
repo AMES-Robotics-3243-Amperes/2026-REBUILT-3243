@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drivetrain.SwerveSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.util.FuelTrajectoryCalculator;
-import frc.robot.util.FuelTrajectoryCalculator.FuelShotData;
+import frc.robot.util.FuelTrajectoryCalculator.FuelShotSetpoints;
 import java.util.function.Supplier;
 
 public class ShootingCommands {
@@ -15,7 +15,7 @@ public class ShootingCommands {
       SwerveSubsystem drivetrain,
       ShooterSubsystem shooter) {
     class ShotDataContainer {
-      public FuelShotData data =
+      public FuelShotSetpoints data =
           FuelTrajectoryCalculator.getFuelShot(drivetrain.getPose(), drivetrain.getChassisSpeeds());
     }
 
@@ -29,7 +29,7 @@ public class ShootingCommands {
                         drivetrain.getPose(), drivetrain.getChassisSpeeds())),
         drivetrain.driveSetpiontGeneratorCommand(
             driveLinearStrategy,
-            drivetrain.rotateAtAngle(() -> dataContainer.data.drivetrainSetpoint())),
+            drivetrain.rotateAtAngle(() -> dataContainer.data.fuelGroundSpeedRotation())),
         shooter.shootAtSetpointCommand(() -> dataContainer.data.shooterSetpoint()));
   }
 }

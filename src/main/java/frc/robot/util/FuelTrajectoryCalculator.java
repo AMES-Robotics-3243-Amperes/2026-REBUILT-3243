@@ -14,7 +14,9 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
@@ -23,36 +25,26 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import frc.robot.constants.ShooterConstants;
-import frc.robot.constants.setpoints.BluePointsOfInterest;
 
 public class FuelTrajectoryCalculator {
-  /* A setpoint for the shooter to follow. */
-  public record ShooterSetpoint(LinearVelocity linearFlywheelSpeed, Angle hoodAngle) {}
+  /* The data behind a fuel shot; i.e. the shooter setpoint values. */
+  public record FuelShot(LinearVelocity linearFlywheelSpeed, Angle hoodAngle, Time shotTime) {}
 
-  /* A setpoint for the robot to follow. Most important is the shooter setpoint, but also includes the field-relative rotation the fuel must be shot from. */
-  public record FuelShotSetpoints(
-      ShooterSetpoint shooterSetpoint, Rotation2d fuelGroundSpeedRotation) {}
+  /* A setpoint for the robot to follow. Most important is the actual shot, but also includes the field-relative rotation the fuel must be shot from. */
+  public record FuelShotSetpoints(FuelShot shooterSetpoint, Rotation2d fuelGroundSpeedRotation) {}
 
-  /* A shooter setpoint along with other information about the trajectory used in the calculation. */
-  private record FuelTrajectory(ShooterSetpoint shooterSetpoint, Time fuelTravelTime) {}
-
-  private static FuelTrajectory calculateFuelTrajectory(Pose2d robotPose) {
-    Translation3d shooterToHub =
-        PointOfInterestManager.flipTranslation(BluePointsOfInterest.hubPosition)
-            .minus(
-                new Pose3d(robotPose)
-                    .transformBy(ShooterConstants.robotToShooter)
-                    .getTranslation());
-
-    double horizontalDistanceToHub = shooterToHub.toTranslation2d().getNorm();
+  private static FuelShot calculateFuelTrajectory(Translation3d goal, Translation3d shooterStart) {
+    double horizontalDistanceToSetpoint =
+        shooterStart.toTranslation2d().getDistance(goal.toTranslation2d());
+    double verticalDistanceToSetpoint = goal.getZ() - shooterStart.getZ();
 
     // we're going to construct polynomial from three points. the first point is the shooter,
     // centered at the origin. the second is the center of the hub's funnel.
     double x2 =
         Double.max(
-            horizontalDistanceToHub - ShooterConstants.extraPointHorizontalOffset.in(Meters),
-            horizontalDistanceToHub / 2);
-    double y2 = shooterToHub.getZ() + ShooterConstants.extraPointVerticalOffset.in(Meters);
+            horizontalDistanceToSetpoint - ShooterConstants.extraPointHorizontalOffset.in(Meters),
+            horizontalDistanceToSetpoint / 2);
+    double y2 = verticalDistanceToSetpoint + ShooterConstants.extraPointVerticalOffset.in(Meters);
 
     // find the coefficients of the polynomial (c is 0)
     Matrix<N2, N2> pointMatrix =
@@ -61,9 +53,10 @@ public class FuelTrajectoryCalculator {
             Nat.N2(),
             x2 * x2,
             x2,
-            horizontalDistanceToHub * horizontalDistanceToHub,
-            horizontalDistanceToHub);
-    Matrix<N2, N1> coeffSolutions = pointMatrix.solve(VecBuilder.fill(y2, shooterToHub.getZ()));
+            horizontalDistanceToSetpoint * horizontalDistanceToSetpoint,
+            horizontalDistanceToSetpoint);
+    Matrix<N2, N1> coeffSolutions =
+        pointMatrix.solve(VecBuilder.fill(y2, verticalDistanceToSetpoint));
     double a = coeffSolutions.get(0, 0);
     double b = coeffSolutions.get(1, 0);
 
@@ -82,8 +75,8 @@ public class FuelTrajectoryCalculator {
     // spot with known b and c values.
     b = Math.tan(fuelAngle.in(Radians));
     a =
-        (shooterToHub.getZ() - b * horizontalDistanceToHub)
-            / (horizontalDistanceToHub * horizontalDistanceToHub);
+        (verticalDistanceToSetpoint - b * horizontalDistanceToSetpoint)
+            / (horizontalDistanceToSetpoint * horizontalDistanceToSetpoint);
 
     // if a > 0, the hood's angle was clamped too low and it's impossible to make the shot. we'll
     // follow through with the calculations with very very small a (i.e. the setpoint is more or
@@ -99,29 +92,52 @@ public class FuelTrajectoryCalculator {
 
     // the fuel angle is 0 at the horizon but the hood is 0 when shooting upwards, hence the 90 -
     // fuelAngle
-    return new FuelTrajectory(
-        new ShooterSetpoint(fuelSpeed, Degrees.of(90).minus(fuelAngle)),
-        Meters.of(horizontalDistanceToHub).div(fuelSpeed.times(fuelAngleCos)));
+    return new FuelShot(
+        fuelSpeed,
+        Degrees.of(90).minus(fuelAngle),
+        Meters.of(horizontalDistanceToSetpoint).div(fuelSpeed.times(fuelAngleCos)));
   }
 
-  public static FuelShotSetpoints getFuelShot(Pose2d robotPose, ChassisSpeeds chassisSpeeds) {
-    // run secant method on trajectoryTime(lookaheadTime) - lookaheadTime
+  private static Pose3d getShooterPositionAndRotationFromRobotPosition(
+      Translation3d goal, Translation2d robotPosition) {
+        // note that this is NOT correct when the shooter doesn't point across/away from the center of the robot. ours doesn't though, so...
+    Rotation3d goalRobotRotation =
+        new Rotation3d(
+            goal.toTranslation2d()
+                .minus(robotPosition)
+                .getAngle()
+                .minus(ShooterConstants.robotToShooter.getRotation().toRotation2d()));
+    Pose3d robotPoseWithCorrectRotation =
+        new Pose3d(new Translation3d(robotPosition), goalRobotRotation);
+    return robotPoseWithCorrectRotation.transformBy(ShooterConstants.robotToShooter);
+  }
 
-    // here, t0 is always just t_(k - 2) and t1 is always t_(k - 1)
-    double lookahead0 = 0;
-    FuelTrajectory trajectory0 = calculateFuelTrajectory(robotPose);
+  public static FuelShotSetpoints getFuelShot(
+      Translation3d goal, Pose2d robotPose, ChassisSpeeds chassisSpeeds) {
+    // the approach here is to run secant method on trajectoryTime(lookaheadTime) - lookaheadTime
 
     // we'll need this to build find the rotation setpoint at the end, so we store it for use after
     // the loop
-    Pose2d adjustedShotStart =
-        robotPose.plus(
-            new Transform2d(
-                chassisSpeeds.vxMetersPerSecond * trajectory0.fuelTravelTime().in(Seconds),
-                chassisSpeeds.vyMetersPerSecond * trajectory0.fuelTravelTime().in(Seconds),
-                new Rotation2d()));
+    Pose3d shotStart =
+        getShooterPositionAndRotationFromRobotPosition(goal, robotPose.getTranslation());
 
-    double lookahead1 = trajectory0.fuelTravelTime().in(Seconds);
-    FuelTrajectory trajectory1 = calculateFuelTrajectory(adjustedShotStart);
+    // here, t0 is always just t_(k - 2) and t1 is always t_(k - 1)
+    double lookahead0 = 0;
+    FuelShot trajectory0 = calculateFuelTrajectory(goal, shotStart.getTranslation());
+
+    shotStart =
+        getShooterPositionAndRotationFromRobotPosition(
+            goal,
+            robotPose
+                .transformBy(
+                    new Transform2d(
+                        chassisSpeeds.vxMetersPerSecond * trajectory0.shotTime().in(Seconds),
+                        chassisSpeeds.vyMetersPerSecond * trajectory0.shotTime().in(Seconds),
+                        new Rotation2d()))
+                .getTranslation());
+
+    double lookahead1 = trajectory0.shotTime().in(Seconds);
+    FuelShot trajectory1 = calculateFuelTrajectory(goal, shotStart.getTranslation());
 
     // secant method iteration
     for (int i = 0; i < ShooterConstants.secantMethodIterations; i++) {
@@ -129,34 +145,32 @@ public class FuelTrajectoryCalculator {
 
       // here, f(t) = length(trajectory(lookaheadPosition(t))) - t
       double newLookahead =
-          (lookahead0 * (trajectory1.fuelTravelTime().in(Seconds) - lookahead1)
-                  - lookahead1 * (trajectory0.fuelTravelTime().in(Seconds) - lookahead0))
-              / (trajectory1.fuelTravelTime().in(Seconds)
-                  - trajectory0.fuelTravelTime().in(Seconds)
+          (lookahead0 * (trajectory1.shotTime().in(Seconds) - lookahead1)
+                  - lookahead1 * (trajectory0.shotTime().in(Seconds) - lookahead0))
+              / (trajectory1.shotTime().in(Seconds)
+                  - trajectory0.shotTime().in(Seconds)
                   + lookahead0
                   - lookahead1);
 
       // update values for next iteration
-      adjustedShotStart =
-          robotPose.plus(
-              new Transform2d(
-                  chassisSpeeds.vxMetersPerSecond * newLookahead,
-                  chassisSpeeds.vyMetersPerSecond * newLookahead,
-                  new Rotation2d()));
+      shotStart =
+          getShooterPositionAndRotationFromRobotPosition(
+              goal,
+              robotPose
+                  .plus(
+                      new Transform2d(
+                          chassisSpeeds.vxMetersPerSecond * newLookahead,
+                          chassisSpeeds.vyMetersPerSecond * newLookahead,
+                          new Rotation2d()))
+                  .getTranslation());
 
       lookahead0 = lookahead1;
       trajectory0 = trajectory1;
 
       lookahead1 = newLookahead;
-      trajectory1 = calculateFuelTrajectory(adjustedShotStart);
+      trajectory1 = calculateFuelTrajectory(goal, shotStart.getTranslation());
     }
 
-    return new FuelShotSetpoints(
-        trajectory1.shooterSetpoint(),
-        PointOfInterestManager.flipTranslation(BluePointsOfInterest.hubPosition)
-            .toTranslation2d()
-            .minus(adjustedShotStart.getTranslation())
-            .getAngle()
-            .rotateBy(ShooterConstants.robotToShooter.getRotation().toRotation2d().unaryMinus()));
+    return new FuelShotSetpoints(trajectory1, shotStart.getRotation().toRotation2d());
   }
 }

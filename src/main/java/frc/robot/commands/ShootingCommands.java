@@ -1,18 +1,21 @@
 package frc.robot.commands;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.constants.ShooterConstants;
+import frc.robot.constants.setpoints.BluePointsOfInterest;
 import frc.robot.subsystems.drivetrain.SwerveSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.util.Container;
 import frc.robot.util.FuelTrajectoryCalculator;
+import frc.robot.util.FuelTrajectoryCalculator.FuelShot;
 import frc.robot.util.FuelTrajectoryCalculator.FuelShotSetpoints;
-import frc.robot.util.FuelTrajectoryCalculator.ShooterSetpoint;
+import frc.robot.util.PointOfInterestManager;
 import java.util.function.Supplier;
 
 public class ShootingCommands {
@@ -23,7 +26,8 @@ public class ShootingCommands {
     Container<FuelShotSetpoints> shotData =
         new Container<FuelShotSetpoints>(
             new FuelShotSetpoints(
-                new ShooterSetpoint(MetersPerSecond.of(0), ShooterConstants.hoodMinRotation),
+                new FuelShot(
+                    MetersPerSecond.of(0), ShooterConstants.hoodMinRotation, Seconds.of(0)),
                 Rotation2d.kZero));
 
     return Commands.parallel(
@@ -31,10 +35,12 @@ public class ShootingCommands {
             () ->
                 shotData.inner =
                     FuelTrajectoryCalculator.getFuelShot(
-                        drivetrain.getPose(), drivetrain.getChassisSpeeds())),
+                        PointOfInterestManager.flipTranslation(BluePointsOfInterest.hubPosition),
+                        drivetrain.getPose(),
+                        drivetrain.getChassisSpeeds())),
         drivetrain.driveSetpiontGeneratorCommand(
             driveLinearStrategy,
-            drivetrain.rotateAtAngle(() -> shotData.inner.fuelGroundSpeedRotation())),
+            drivetrain.rotateAtAngleFeedForward(() -> shotData.inner.fuelGroundSpeedRotation())),
         shooter.shootAtSetpointCommand(() -> shotData.inner.shooterSetpoint()));
   }
 }

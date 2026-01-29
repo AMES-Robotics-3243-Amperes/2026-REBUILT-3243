@@ -188,8 +188,8 @@ public class RobotContainer {
 
     primaryJoystick
         .leftBumper()
-        .whileTrue(
-            Commands.run(
+        .onTrue(
+            Commands.runOnce(
                 () -> {
                   RebuiltFuelOnFly fuel =
                       new RebuiltFuelOnFly(

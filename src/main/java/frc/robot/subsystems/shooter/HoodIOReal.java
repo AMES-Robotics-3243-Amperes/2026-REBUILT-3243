@@ -60,7 +60,6 @@ public class HoodIOReal implements HoodIO {
 
   @Override
   public void setAngle(Angle angle) {
-    closedLoopController.setSetpoint(
-        angle.in(Rotations), ControlType.kPosition); // TODO: motion magic? on-rio control?
+    closedLoopController.setSetpoint(angle.in(Rotations), ControlType.kPosition);
   }
 }

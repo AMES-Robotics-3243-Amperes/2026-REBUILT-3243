@@ -6,7 +6,6 @@ import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.RobotController;
-import frc.robot.subsystems.drivetrain.GyroIO.GyroIOInputs;
 
 public class GyroIONavX implements GyroIO {
   private final AHRS imu = new AHRS(NavXComType.kMXP_SPI);

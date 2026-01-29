@@ -22,7 +22,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.constants.ShooterConstants;
-import frc.robot.util.FuelTrajectoryCalculator.ShooterSetpoint;
+import frc.robot.util.FuelTrajectoryCalculator.FuelShot;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -115,19 +115,19 @@ public class ShooterSubsystem extends SubsystemBase {
         this::reset);
   }
 
-  public Command angleHoodForShootCommand(Supplier<ShooterSetpoint> setpointSupplier) {
+  public Command angleHoodForShootCommand(Supplier<FuelShot> setpointSupplier) {
     return runEnd(
         () -> {
-          ShooterSetpoint setpoint = setpointSupplier.get();
+          FuelShot setpoint = setpointSupplier.get();
           setHoodAngle(setpoint.hoodAngle());
         },
         this::reset);
   }
 
-  public Command shootAtSetpointCommand(Supplier<ShooterSetpoint> setpointSupplier) {
+  public Command shootAtSetpointCommand(Supplier<FuelShot> setpointSupplier) {
     return runEnd(
         () -> {
-          ShooterSetpoint setpoint = setpointSupplier.get();
+          FuelShot setpoint = setpointSupplier.get();
           Angle clampedAngle = setHoodAngle(setpoint.hoodAngle());
           runFlywheelAtFuelSpeedWithHood(setpoint.linearFlywheelSpeed(), clampedAngle);
         },

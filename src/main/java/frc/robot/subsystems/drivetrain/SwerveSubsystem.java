@@ -598,7 +598,7 @@ public class SwerveSubsystem extends SubsystemBase {
     };
   }
 
-  public Supplier<AngularVelocity> rotateAtAngle(Supplier<Rotation2d> targetSupplier) {
+  public Supplier<AngularVelocity> rotateAtAngleFeedForward(Supplier<Rotation2d> targetSupplier) {
     ProfiledPIDController pidController =
         SwerveConstants.rotationControl.profiledPIDController(
             Radians, Degrees.of(-180), Degrees.of(180));

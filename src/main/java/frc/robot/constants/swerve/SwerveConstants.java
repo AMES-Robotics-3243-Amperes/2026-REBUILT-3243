@@ -34,7 +34,7 @@ public class SwerveConstants {
   // 0).iZone(1);
   public static final ControlConstantsBuilder rotationControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(7, 0.4, 0.1)
+          .pid(4, 0, 0.2)
           .iZone(1)
           .constraints(RotationsPerSecond.of(3), RotationsPerSecondPerSecond.of(9));
   // physical properties

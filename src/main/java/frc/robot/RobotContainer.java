@@ -33,9 +33,9 @@ import frc.robot.subsystems.shooter.HoodIOReal;
 import frc.robot.subsystems.shooter.HoodIOSim;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.vision.VisionSubsystem;
-import java.util.List;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnFly;
@@ -61,6 +61,7 @@ public class RobotContainer {
       case REAL_COMPETITION:
       case REAL:
         driveSimulation = null;
+
         drivetrain =
             new SwerveSubsystem(
                 new GyroIO() {},
@@ -73,7 +74,13 @@ public class RobotContainer {
 
         shooter = new ShooterSubsystem(new FlywheelIOReal(), new HoodIOReal());
 
-        vision = new VisionSubsystem(drivetrain::addVisionMeasurement, List.of());
+        vision =
+            new VisionSubsystem(
+                drivetrain::addVisionMeasurement,
+                VisionConstants.cameras.stream()
+                    .<VisionIO>map(config -> new VisionIOLimelight(config, drivetrain::getRotation))
+                    .toList());
+
         break;
 
       case SIM:
@@ -104,6 +111,7 @@ public class RobotContainer {
                             new VisionIOPhotonVisionSim(
                                 config, driveSimulation::getSimulatedDriveTrainPose))
                     .toList());
+
         break;
 
       case REPLAY:
@@ -128,6 +136,7 @@ public class RobotContainer {
                 VisionConstants.cameras.stream()
                     .<VisionIO>map(config -> new VisionIO(config) {})
                     .toList());
+
         break;
 
       default:
@@ -179,8 +188,8 @@ public class RobotContainer {
 
     primaryJoystick
         .leftBumper()
-        .onTrue(
-            Commands.runOnce(
+        .whileTrue(
+            Commands.run(
                 () -> {
                   RebuiltFuelOnFly fuel =
                       new RebuiltFuelOnFly(

@@ -58,6 +58,7 @@ import frc.robot.constants.swerve.ModuleConstants;
 import frc.robot.constants.swerve.SwerveConstants;
 import frc.robot.constants.swerve.SysIdConstants;
 import frc.robot.constants.swerve.TunerConstants;
+import frc.robot.util.Container;
 import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -597,27 +598,41 @@ public class SwerveSubsystem extends SubsystemBase {
     };
   }
 
-  public Supplier<AngularVelocity> rotateAtAngle(Supplier<Rotation2d> rotation) {
+  public Supplier<AngularVelocity> rotateAtAngle(Supplier<Rotation2d> targetSupplier) {
     ProfiledPIDController pidController =
         SwerveConstants.rotationControl.profiledPIDController(
             Radians, Degrees.of(-180), Degrees.of(180));
     pidController.enableContinuousInput(-Math.PI, Math.PI);
     pidController.reset(getRotation().getRadians());
+    Container<Rotation2d> previousSetpoint = new Container<Rotation2d>(targetSupplier.get());
 
-    Timer pidResetTimer = new Timer();
-    pidResetTimer.restart();
+    Timer timeSinceLastLoop = new Timer();
+    timeSinceLastLoop.restart();
 
     return () -> {
-      if (pidResetTimer.hasElapsed(0.08)) pidController.reset(getRotation().getRadians());
+      Rotation2d setpoint = targetSupplier.get();
 
-      pidResetTimer.restart();
+      AngularVelocity setpointVelocity =
+          setpoint
+              .minus(previousSetpoint.inner)
+              .getMeasure()
+              .div(Seconds.of(timeSinceLastLoop.get()));
+
+      if (timeSinceLastLoop.hasElapsed(0.08)) {
+        pidController.reset(getRotation().getRadians());
+        previousSetpoint.inner = setpoint;
+        setpointVelocity = RadiansPerSecond.of(0);
+      }
+
+      timeSinceLastLoop.restart();
 
       double output =
-          pidController.calculate(getRotation().getRadians(), rotation.get().getRadians());
+          pidController.calculate(getRotation().getRadians(), targetSupplier.get().getRadians());
+      previousSetpoint.inner = setpoint;
 
       Logger.recordOutput("pid error radians", pidController.getPositionError());
 
-      return RadiansPerSecond.of(output);
+      return RadiansPerSecond.of(output).plus(setpointVelocity);
     };
   }
 }

@@ -105,17 +105,7 @@ public class FuelTrajectoryCalculator {
   }
 
   public static FuelShotSetpoints getFuelShot(Pose2d robotPose, ChassisSpeeds chassisSpeeds) {
-    // we have a way to calculate the necessary trajectory for a stationary robot at a certain
-    // point, but now we want to compensate for a moving robot. the impact of a moving robot on the
-    // fuel is more or less uniformly adding the robot's speed to the fuel's ground speed throughout
-    // the duration of the launch. thus, if we know how long the fuel will be in the air, we just
-    // look at how far the robot will travel in that time and pretend we're shooting from the
-    // adjusted position. however, once we calculate the trajectory from the adjusted position, the
-    // new trajectory the robot shoots the fuel at may have a different length. the fuel may
-    // over/undershoot the hub depending on if the new trajectory is longer or shorter. in essence,
-    // we're looking for a lookahead time t such that the length of the trajectory generated with
-    // that lookahead time is equal to the lookahead time. all of that is to say that all we do here
-    // is run the secant method to find the zero of timeInAir(lookaheadTime) - lookaheadTime.
+    // run secant method on trajectoryTime(lookaheadTime) - lookaheadTime
 
     // here, t0 is always just t_(k - 2) and t1 is always t_(k - 1)
     double lookahead0 = 0;

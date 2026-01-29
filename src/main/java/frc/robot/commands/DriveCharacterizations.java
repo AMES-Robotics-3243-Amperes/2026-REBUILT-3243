@@ -36,6 +36,7 @@ import frc.robot.constants.swerve.SwerveConstants;
 import frc.robot.constants.swerve.SysIdConstants;
 import frc.robot.subsystems.drivetrain.SwerveSubsystem;
 import frc.robot.subsystems.drivetrain.SwerveSubsystem.SwerveSysIdRoutine;
+import frc.robot.util.Container;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
@@ -176,17 +177,13 @@ public class DriveCharacterizations {
 
   /** Measures the robot's slip current. Place robot in front of a solid wall before running. */
   public static Command slipCurrentCharacterization(SwerveSubsystem drive) {
-    class CharacterizationState {
-      Current maxCurrent = Amps.of(0);
-    }
-
+    Container<Current> maxCurrent = new Container<Current>(Amps.of(0));
     SlewRateLimiter accelerationLimiter = new SlewRateLimiter(0.1);
-    CharacterizationState state = new CharacterizationState();
 
     return Commands.sequence(
         Commands.runOnce(
             () -> {
-              state.maxCurrent = Amps.of(0);
+              maxCurrent.inner = Amps.of(0);
               accelerationLimiter.reset(0);
             }),
         Commands.run(() -> drive.drive(new ChassisSpeeds(0.08, 0, 0)), drive)
@@ -205,8 +202,8 @@ public class DriveCharacterizations {
                       accelerationLimiter.calculate(Double.MAX_VALUE));
 
                   Current activeCurrent = drive.getAverageCurrent();
-                  if (state.maxCurrent.lt(activeCurrent)) {
-                    state.maxCurrent = activeCurrent;
+                  if (maxCurrent.inner.lt(activeCurrent)) {
+                    maxCurrent.inner = activeCurrent;
                   }
                 },
                 drive)
@@ -216,7 +213,7 @@ public class DriveCharacterizations {
               NumberFormat formatter = new DecimalFormat("#0.000");
               System.out.println("********** Slip Current Characterization Results **********");
               System.out.println(
-                  "\tSlip Current: " + formatter.format(state.maxCurrent.in(Amps)) + " amps");
+                  "\tSlip Current: " + formatter.format(maxCurrent.inner.in(Amps)) + " amps");
             }));
   }
 

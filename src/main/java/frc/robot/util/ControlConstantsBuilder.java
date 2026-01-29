@@ -1,7 +1,6 @@
 package frc.robot.util;
 
 import static edu.wpi.first.units.Units.Milliseconds;
-import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radian;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
@@ -184,16 +183,16 @@ public class ControlConstantsBuilder {
 
     config
         .pid(constantsRotationsMs.kP(), constantsRotationsMs.kI(), constantsRotationsMs.kD())
-        .iZone(iZone)
-        .feedForward
-        .kS(kS)
-        .kV(kV.in(Value.per(RPM)))
-        .kA(kA.in(Value.per(RPM.per(Second))));
+        .iZone(iZone);
+    //     .feedForward
+    //     .kS(kS)
+    //     .kV(kV.in(Value.per(RPM)))
+    //     .kA(kA.in(Value.per(RPM.per(Second))));
 
-    config
-        .maxMotion
-        .cruiseVelocity(maxVelocity.in(RPM))
-        .maxAcceleration(maxAcceleration.in(RPM.per(Second)));
+    // config
+    //     .maxMotion
+    //     .cruiseVelocity(maxVelocity.in(RPM))
+    //     .maxAcceleration(maxAcceleration.in(RPM.per(Second)));
 
     return config;
   }

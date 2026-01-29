@@ -100,7 +100,8 @@ public class FuelTrajectoryCalculator {
 
   private static Pose3d getShooterPositionAndRotationFromRobotPosition(
       Translation3d goal, Translation2d robotPosition) {
-        // note that this is NOT correct when the shooter doesn't point across/away from the center of the robot. ours doesn't though, so...
+    // note that this is NOT correct when the shooter doesn't point across/away from the center of
+    // the robot. ours doesn't though, so...
     Rotation3d goalRobotRotation =
         new Rotation3d(
             goal.toTranslation2d()

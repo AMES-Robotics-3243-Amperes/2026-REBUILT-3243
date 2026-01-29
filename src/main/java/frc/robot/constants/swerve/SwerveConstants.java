@@ -27,7 +27,7 @@ public class SwerveConstants {
   public static final double teleopJoystickDeadband = 0.3;
   public static final double teleopAbsoluteRotationDeadband = 0.5;
 
-  public static final LinearVelocity linearTeleopSpeed = MetersPerSecond.of(2);
+  public static final LinearVelocity linearTeleopSpeed = MetersPerSecond.of(0.5);
   public static final AngularVelocity angularTeleopSpeed = RotationsPerSecond.of(0.5);
 
   // public static final ControlConstants drivePidConstants = new PIDBuilder().pid(3, 0,

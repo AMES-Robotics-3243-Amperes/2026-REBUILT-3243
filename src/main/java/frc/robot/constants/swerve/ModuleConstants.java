@@ -35,7 +35,7 @@ public class ModuleConstants {
 
   public static final double driveGearRatio = 5.79;
   public static final double steerGearRatio = 25;
-  public static final Distance kWheelRadius = Inches.of(1.967);
+  public static final Distance kWheelRadius = Inches.of(1.5); // temp
 
   public static final ClosedLoopOutputType steerClosedLoopOutput = ClosedLoopOutputType.Voltage;
   public static final ClosedLoopOutputType driveClosedLoopOutput = ClosedLoopOutputType.Voltage;

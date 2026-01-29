@@ -19,17 +19,17 @@ import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.constants.swerve.TunerConstants;
 import frc.robot.subsystems.drivetrain.GyroIO;
+import frc.robot.subsystems.drivetrain.GyroIONavX;
 import frc.robot.subsystems.drivetrain.GyroIOSim;
 import frc.robot.subsystems.drivetrain.ModuleIO;
+import frc.robot.subsystems.drivetrain.ModuleIORev;
 import frc.robot.subsystems.drivetrain.ModuleIOTalonFXSim;
 import frc.robot.subsystems.drivetrain.SwerveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.intake.RollerIO;
 import frc.robot.subsystems.shooter.FlywheelIO;
-import frc.robot.subsystems.shooter.FlywheelIOReal;
 import frc.robot.subsystems.shooter.FlywheelIOSim;
 import frc.robot.subsystems.shooter.HoodIO;
-import frc.robot.subsystems.shooter.HoodIOReal;
 import frc.robot.subsystems.shooter.HoodIOSim;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.subsystems.vision.VisionIO;
@@ -64,15 +64,15 @@ public class RobotContainer {
 
         drivetrain =
             new SwerveSubsystem(
-                new GyroIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {});
+                new GyroIONavX() {},
+                new ModuleIORev(1, 2, Rotation2d.fromDegrees(90)) {},
+                new ModuleIORev(3, 4, Rotation2d.fromDegrees(0)) {},
+                new ModuleIORev(5, 6, Rotation2d.fromDegrees(180)) {},
+                new ModuleIORev(7, 8, Rotation2d.fromDegrees(270)) {});
 
         intake = new IntakeSubsystem(new RollerIO() {});
 
-        shooter = new ShooterSubsystem(new FlywheelIOReal(), new HoodIOReal());
+        shooter = new ShooterSubsystem(new FlywheelIOSim(), new HoodIOSim());
 
         vision =
             new VisionSubsystem(

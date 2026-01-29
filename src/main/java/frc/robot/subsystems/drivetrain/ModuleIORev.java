@@ -18,6 +18,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
+import frc.robot.util.ControlConstantsBuilder;
 
 public class ModuleIORev implements ModuleIO {
   Rotation2d offset;
@@ -30,6 +31,11 @@ public class ModuleIORev implements ModuleIO {
   RelativeEncoder driveEncoder;
 
   public ModuleIORev(int driveId, int turnId, Rotation2d offset) {
+    ControlConstantsBuilder driveControl =
+        ControlConstantsBuilder.fromRadiansAndSeconds()
+            .pid(0.0001, 0, 0)
+            .sva(0.1396, 0.10411, 0.013093);
+
     // Hardcoded constants for now. If we ever get an actual prototype bot on a rev drivetrain
     // perhaps this can be improved
     final double factor = (45.0 * 22) / (13 * 15);
@@ -41,7 +47,7 @@ public class ModuleIORev implements ModuleIO {
     SparkMaxConfig azimuthConfig = new SparkMaxConfig();
     azimuthConfig
         .closedLoop
-        .pid(3, 0, 0)
+        .pid(1.8, 0, 0)
         .positionWrappingEnabled(true)
         .positionWrappingInputRange(0, 1)
         .feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
@@ -54,7 +60,10 @@ public class ModuleIORev implements ModuleIO {
         azimuthConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     SparkMaxConfig driveConfig = new SparkMaxConfig();
-    driveConfig.closedLoop.pid(0.001, 0, 0).feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+    driveConfig
+        .closedLoop
+        .apply(driveControl.revClosedLoopConfig())
+        .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
     driveConfig.encoder.positionConversionFactor(1 / factor).velocityConversionFactor(1 / factor);
     driveMotor.configure(
         driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);

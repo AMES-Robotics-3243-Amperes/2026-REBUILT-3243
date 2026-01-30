@@ -29,9 +29,9 @@ public class TunerConstants {
               .withCouplingGearRatio(ModuleConstants.kCoupleRatio)
               .withWheelRadius(ModuleConstants.wheelRadius)
               .withSteerMotorGains(
-                  Slot0Configs.from(ModuleConstants.steerControl.talonFXSlotConfigs()))
+                  Slot0Configs.from(ModuleConstants.steerControl.talonFXConfigs().getFirst()))
               .withDriveMotorGains(
-                  Slot0Configs.from(ModuleConstants.driveControl.talonFXSlotConfigs()))
+                  Slot0Configs.from(ModuleConstants.driveControl.talonFXConfigs().getFirst()))
               .withSteerMotorClosedLoopOutput(ModuleConstants.steerClosedLoopOutput)
               .withDriveMotorClosedLoopOutput(ModuleConstants.driveClosedLoopOutput)
               .withSlipCurrent(SwerveConstants.slipCurrent)

@@ -17,6 +17,7 @@ import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.SlotConfigs;
 import com.pathplanner.lib.config.PIDConstants;
 import com.revrobotics.spark.config.ClosedLoopConfig;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -31,6 +32,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Per;
+import java.util.Optional;
 
 public class ControlConstantsBuilder {
   public record ControlConstants(
@@ -41,8 +43,8 @@ public class ControlConstantsBuilder {
       double kS,
       double kV,
       double kA,
-      double maxVelocity,
-      double maxAcceleration) {}
+      Optional<Double> maxVelocity,
+      Optional<Double> maxAcceleration) {}
 
   public Per<DimensionlessUnit, AngleUnit> kP = Value.per(Radian).ofNative(0);
   public Per<DimensionlessUnit, MultUnit<AngleUnit, TimeUnit>> kI =
@@ -56,9 +58,8 @@ public class ControlConstantsBuilder {
   public Per<DimensionlessUnit, AngularAccelerationUnit> kA =
       Value.per(RadiansPerSecondPerSecond).ofNative(0);
 
-  public AngularVelocity maxVelocity = RotationsPerSecond.of(Double.POSITIVE_INFINITY);
-  public AngularAcceleration maxAcceleration =
-      RotationsPerSecondPerSecond.of(Double.POSITIVE_INFINITY);
+  public Optional<AngularVelocity> maxVelocity = Optional.empty();
+  public Optional<AngularAcceleration> maxAcceleration = Optional.empty();
 
   //
   // Initialization
@@ -89,8 +90,8 @@ public class ControlConstantsBuilder {
 
   public ControlConstantsBuilder constraints(
       AngularVelocity maxVelocity, AngularAcceleration maxAcceleration) {
-    this.maxVelocity = maxVelocity;
-    this.maxAcceleration = maxAcceleration;
+    this.maxVelocity = Optional.of(maxVelocity);
+    this.maxAcceleration = Optional.of(maxAcceleration);
 
     return this;
   }
@@ -119,8 +120,9 @@ public class ControlConstantsBuilder {
         kS,
         kV.in(Value.per(angleUnit.per(timeUnit))),
         kA.in(Value.per(angleUnit.per(timeUnit).per(timeUnit))),
-        maxVelocity.in(angleUnit.per(timeUnit)),
-        maxAcceleration.in(angleUnit.per(timeUnit).per(timeUnit)));
+        maxVelocity.map(velocity -> velocity.in(angleUnit.per(timeUnit))),
+        maxAcceleration.map(
+            acceleration -> acceleration.in(angleUnit.per(timeUnit).per(timeUnit))));
   }
 
   public PIDController pidController(AngleUnit angleUnit, Angle minWrap, Angle maxWrap) {
@@ -147,14 +149,21 @@ public class ControlConstantsBuilder {
       AngleUnit angleUnit, Angle minWrap, Angle maxWrap) {
     ControlConstants constants = in(angleUnit, Seconds);
 
+    double maxVelocity =
+        this.maxVelocity
+            .orElse(RotationsPerSecond.of(Double.POSITIVE_INFINITY))
+            .in(angleUnit.per(Second));
+    double maxAcceleration =
+        this.maxAcceleration
+            .orElse(RotationsPerSecondPerSecond.of(Double.POSITIVE_INFINITY))
+            .in(angleUnit.per(Second).per(Second));
+
     ProfiledPIDController controller =
         new ProfiledPIDController(
             constants.kP(),
             constants.kI(),
             constants.kD(),
-            new TrapezoidProfile.Constraints(
-                maxVelocity.in(angleUnit.per(Seconds)),
-                maxAcceleration.in(angleUnit.per(Seconds).per(Seconds))));
+            new TrapezoidProfile.Constraints(maxVelocity, maxAcceleration));
 
     controller.setIZone(iZone);
     controller.enableContinuousInput(minWrap.in(angleUnit), maxWrap.in(angleUnit));
@@ -165,14 +174,21 @@ public class ControlConstantsBuilder {
   public ProfiledPIDController profiledPIDController(AngleUnit angleUnit) {
     ControlConstants constants = in(angleUnit, Seconds);
 
+    double maxVelocity =
+        this.maxVelocity
+            .orElse(RotationsPerSecond.of(Double.POSITIVE_INFINITY))
+            .in(angleUnit.per(Second));
+    double maxAcceleration =
+        this.maxAcceleration
+            .orElse(RotationsPerSecondPerSecond.of(Double.POSITIVE_INFINITY))
+            .in(angleUnit.per(Second).per(Second));
+
     ProfiledPIDController controller =
         new ProfiledPIDController(
             constants.kP(),
             constants.kI(),
             constants.kD(),
-            new TrapezoidProfile.Constraints(
-                maxVelocity.in(angleUnit.per(Seconds)),
-                maxAcceleration.in(angleUnit.per(Seconds).per(Seconds))));
+            new TrapezoidProfile.Constraints(maxVelocity, maxAcceleration));
     controller.setIZone(iZone);
 
     return controller;
@@ -184,35 +200,37 @@ public class ControlConstantsBuilder {
 
     config
         .pid(constantsRotationsMs.kP(), constantsRotationsMs.kI(), constantsRotationsMs.kD())
-        .iZone(iZone)
-        .feedForward
-        .kS(kS)
-        .kV(kV.in(Value.per(RPM)))
-        .kA(kA.in(Value.per(RPM.per(Second))));
+        .iZone(iZone);
 
-    // config
-    //     .maxMotion
-    //     .cruiseVelocity(maxVelocity.in(RPM))
-    //     .maxAcceleration(maxAcceleration.in(RPM.per(Second)));
+    if (kS != 0) config.feedForward.kS(kS);
+    if (kV.in(Value.per(RPM)) != 0) config.feedForward.kV(kV.in(Value.per(RPM)));
+    if (kA.in(Value.per(RPM.per(Second))) != 0)
+      config.feedForward.kA(kA.in(Value.per(RPM.per(Second))));
+
+    maxVelocity.ifPresent(velocity -> config.maxMotion.cruiseVelocity(velocity.in(RPM)));
+    maxAcceleration.ifPresent(
+        acceleration -> config.maxMotion.maxAcceleration(acceleration.in(RPM.per(Second))));
 
     return config;
   }
 
-  public SlotConfigs talonFXSlotConfigs() {
+  public Pair<SlotConfigs, MotionMagicConfigs> talonFXConfigs() {
     ControlConstants constantsRotationsSeconds = in(Rotations, Seconds);
 
-    return new SlotConfigs()
-        .withKP(constantsRotationsSeconds.kP())
-        .withKI(constantsRotationsSeconds.kI())
-        .withKD(constantsRotationsSeconds.kD())
-        .withKS(constantsRotationsSeconds.kS())
-        .withKV(constantsRotationsSeconds.kV())
-        .withKA(constantsRotationsSeconds.kA());
-  }
+    SlotConfigs slotConfigs =
+        new SlotConfigs()
+            .withKP(constantsRotationsSeconds.kP())
+            .withKI(constantsRotationsSeconds.kI())
+            .withKD(constantsRotationsSeconds.kD())
+            .withKS(constantsRotationsSeconds.kS())
+            .withKV(constantsRotationsSeconds.kV())
+            .withKA(constantsRotationsSeconds.kA());
 
-  public MotionMagicConfigs talonFXMotionMagicConfigs() {
-    return new MotionMagicConfigs()
-        .withMotionMagicCruiseVelocity(maxVelocity)
-        .withMotionMagicAcceleration(maxAcceleration);
+    MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
+    maxVelocity.ifPresent(velocity -> motionMagicConfigs.withMotionMagicCruiseVelocity(velocity));
+    maxAcceleration.ifPresent(
+        acceleration -> motionMagicConfigs.withMotionMagicAcceleration(acceleration));
+
+    return new Pair<SlotConfigs, MotionMagicConfigs>(slotConfigs, motionMagicConfigs);
   }
 }

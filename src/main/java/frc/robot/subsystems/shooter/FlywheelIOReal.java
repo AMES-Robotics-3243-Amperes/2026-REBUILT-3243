@@ -45,8 +45,8 @@ public class FlywheelIOReal implements FlywheelIO {
         .withSupplyCurrentLimit(ShooterConstants.flywheelSupplyCurrentLimit)
         .withSupplyCurrentLimitEnable(true);
     flywheelConfig
-        .withSlot0(Slot0Configs.from(ShooterConstants.flywheelControl.talonFXSlotConfigs()))
-        .withMotionMagic(ShooterConstants.flywheelControl.talonFXMotionMagicConfigs());
+        .withSlot0(Slot0Configs.from(ShooterConstants.flywheelControl.talonFXConfigs().getFirst()))
+        .withMotionMagic(ShooterConstants.flywheelControl.talonFXConfigs().getSecond());
 
     flywheelConfig.Feedback.SensorToMechanismRatio = ShooterConstants.flywheelGearReduction;
 

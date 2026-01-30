@@ -14,10 +14,12 @@ import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.util.ControlConstantsBuilder;
 
 public class ModuleIORev implements ModuleIO {
@@ -65,6 +67,7 @@ public class ModuleIORev implements ModuleIO {
         .apply(driveControl.revClosedLoopConfig())
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
     driveConfig.encoder.positionConversionFactor(1 / factor).velocityConversionFactor(1 / factor);
+    driveConfig.idleMode(IdleMode.kBrake);
     driveMotor.configure(
         driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -92,6 +95,11 @@ public class ModuleIORev implements ModuleIO {
     inputs.turnVelocity = RPM.of(azimuthEncoder.getVelocity());
     inputs.turnAppliedVolts = Volts.of(azimuth.getAppliedOutput() * azimuth.getBusVoltage());
     inputs.turnCurrentAmps = Amps.of(azimuth.getOutputCurrent());
+
+    inputs.odometryTimestamps = new double[] {RobotController.getFPGATime() / 1e6};
+    inputs.odometryDrivePositionsRad = new double[] {driveEncoder.getPosition()};
+    inputs.odometryTurnPositions =
+        new Rotation2d[] {Rotation2d.fromRotations(azimuthEncoder.getPosition()).plus(offset)};
   }
 
   @Override

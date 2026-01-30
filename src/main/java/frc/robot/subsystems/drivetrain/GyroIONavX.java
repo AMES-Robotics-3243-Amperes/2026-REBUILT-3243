@@ -17,10 +17,15 @@ public class GyroIONavX implements GyroIO {
   @Override
   public void updateInputs(GyroIOInputs inputs) {
     inputs.connected = true;
-    inputs.yawPosition = Rotation2d.fromDegrees(imu.getYaw());
-    inputs.yawVelocity = DegreesPerSecond.of(imu.getRate());
+    inputs.yawPosition = Rotation2d.fromDegrees(-imu.getYaw());
+    inputs.yawVelocity = DegreesPerSecond.of(-imu.getRate());
 
     inputs.odometryYawTimestamps = new double[] {RobotController.getFPGATime() / 1e6};
-    inputs.odometryYawPositions = new Rotation2d[] {Rotation2d.fromDegrees(imu.getYaw())};
+    inputs.odometryYawPositions = new Rotation2d[] {Rotation2d.fromDegrees(-imu.getYaw())};
+  }
+
+  @Override
+  public void resetYaw() {
+    imu.reset();
   }
 }

@@ -27,7 +27,7 @@ public class TunerConstants {
               .withDriveMotorGearRatio(ModuleConstants.driveGearRatio)
               .withSteerMotorGearRatio(ModuleConstants.steerGearRatio)
               .withCouplingGearRatio(ModuleConstants.kCoupleRatio)
-              .withWheelRadius(ModuleConstants.kWheelRadius)
+              .withWheelRadius(ModuleConstants.wheelRadius)
               .withSteerMotorGains(
                   Slot0Configs.from(ModuleConstants.steerControl.talonFXSlotConfigs()))
               .withDriveMotorGains(

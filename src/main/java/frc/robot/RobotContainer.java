@@ -56,6 +56,8 @@ public class RobotContainer {
 
   private final LoggedDashboardChooser<Command> autoChooser;
 
+  GyroIONavX gyro = new GyroIONavX();
+
   public RobotContainer() {
     switch (ModeConstants.robotMode) {
       case REAL_COMPETITION:
@@ -64,7 +66,7 @@ public class RobotContainer {
 
         drivetrain =
             new SwerveSubsystem(
-                new GyroIONavX() {},
+                gyro,
                 new ModuleIORev(1, 2, Rotation2d.fromDegrees(90)) {},
                 new ModuleIORev(3, 4, Rotation2d.fromDegrees(0)) {},
                 new ModuleIORev(5, 6, Rotation2d.fromDegrees(180)) {},
@@ -169,11 +171,7 @@ public class RobotContainer {
     primaryJoystick.rightTrigger().whileTrue(intake.runAtIntakeSpeedCommand(drivetrain::getSpeed));
     primaryJoystick.leftTrigger().whileTrue(intake.outtakeCommand());
 
-    primaryJoystick
-        .a()
-        .onTrue(DriveCharacterizations.sysIdCharacterization(drivetrain, primaryJoystick.a()));
-
-    primaryJoystick.b().onTrue(shooter.sysIdCommand(primaryJoystick.b()));
+    primaryJoystick.x().onTrue(Commands.runOnce(gyro::resetYaw));
 
     primaryJoystick
         .y()

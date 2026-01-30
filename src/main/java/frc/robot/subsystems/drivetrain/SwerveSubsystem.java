@@ -90,7 +90,7 @@ public class SwerveSubsystem extends SubsystemBase {
                   ModuleConstants.steerGearRatio,
                   ModuleConstants.driveFrictionVoltage,
                   ModuleConstants.steerFrictionVoltage,
-                  ModuleConstants.kWheelRadius,
+                  ModuleConstants.wheelRadius,
                   ModuleConstants.kSteerInertia,
                   SwerveConstants.wheelCoefficientOfFriction));
 
@@ -99,7 +99,7 @@ public class SwerveSubsystem extends SubsystemBase {
           SwerveConstants.robotMass.in(Kilograms),
           SwerveConstants.robotMomentOfInertia.in(KilogramSquareMeters),
           new ModuleConfig(
-              ModuleConstants.kWheelRadius.in(Meters),
+              ModuleConstants.wheelRadius.in(Meters),
               SwerveConstants.speedAt12Volts.in(MetersPerSecond),
               SwerveConstants.wheelCoefficientOfFriction,
               (ModuleConstants.driveClosedLoopOutput == ClosedLoopOutputType.Voltage
@@ -147,10 +147,10 @@ public class SwerveSubsystem extends SubsystemBase {
       ModuleIO brModuleIO,
       Consumer<Pose2d> resetSimulationPoseCallBack) {
     this.gyroIO = gyroIO;
-    modules[0] = new SwerveModule(flModuleIO, 0, TunerConstants.FrontLeft);
-    modules[1] = new SwerveModule(frModuleIO, 1, TunerConstants.FrontRight);
-    modules[2] = new SwerveModule(blModuleIO, 2, TunerConstants.BackLeft);
-    modules[3] = new SwerveModule(brModuleIO, 3, TunerConstants.BackRight);
+    modules[0] = new SwerveModule(flModuleIO, 0);
+    modules[1] = new SwerveModule(frModuleIO, 1);
+    modules[2] = new SwerveModule(blModuleIO, 2);
+    modules[3] = new SwerveModule(brModuleIO, 3);
 
     this.resetSimulationPoseCallBack = resetSimulationPoseCallBack;
 

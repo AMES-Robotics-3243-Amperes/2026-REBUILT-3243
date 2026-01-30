@@ -27,25 +27,24 @@ public class SwerveConstants {
   public static final double teleopJoystickDeadband = 0.3;
   public static final double teleopAbsoluteRotationDeadband = 0.5;
 
-  public static final LinearVelocity linearTeleopSpeed = MetersPerSecond.of(0.5);
+  public static final LinearVelocity linearTeleopSpeed = MetersPerSecond.of(3);
   public static final AngularVelocity angularTeleopSpeed = RotationsPerSecond.of(0.5);
 
-  // public static final ControlConstants drivePidConstants = new PIDBuilder().pid(3, 0,
-  // 0).iZone(1);
   public static final ControlConstantsBuilder rotationControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
           .pid(4, 0, 0.2)
           .iZone(1)
           .constraints(RotationsPerSecond.of(3), RotationsPerSecondPerSecond.of(9));
+
   // physical properties
   public static final Distance driveBaseFrontLength = Inches.of(26);
   public static final Distance driveBaseSideLength = Inches.of(26);
 
-  public static final Mass robotMass = Pounds.of(120);
+  public static final Mass robotMass = Pounds.of(90);
   public static final MomentOfInertia robotMomentOfInertia = KilogramSquareMeters.of(6);
-  public static final double wheelCoefficientOfFriction = 1.0;
+  public static final double wheelCoefficientOfFriction = 1.4;
   public static final Current slipCurrent = Amps.of(120);
-  public static final LinearVelocity speedAt12Volts = MetersPerSecond.of(5);
+  public static final LinearVelocity speedAt12Volts = MetersPerSecond.of(5.2);
 
   public static final Distance driveBaseRadius =
       Meters.of(

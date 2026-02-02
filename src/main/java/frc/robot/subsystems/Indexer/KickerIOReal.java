@@ -1,4 +1,8 @@
-package frc.robot.subsystems.intake;
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
+package frc.robot.subsystems.Indexer;
 
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
@@ -15,27 +19,26 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.units.measure.AngularVelocity;
-import frc.robot.constants.IntakeConstants;
-import frc.robot.util.TunableControls;
+import frc.robot.constants.IndexerConstants;
 
-public class RollerIOReal implements RollerIO {
-  SparkMax sparkMax = new SparkMax(IntakeConstants.rollerId, MotorType.kBrushless);
+/** Add your docs here. */
+public class KickerIOReal implements KickerIO {
+  SparkMax sparkMax = new SparkMax(IndexerConstants.kickerId, MotorType.kBrushless);
 
   SparkClosedLoopController closedLoopController;
   RelativeEncoder encoder;
 
-  public RollerIOReal() {
-    System.out.println("RollerIOReal constructed");
+  public KickerIOReal() {
     SparkMaxConfig config = new SparkMaxConfig();
 
-    config.encoder.positionConversionFactor(IntakeConstants.rollerGearRatio);
-    config.encoder.velocityConversionFactor(IntakeConstants.rollerGearRatio);
+    config.encoder.positionConversionFactor(IndexerConstants.kickerGearRatio);
+    config.encoder.velocityConversionFactor(IndexerConstants.kickerGearRatio);
     config.idleMode(IdleMode.kCoast).inverted(true);
 
     config
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .apply(IntakeConstants.rollerControl.revClosedLoopConfig());
+        .apply(IndexerConstants.kickerControl.revClosedLoopConfig());
 
     config.closedLoop.maxMotion.maxAcceleration(10);
 
@@ -46,7 +49,7 @@ public class RollerIOReal implements RollerIO {
   }
 
   @Override
-  public void updateInputs(RollerIOInputs inputs) {
+  public void updateInputs(KickerIOInputs inputs) {
     inputs.position = Rotations.of(encoder.getPosition());
     inputs.velocity = RPM.of(encoder.getVelocity());
     inputs.appliedVoltage = Volts.of(sparkMax.getAppliedOutput() * sparkMax.getBusVoltage());

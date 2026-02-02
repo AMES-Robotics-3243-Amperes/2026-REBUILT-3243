@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.constants.GitConstants;
 import frc.robot.constants.ModeConstants;
 import frc.robot.util.LocalADStarAK;
+import frc.robot.util.TunableControls;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -74,6 +75,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
+    TunableControls.periodic();
   }
 
   @Override

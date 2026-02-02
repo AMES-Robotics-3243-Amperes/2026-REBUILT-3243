@@ -1,3 +1,5 @@
+// Thanks team 5000 for the naming "inspiration"
+
 package frc.robot.util;
 
 import static edu.wpi.first.units.Units.Radians;
@@ -14,6 +16,9 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import frc.robot.constants.ModeConstants;
+import frc.robot.constants.ModeConstants.Mode;
 import frc.robot.util.ControlConstantsBuilder.ControlConstants;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +60,7 @@ public class TunableControls {
         return true;
       }
 
-      if (Double.compare(current, lastValue) != 0) {
+      if (current != lastValue) {
         lastValue = current;
         return true;
       }
@@ -73,16 +78,8 @@ public class TunableControls {
 
   public static void periodic() {
     for (Entry entry : entries) {
-      boolean changed = false;
-
       for (TunableNumber number : entry.numbers) {
-        if (number.hasChanged()) {
-          changed = true;
-        }
-      }
-
-      if (changed) {
-        entry.callback.run();
+        if (number.hasChanged() && ModeConstants.robotMode != Mode.REAL_COMPETITION) entry.callback.run();
       }
     }
   }
@@ -124,20 +121,10 @@ public class TunableControls {
   }
 
   public static void registerSparkMaxClosedLoopTuning(
-      SparkMax motor,
-      SparkMaxConfig config,
-      String name,
-      ControlConstantsBuilder defaults,
-      ResetMode resetMode,
-      PersistMode persistMode) {
-    System.out.println("Registering SparkMax tuning for " + name);
-
+      SparkMax motor, String name, ControlConstantsBuilder defaults) {
     Objects.requireNonNull(motor);
-    Objects.requireNonNull(config);
     Objects.requireNonNull(name);
     Objects.requireNonNull(defaults);
-    Objects.requireNonNull(resetMode);
-    Objects.requireNonNull(persistMode);
 
     ControlConstants defaultConstants = defaults.in(Radians, Seconds);
 
@@ -155,36 +142,44 @@ public class TunableControls {
                   .pid(kP.get(), kI.get(), kD.get())
                   .sva(kS.get(), kV.get(), kA.get());
 
-          config.closedLoop.apply(builder.revClosedLoopConfig());
-          motor.configure(config, resetMode, persistMode);
+          SparkMaxConfig config = new SparkMaxConfig();
+          config.apply(builder.revClosedLoopConfig());
+
+          motor.configure(
+              config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
         };
 
     register(apply, kP, kI, kD, kS, kV, kA);
   }
 
-  public static class TunablePidController {
-    private final PIDController controller;
-    private final TunableNumber kP;
-    private final TunableNumber kI;
-    private final TunableNumber kD;
+  public static void registerPIDControllerTuning(PIDController controller, String name) {
+    TunableNumber kP = new TunableNumber("/Tuning/" + name + "/kP", controller.getP());
+    TunableNumber kI = new TunableNumber("/Tuning/" + name + "/kI", controller.getI());
+    TunableNumber kD = new TunableNumber("/Tuning/" + name + "/kD", controller.getD());
 
-    public TunablePidController(String name, double p, double i, double d, double periodSeconds) {
-      this.controller = new PIDController(p, i, d, periodSeconds);
+    Runnable apply =
+        () -> {
+          controller.setP(kP.get());
+          controller.setI(kI.get());
+          controller.setD(kD.get());
+        };
 
-      this.kP = new TunableNumber("/Tuning/" + name + "/kP", p);
-      this.kI = new TunableNumber("/Tuning/" + name + "/kI", i);
-      this.kD = new TunableNumber("/Tuning/" + name + "/kD", d);
+    register(apply, kP, kI, kD);
+  }
 
-      register(this::update, kP, kI, kD);
-      update();
-    }
+  public static void registerProfiledPIDControllerTuning(
+      ProfiledPIDController controller, String name) {
+    TunableNumber kP = new TunableNumber("/Tuning/" + name + "/kP", controller.getP());
+    TunableNumber kI = new TunableNumber("/Tuning/" + name + "/kI", controller.getI());
+    TunableNumber kD = new TunableNumber("/Tuning/" + name + "/kD", controller.getD());
 
-    private void update() {
-      controller.setPID(kP.get(), kI.get(), kD.get());
-    }
+    Runnable apply =
+        () -> {
+          controller.setP(kP.get());
+          controller.setI(kI.get());
+          controller.setD(kD.get());
+        };
 
-    public PIDController getController() {
-      return controller;
-    }
+    register(apply, kP, kI, kD);
   }
 }

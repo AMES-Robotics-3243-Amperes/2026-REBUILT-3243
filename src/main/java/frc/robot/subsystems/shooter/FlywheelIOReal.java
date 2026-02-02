@@ -19,7 +19,6 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.constants.ShooterConstants;
-import frc.robot.util.TunableControls;
 
 /** Add your docs here. */
 public class FlywheelIOReal implements FlywheelIO {

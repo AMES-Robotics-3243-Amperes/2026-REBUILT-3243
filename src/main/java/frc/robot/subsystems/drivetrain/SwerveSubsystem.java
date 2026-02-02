@@ -59,6 +59,7 @@ import frc.robot.constants.swerve.SwerveConstants;
 import frc.robot.constants.swerve.SysIdConstants;
 import frc.robot.constants.swerve.TunerConstants;
 import frc.robot.util.Container;
+import frc.robot.util.TunableControls;
 import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -603,6 +604,7 @@ public class SwerveSubsystem extends SubsystemBase {
         SwerveConstants.rotationControl.profiledPIDController(
             Radians, Degrees.of(-180), Degrees.of(180));
     pidController.enableContinuousInput(-Math.PI, Math.PI);
+    pidController.setTolerance(SwerveConstants.rotationFeedBackTolerance.in(Radians));
     pidController.reset(getRotation().getRadians());
     Container<Rotation2d> previousSetpoint = new Container<Rotation2d>(targetSupplier.get());
 
@@ -618,6 +620,7 @@ public class SwerveSubsystem extends SubsystemBase {
               .getMeasure()
               .div(Seconds.of(timeSinceLastLoop.get()));
 
+      // four loops is picked arbitrarily
       if (timeSinceLastLoop.hasElapsed(0.08)) {
         pidController.reset(getRotation().getRadians());
         previousSetpoint.inner = setpoint;
@@ -626,13 +629,14 @@ public class SwerveSubsystem extends SubsystemBase {
 
       timeSinceLastLoop.restart();
 
-      double output =
+      double feedbackOutput =
           pidController.calculate(getRotation().getRadians(), targetSupplier.get().getRadians());
       previousSetpoint.inner = setpoint;
 
       Logger.recordOutput("pid error radians", pidController.getPositionError());
 
-      return RadiansPerSecond.of(output).plus(setpointVelocity);
+      return RadiansPerSecond.of(feedbackOutput)
+          .plus(setpointVelocity.times(SwerveConstants.rotationFeedforwardCoefficient));
     };
   }
 }

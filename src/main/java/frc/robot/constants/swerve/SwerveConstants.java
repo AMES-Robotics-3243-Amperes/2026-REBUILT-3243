@@ -1,6 +1,7 @@
 package frc.robot.constants.swerve;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Hertz;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
@@ -12,6 +13,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 
 import com.ctre.phoenix6.CANBus;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
@@ -30,9 +32,12 @@ public class SwerveConstants {
   public static final LinearVelocity linearTeleopSpeed = MetersPerSecond.of(3);
   public static final AngularVelocity angularTeleopSpeed = RotationsPerSecond.of(0.5);
 
+  // control
+  public static final double rotationFeedforwardCoefficient = 0.8;
+  public static final Angle rotationFeedBackTolerance = Degrees.of(0.6);
   public static final ControlConstantsBuilder rotationControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(4, 0, 0.2)
+          .pid(5.1, 0, 0.07)
           .iZone(1)
           .constraints(RotationsPerSecond.of(3), RotationsPerSecondPerSecond.of(9));
 

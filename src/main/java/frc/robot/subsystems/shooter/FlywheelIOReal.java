@@ -4,92 +4,66 @@
 
 package frc.robot.subsystems.shooter;
 
-import com.ctre.phoenix6.BaseStatusSignal;
-import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.CoastOut;
-import com.ctre.phoenix6.controls.VelocityVoltage;
-import com.ctre.phoenix6.controls.VoltageOut;
-import com.ctre.phoenix6.hardware.ParentDevice;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.units.measure.Angle;
+import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.Rotations;
+import static edu.wpi.first.units.Units.Volts;
+
+import com.revrobotics.PersistMode;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.ResetMode;
+import com.revrobotics.spark.FeedbackSensor;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Voltage;
 import frc.robot.constants.ShooterConstants;
-import frc.robot.util.TunableControls;
 
 /** Add your docs here. */
 public class FlywheelIOReal implements FlywheelIO {
-  protected final TalonFX leader = new TalonFX(ShooterConstants.flywheelLeftId);
-  // private final TalonFX follower = new TalonFX(ShooterConstants.flywheelRightId);
 
-  protected final StatusSignal<Angle> position;
-  protected final StatusSignal<AngularVelocity> velocity;
-  protected final StatusSignal<Voltage> voltage;
+  SparkMax sparkMax = new SparkMax(ShooterConstants.flywheelId, MotorType.kBrushless);
 
-  private final VoltageOut voltageRequest = new VoltageOut(0);
-  private final VelocityVoltage velocityRequest = new VelocityVoltage(0);
-  private final CoastOut coastRequest = new CoastOut();
+  SparkClosedLoopController closedLoopController;
+  RelativeEncoder encoder;
 
   public FlywheelIOReal() {
-    TalonFXConfiguration flywheelConfig = new TalonFXConfiguration();
+    System.out.println("RollerIOReal constructed");
+    SparkMaxConfig config = new SparkMaxConfig();
 
-    flywheelConfig
-        .MotorOutput
-        .withInverted(InvertedValue.CounterClockwise_Positive)
-        .withNeutralMode(NeutralModeValue.Coast);
-    flywheelConfig
-        .CurrentLimits
-        .withSupplyCurrentLimit(ShooterConstants.flywheelSupplyCurrentLimit)
-        .withSupplyCurrentLimitEnable(true);
-    flywheelConfig
-        .withSlot0(Slot0Configs.from(ShooterConstants.flywheelControl.talonFXConfigs().getFirst()))
-        .withMotionMagic(ShooterConstants.flywheelControl.talonFXConfigs().getSecond());
+    config.encoder.positionConversionFactor(ShooterConstants.flywheelGearRatio);
+    config.encoder.velocityConversionFactor(ShooterConstants.flywheelGearRatio);
+    config.idleMode(IdleMode.kCoast).inverted(true);
 
-    flywheelConfig.Feedback.SensorToMechanismRatio = ShooterConstants.flywheelGearReduction;
+    config
+        .closedLoop
+        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+        .apply(ShooterConstants.flywheelControl.revClosedLoopConfig());
 
-    leader.getConfigurator().apply(flywheelConfig);
-    // follower.getConfigurator().apply(flywheelConfig);
+    config.closedLoop.maxMotion.maxAcceleration(10);
 
-    // follower.setControl(
-    //     new Follower(
-    //         ShooterConstants.flywheelLeftId,
-    //         MotorAlignmentValue
-    //             .Opposed));
+    sparkMax.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    position = leader.getPosition();
-    velocity = leader.getVelocity();
-    voltage = leader.getMotorVoltage();
-
-    // Configure periodic frames
-    BaseStatusSignal.setUpdateFrequencyForAll(50.0, position, velocity, voltage);
-    ParentDevice.optimizeBusUtilizationForAll(leader);
+    closedLoopController = sparkMax.getClosedLoopController();
+    encoder = sparkMax.getEncoder();
   }
 
   @Override
   public void updateInputs(FlywheelIOInputs inputs) {
-    BaseStatusSignal.refreshAll(position, velocity, voltage);
-
-    inputs.position = position.getValue();
-    inputs.velocity = velocity.getValue();
-    inputs.appliedVoltage = voltage.getValue();
+    inputs.position = Rotations.of(encoder.getPosition());
+    inputs.velocity = RPM.of(encoder.getVelocity());
+    inputs.appliedVoltage = Volts.of(sparkMax.getAppliedOutput() * sparkMax.getBusVoltage());
   }
 
   @Override
   public void runOpenLoop(double output) {
-    leader.setControl(voltageRequest.withOutput(output));
+    sparkMax.setVoltage(output);
   }
 
   @Override
   public void setAngularVelocity(AngularVelocity velocity) {
-    leader.setControl(velocityRequest.withVelocity(velocity));
-  }
-
-  @Override
-  public void coast() {
-    leader.setControl(coastRequest);
+    closedLoopController.setSetpoint(velocity.in(RPM), ControlType.kVelocity);
   }
 }

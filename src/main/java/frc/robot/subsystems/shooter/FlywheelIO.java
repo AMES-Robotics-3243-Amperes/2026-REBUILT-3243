@@ -4,8 +4,8 @@
 
 package frc.robot.subsystems.shooter;
 
-import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.measure.Angle;
@@ -17,20 +17,17 @@ import org.littletonrobotics.junction.AutoLog;
 public interface FlywheelIO {
   @AutoLog
   class FlywheelIOInputs {
-    public Angle position = Rotations.of(0);
-    public AngularVelocity velocity = RotationsPerSecond.of(0);
-    public Voltage appliedVoltage = Volts.of(0);
+    Angle position = Radians.of(0);
+    AngularVelocity velocity = RadiansPerSecond.of(0);
+    Voltage appliedVoltage = Volts.of(0);
   }
 
   /** Updates the set of loggable inputs. */
   default void updateInputs(FlywheelIOInputs inputs) {}
 
-  /** Run the flywheel at the specified open loop value. */
+  /** Run the motors at the specified open loop value. */
   default void runOpenLoop(double output) {}
 
-  /** Run the flywheel at the specified velocity. */
+  /** Run the motors at the specified velocity. */
   default void setAngularVelocity(AngularVelocity velocity) {}
-
-  /** Coasts the flywheel. */
-  default void coast() {}
 }

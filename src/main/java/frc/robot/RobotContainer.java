@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Degrees;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -13,9 +11,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCharacterizations;
-import frc.robot.commands.ShootingCommands;
 import frc.robot.constants.ModeConstants;
-import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.constants.swerve.TunerConstants;
 import frc.robot.subsystems.drivetrain.GyroIO;
@@ -25,20 +21,12 @@ import frc.robot.subsystems.drivetrain.ModuleIO;
 import frc.robot.subsystems.drivetrain.ModuleIORev;
 import frc.robot.subsystems.drivetrain.ModuleIOTalonFXSim;
 import frc.robot.subsystems.drivetrain.SwerveSubsystem;
-import frc.robot.subsystems.intake.IntakeSubsystem;
-import frc.robot.subsystems.intake.RollerIO;
-import frc.robot.subsystems.shooter.FlywheelIO;
-import frc.robot.subsystems.shooter.FlywheelIOSim;
-import frc.robot.subsystems.shooter.HoodIO;
-import frc.robot.subsystems.shooter.HoodIOSim;
-import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.vision.VisionSubsystem;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
-import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnFly;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -46,8 +34,6 @@ public class RobotContainer {
   private final CommandXboxController primaryJoystick = new CommandXboxController(0);
 
   private final SwerveSubsystem drivetrain;
-  private final IntakeSubsystem intake;
-  private final ShooterSubsystem shooter;
 
   @SuppressWarnings("unused")
   private final VisionSubsystem vision;
@@ -71,10 +57,6 @@ public class RobotContainer {
                 new ModuleIORev(3, 4, Rotation2d.fromDegrees(0)) {},
                 new ModuleIORev(5, 6, Rotation2d.fromDegrees(180)) {},
                 new ModuleIORev(7, 8, Rotation2d.fromDegrees(270)) {});
-
-        intake = new IntakeSubsystem(new RollerIO() {});
-
-        shooter = new ShooterSubsystem(new FlywheelIOSim(), new HoodIOSim());
 
         vision =
             new VisionSubsystem(
@@ -100,10 +82,6 @@ public class RobotContainer {
                 new ModuleIOTalonFXSim(TunerConstants.BackRight, driveSimulation.getModules()[3]),
                 driveSimulation::setSimulationWorldPose);
 
-        intake = new IntakeSubsystem(new RollerIO() {});
-
-        shooter = new ShooterSubsystem(new FlywheelIOSim(), new HoodIOSim());
-
         vision =
             new VisionSubsystem(
                 drivetrain::addVisionMeasurement,
@@ -127,10 +105,6 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-
-        intake = new IntakeSubsystem(new RollerIO() {});
-
-        shooter = new ShooterSubsystem(new FlywheelIO() {}, new HoodIO() {});
 
         vision =
             new VisionSubsystem(
@@ -168,42 +142,7 @@ public class RobotContainer {
 
     // primaryJoystick.a().whileTrue(DriveCommands.maxSpeedCharacterization(drivetrain));
 
-    primaryJoystick.rightTrigger().whileTrue(intake.runAtIntakeSpeedCommand(drivetrain::getSpeed));
-    primaryJoystick.leftTrigger().whileTrue(intake.outtakeCommand());
-
     primaryJoystick.x().onTrue(Commands.runOnce(gyro::resetYaw));
-
-    primaryJoystick
-        .y()
-        .whileTrue(
-            ShootingCommands.shootHubWithIndependentLinearDriveCommand(
-                drivetrain.joystickDriveLinear(
-                    primaryJoystick::getLeftX,
-                    primaryJoystick::getLeftY,
-                    primaryJoystick.start().negate()),
-                drivetrain,
-                shooter));
-
-    primaryJoystick
-        .leftBumper()
-        .onTrue(
-            Commands.runOnce(
-                () -> {
-                  RebuiltFuelOnFly fuel =
-                      new RebuiltFuelOnFly(
-                          driveSimulation.getSimulatedDriveTrainPose().getTranslation(),
-                          ShooterConstants.robotToShooter.getTranslation().toTranslation2d(),
-                          driveSimulation.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
-                          driveSimulation
-                              .getSimulatedDriveTrainPose()
-                              .getRotation()
-                              .plus(ShooterConstants.robotToShooter.getRotation().toRotation2d()),
-                          ShooterConstants.robotToShooter.getMeasureZ(),
-                          shooter.getFuelVelocity(),
-                          Degrees.of(90).minus(shooter.getHoodAngle()));
-
-                  SimulatedArena.getInstance().addGamePieceProjectile(fuel);
-                }));
   }
 
   public Command getAutonomousCommand() {

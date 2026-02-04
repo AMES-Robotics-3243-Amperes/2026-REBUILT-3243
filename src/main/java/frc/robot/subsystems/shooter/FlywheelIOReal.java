@@ -20,6 +20,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.constants.ShooterConstants;
+import frc.robot.util.TunableControls;
 
 /** Add your docs here. */
 public class FlywheelIOReal implements FlywheelIO {
@@ -30,8 +31,11 @@ public class FlywheelIOReal implements FlywheelIO {
   RelativeEncoder encoder;
 
   public FlywheelIOReal() {
-    System.out.println("RollerIOReal constructed");
+    System.out.println("FlywheelIOReal constructed");
     SparkMaxConfig config = new SparkMaxConfig();
+
+    TunableControls.registerSparkMaxClosedLoopTuning(
+        sparkMax, "Shooter/Flywheel", ShooterConstants.flywheelControl);
 
     config.encoder.positionConversionFactor(ShooterConstants.flywheelGearRatio);
     config.encoder.velocityConversionFactor(ShooterConstants.flywheelGearRatio);
@@ -41,8 +45,6 @@ public class FlywheelIOReal implements FlywheelIO {
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .apply(ShooterConstants.flywheelControl.revClosedLoopConfig());
-
-    config.closedLoop.maxMotion.maxAcceleration(10);
 
     sparkMax.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 

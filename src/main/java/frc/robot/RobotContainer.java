@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.RPM;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -21,6 +23,11 @@ import frc.robot.subsystems.drivetrain.ModuleIO;
 import frc.robot.subsystems.drivetrain.ModuleIORev;
 import frc.robot.subsystems.drivetrain.ModuleIOTalonFXSim;
 import frc.robot.subsystems.drivetrain.SwerveSubsystem;
+import frc.robot.subsystems.shooter.FlywheelIO;
+import frc.robot.subsystems.shooter.FlywheelIOReal;
+import frc.robot.subsystems.shooter.IndexerIO;
+import frc.robot.subsystems.shooter.IndexerIOReal;
+import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
@@ -34,6 +41,7 @@ public class RobotContainer {
   private final CommandXboxController primaryJoystick = new CommandXboxController(0);
 
   private final SwerveSubsystem drivetrain;
+  private final ShooterSubsystem shooter;
 
   @SuppressWarnings("unused")
   private final VisionSubsystem vision;
@@ -57,6 +65,8 @@ public class RobotContainer {
                 new ModuleIORev(3, 4, Rotation2d.fromDegrees(0)) {},
                 new ModuleIORev(5, 6, Rotation2d.fromDegrees(180)) {},
                 new ModuleIORev(7, 8, Rotation2d.fromDegrees(270)) {});
+
+        shooter = new ShooterSubsystem(new FlywheelIOReal(), new IndexerIOReal());
 
         vision =
             new VisionSubsystem(
@@ -82,6 +92,8 @@ public class RobotContainer {
                 new ModuleIOTalonFXSim(TunerConstants.BackRight, driveSimulation.getModules()[3]),
                 driveSimulation::setSimulationWorldPose);
 
+        shooter = new ShooterSubsystem(new FlywheelIO() {}, new IndexerIO() {});
+
         vision =
             new VisionSubsystem(
                 drivetrain::addVisionMeasurement,
@@ -105,6 +117,8 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
+
+        shooter = new ShooterSubsystem(new FlywheelIO() {}, new IndexerIO() {});
 
         vision =
             new VisionSubsystem(
@@ -141,6 +155,8 @@ public class RobotContainer {
             drivetrain.joystickDriveAngular(primaryJoystick::getRightX)));
 
     // primaryJoystick.a().whileTrue(DriveCommands.maxSpeedCharacterization(drivetrain));
+
+    primaryJoystick.a().whileTrue(shooter.runAtSpeedCommand(RPM.of(2000), RPM.of(2000)));
 
     primaryJoystick.x().onTrue(Commands.runOnce(gyro::resetYaw));
   }

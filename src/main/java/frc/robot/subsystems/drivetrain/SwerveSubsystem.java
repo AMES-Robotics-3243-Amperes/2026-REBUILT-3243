@@ -59,7 +59,6 @@ import frc.robot.constants.swerve.SwerveConstants;
 import frc.robot.constants.swerve.SysIdConstants;
 import frc.robot.constants.swerve.TunerConstants;
 import frc.robot.util.Container;
-import frc.robot.util.TunableControls;
 import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;

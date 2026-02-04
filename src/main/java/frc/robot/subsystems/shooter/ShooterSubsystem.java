@@ -34,5 +34,17 @@ public class ShooterSubsystem extends SubsystemBase {
     indexerIO.updateInputs(indexerInputs);
     Logger.processInputs("Shooter/Indexer", indexerInputs);
   }
-  
+
+  public Command runAtSpeedCommand(
+      AngularVelocity flywheelVelocity, AngularVelocity indexerVelocity) {
+    return runEnd(
+        () -> {
+          flywheelIO.setAngularVelocity(flywheelVelocity);
+          indexerIO.setAngularVelocity(indexerVelocity);
+        },
+        () -> {
+          flywheelIO.setAngularVelocity(RadiansPerSecond.of(0));
+          indexerIO.setAngularVelocity(RadiansPerSecond.of(0));
+        });
+  }
 }

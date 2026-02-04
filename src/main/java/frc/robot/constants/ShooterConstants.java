@@ -22,14 +22,14 @@ public class ShooterConstants {
   public static final double flywheelGearRatio = 1;
 
   public static final ControlConstantsBuilder flywheelControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.0, 0, 0).sva(0, 0.0, 0.0);
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.000001, 0, 0).sva(0, 0.0, 0.0);
 
   public static final int indexerId = 11;
 
   public static final double indexerGearRatio = 0.25;
 
   public static final ControlConstantsBuilder indexerControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.0, 0, 0).sva(0, 0.0, 0.0);
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.000001, 0, 0).sva(0, 0.0, 0.0);
 
   public static final Velocity<VoltageUnit> sysIdRampRate = Volts.per(Second).of(0.3);
   public static final Voltage sysIdStepVoltage = Volts.of(1.5);

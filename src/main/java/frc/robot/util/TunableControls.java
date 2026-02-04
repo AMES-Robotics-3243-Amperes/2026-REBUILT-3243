@@ -79,7 +79,8 @@ public class TunableControls {
   public static void periodic() {
     for (Entry entry : entries) {
       for (TunableNumber number : entry.numbers) {
-        if (number.hasChanged() && ModeConstants.robotMode != Mode.REAL_COMPETITION) entry.callback.run();
+        if (number.hasChanged() && ModeConstants.robotMode != Mode.REAL_COMPETITION)
+          entry.callback.run();
       }
     }
   }

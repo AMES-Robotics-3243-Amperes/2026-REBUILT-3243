@@ -20,6 +20,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.constants.ShooterConstants;
+import frc.robot.util.TunableControls;
 
 /** Add your docs here. */
 public class IndexerIOReal implements IndexerIO {
@@ -30,8 +31,11 @@ public class IndexerIOReal implements IndexerIO {
   RelativeEncoder encoder;
 
   public IndexerIOReal() {
-    System.out.println("RollerIOReal constructed");
+    System.out.println("IndexerIOReal constructed");
     SparkMaxConfig config = new SparkMaxConfig();
+
+    TunableControls.registerSparkMaxClosedLoopTuning(
+        sparkMax, "Shooter/Indexer", ShooterConstants.indexerControl);
 
     config.encoder.positionConversionFactor(ShooterConstants.indexerGearRatio);
     config.encoder.velocityConversionFactor(ShooterConstants.indexerGearRatio);

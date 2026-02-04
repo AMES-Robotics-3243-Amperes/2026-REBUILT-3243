@@ -157,8 +157,8 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    // primaryJoystick.a().whileTrue(DriveCommands.maxSpeedCharacterization(drivetrain));
-    new Trigger(DriverStation::isTeleop).whileTrue(Commands.run(stateMachine::updateState));
+    // stateMachine.updateState();
+    new Trigger(DriverStation::isTeleopEnabled).whileTrue(stateMachine.stateMachineCommand());
 
     primaryJoystick.rightTrigger().whileTrue(intake.runAtIntakeSpeedCommand(drivetrain::getSpeed));
     primaryJoystick.leftTrigger().whileTrue(intake.outtakeCommand());

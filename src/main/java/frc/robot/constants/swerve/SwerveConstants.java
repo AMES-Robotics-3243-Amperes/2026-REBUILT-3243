@@ -13,6 +13,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 
 import com.ctre.phoenix6.CANBus;
+import com.pathplanner.lib.config.PIDConstants;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -40,6 +41,8 @@ public class SwerveConstants {
           .pid(5.1, 0, 0.07)
           .iZone(1)
           .constraints(RotationsPerSecond.of(3), RotationsPerSecondPerSecond.of(9));
+
+  public static final PIDConstants driveControl = new PIDConstants(5, 0, 0);
 
   // physical properties
   public static final Distance driveBaseFrontLength = Inches.of(26);

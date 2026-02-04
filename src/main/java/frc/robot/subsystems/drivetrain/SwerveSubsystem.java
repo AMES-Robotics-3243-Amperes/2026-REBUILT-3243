@@ -13,7 +13,7 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPLTVController;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.swerve.SwerveSetpoint;
@@ -164,10 +164,9 @@ public class SwerveSubsystem extends SubsystemBase {
         this::setPose,
         this::getChassisSpeeds,
         this::driveFeedforwards,
-        new PPLTVController(0.02),
-        // new PPHolonomicDriveController(
-        //     SwerveConstants.drivePid.buildConstants(),
-        //     SwerveConstants.rotationPidRadians.buildConstants()),
+        new PPHolonomicDriveController(
+            SwerveConstants.driveControl,
+            SwerveConstants.rotationControl.pathPlannerPIDConstants()),
         pathPlannerConfig,
         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
         this);

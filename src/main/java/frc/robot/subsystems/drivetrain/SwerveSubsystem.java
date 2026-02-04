@@ -59,7 +59,6 @@ import frc.robot.constants.swerve.SwerveConstants;
 import frc.robot.constants.swerve.SysIdConstants;
 import frc.robot.constants.swerve.TunerConstants;
 import frc.robot.util.Container;
-import frc.robot.util.TunableControls;
 import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -555,7 +554,12 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Supplier<Translation2d> joystickDriveLinear(
-      DoubleSupplier leftJoystickX, DoubleSupplier leftJoystickY, BooleanSupplier fieldRelative) {
+      LinearVelocity velocity,
+      DoubleSupplier leftJoystickX,
+      DoubleSupplier leftJoystickY,
+      BooleanSupplier fieldRelative) {
+    final double velocityMps = velocity.in(MetersPerSecond);
+
     return () -> {
       double fieldX = -leftJoystickY.getAsDouble();
       double fieldY = -leftJoystickX.getAsDouble();
@@ -569,10 +573,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
       // Convert to field relative speeds & send command
       ChassisSpeeds speeds =
-          new ChassisSpeeds(
-              rawSpeeds.get(0) * SwerveConstants.linearTeleopSpeed.in(MetersPerSecond),
-              rawSpeeds.get(1) * SwerveConstants.linearTeleopSpeed.in(MetersPerSecond),
-              0);
+          new ChassisSpeeds(rawSpeeds.get(0) * velocityMps, rawSpeeds.get(1) * velocityMps, 0);
 
       if (fieldRelative.getAsBoolean()) {
         boolean isFlipped =

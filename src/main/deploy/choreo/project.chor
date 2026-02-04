@@ -10,6 +10,20 @@
      "exp":"7.8 m",
      "val":7.8
     }
+   },
+   "TrenchEnterX":{
+    "dimension":"Length",
+    "var":{
+     "exp":"3.3 m",
+     "val":3.3
+    }
+   },
+   "TrenchExitX":{
+    "dimension":"Length",
+    "var":{
+     "exp":"5.8 m",
+     "val":5.8
+    }
    }
   },
   "poses":{

@@ -8,7 +8,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.constants.ShooterConstants;
-import frc.robot.constants.setpoints.BluePointsOfInterest;
+import frc.robot.constants.setpoints.FieldConstants;
 import frc.robot.subsystems.drivetrain.SwerveSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.util.Container;
@@ -35,7 +35,7 @@ public class ShootingCommands {
             () ->
                 shotData.inner =
                     FuelTrajectoryCalculator.getFuelShot(
-                        PointOfInterestManager.flipTranslation(BluePointsOfInterest.hubPosition),
+                        PointOfInterestManager.flipTranslation(FieldConstants.hubPosition),
                         drivetrain.getPose(),
                         drivetrain.getChassisSpeeds())),
         drivetrain.driveSetpiontGeneratorCommand(

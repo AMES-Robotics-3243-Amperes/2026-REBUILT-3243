@@ -11,6 +11,8 @@ import edu.wpi.first.units.measure.*;
  */
 public final class ChoreoVars {
   public static final Distance PickupX = Units.Meters.of(7.8);
+  public static final Distance TrenchEnterX = Units.Meters.of(3.3);
+  public static final Distance TrenchExitX = Units.Meters.of(5.8);
 
   public static final class Poses {
     public static final Pose2d LeftShoot = new Pose2d(2.5, 5.5, Rotation2d.fromRadians(-0.6));

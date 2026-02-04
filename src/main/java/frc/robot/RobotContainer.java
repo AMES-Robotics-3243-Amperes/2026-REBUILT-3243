@@ -9,11 +9,12 @@ import static edu.wpi.first.units.Units.Degrees;
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DriveCharacterizations;
-import frc.robot.commands.ShootingCommands;
 import frc.robot.constants.ModeConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.VisionConstants;
@@ -45,12 +46,11 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   private final CommandXboxController primaryJoystick = new CommandXboxController(0);
 
-  private final SwerveSubsystem drivetrain;
-  private final IntakeSubsystem intake;
-  private final ShooterSubsystem shooter;
+  public final SwerveSubsystem drivetrain;
+  public final IntakeSubsystem intake;
+  public final ShooterSubsystem shooter;
 
-  @SuppressWarnings("unused")
-  private final VisionSubsystem vision;
+  public final RobotStateMachine stateMachine;
 
   private final SwerveDriveSimulation driveSimulation;
 
@@ -76,12 +76,11 @@ public class RobotContainer {
 
         shooter = new ShooterSubsystem(new FlywheelIOSim(), new HoodIOSim());
 
-        vision =
-            new VisionSubsystem(
-                drivetrain::addVisionMeasurement,
-                VisionConstants.cameras.stream()
-                    .<VisionIO>map(config -> new VisionIOLimelight(config, drivetrain::getRotation))
-                    .toList());
+        new VisionSubsystem(
+            drivetrain::addVisionMeasurement,
+            VisionConstants.cameras.stream()
+                .<VisionIO>map(config -> new VisionIOLimelight(config, drivetrain::getRotation))
+                .toList());
 
         break;
 
@@ -104,15 +103,14 @@ public class RobotContainer {
 
         shooter = new ShooterSubsystem(new FlywheelIOSim(), new HoodIOSim());
 
-        vision =
-            new VisionSubsystem(
-                drivetrain::addVisionMeasurement,
-                VisionConstants.cameras.stream()
-                    .<VisionIO>map(
-                        config ->
-                            new VisionIOPhotonVisionSim(
-                                config, driveSimulation::getSimulatedDriveTrainPose))
-                    .toList());
+        new VisionSubsystem(
+            drivetrain::addVisionMeasurement,
+            VisionConstants.cameras.stream()
+                .<VisionIO>map(
+                    config ->
+                        new VisionIOPhotonVisionSim(
+                            config, driveSimulation::getSimulatedDriveTrainPose))
+                .toList());
 
         break;
 
@@ -132,18 +130,19 @@ public class RobotContainer {
 
         shooter = new ShooterSubsystem(new FlywheelIO() {}, new HoodIO() {});
 
-        vision =
-            new VisionSubsystem(
-                drivetrain::addVisionMeasurement,
-                VisionConstants.cameras.stream()
-                    .<VisionIO>map(config -> new VisionIO(config) {})
-                    .toList());
+        new VisionSubsystem(
+            drivetrain::addVisionMeasurement,
+            VisionConstants.cameras.stream()
+                .<VisionIO>map(config -> new VisionIO(config) {})
+                .toList());
 
         break;
 
       default:
         throw new RuntimeException("Invalid robot mode");
     }
+
+    stateMachine = new RobotStateMachine(drivetrain, primaryJoystick);
 
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
@@ -158,31 +157,13 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    drivetrain.setDefaultCommand(
-        drivetrain.driveSetpiontGeneratorCommand(
-            drivetrain.joystickDriveLinear(
-                primaryJoystick::getLeftX,
-                primaryJoystick::getLeftY,
-                primaryJoystick.start().negate()),
-            drivetrain.joystickDriveAngular(primaryJoystick::getRightX)));
-
     // primaryJoystick.a().whileTrue(DriveCommands.maxSpeedCharacterization(drivetrain));
+    new Trigger(DriverStation::isTeleop).whileTrue(Commands.run(stateMachine::updateState));
 
     primaryJoystick.rightTrigger().whileTrue(intake.runAtIntakeSpeedCommand(drivetrain::getSpeed));
     primaryJoystick.leftTrigger().whileTrue(intake.outtakeCommand());
 
     primaryJoystick.x().onTrue(Commands.runOnce(gyro::resetYaw));
-
-    primaryJoystick
-        .y()
-        .whileTrue(
-            ShootingCommands.shootHubWithIndependentLinearDriveCommand(
-                drivetrain.joystickDriveLinear(
-                    primaryJoystick::getLeftX,
-                    primaryJoystick::getLeftY,
-                    primaryJoystick.start().negate()),
-                drivetrain,
-                shooter));
 
     primaryJoystick
         .leftBumper()

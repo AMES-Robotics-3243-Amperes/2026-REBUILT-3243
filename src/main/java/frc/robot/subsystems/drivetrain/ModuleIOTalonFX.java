@@ -31,7 +31,7 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
           TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>
       constants;
 
-  // Hardware objects
+  // Hardware objects eli programmed this
   protected final TalonFX driveTalon;
   protected final TalonFX turnTalon;
   protected final CANcoder cancoder;

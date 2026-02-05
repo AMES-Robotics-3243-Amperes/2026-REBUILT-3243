@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems.shooter;
 
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -43,8 +41,8 @@ public class ShooterSubsystem extends SubsystemBase {
           indexerIO.setAngularVelocity(indexerVelocity);
         },
         () -> {
-          flywheelIO.setAngularVelocity(RadiansPerSecond.of(0));
-          indexerIO.setAngularVelocity(RadiansPerSecond.of(0));
+          flywheelIO.coast();
+          indexerIO.coast();
         });
   }
 }

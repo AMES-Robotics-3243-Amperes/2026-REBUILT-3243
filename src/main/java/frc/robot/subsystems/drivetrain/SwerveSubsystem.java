@@ -554,7 +554,10 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Supplier<Translation2d> joystickDriveLinear(
-      DoubleSupplier leftJoystickX, DoubleSupplier leftJoystickY, BooleanSupplier fieldRelative) {
+      LinearVelocity speed,
+      DoubleSupplier leftJoystickX,
+      DoubleSupplier leftJoystickY,
+      BooleanSupplier fieldRelative) {
     return () -> {
       double fieldX = -leftJoystickY.getAsDouble();
       double fieldY = -leftJoystickX.getAsDouble();
@@ -569,8 +572,8 @@ public class SwerveSubsystem extends SubsystemBase {
       // Convert to field relative speeds & send command
       ChassisSpeeds speeds =
           new ChassisSpeeds(
-              rawSpeeds.get(0) * SwerveConstants.linearTeleopSpeed.in(MetersPerSecond),
-              rawSpeeds.get(1) * SwerveConstants.linearTeleopSpeed.in(MetersPerSecond),
+              rawSpeeds.get(0) * speed.in(MetersPerSecond),
+              rawSpeeds.get(1) * speed.in(MetersPerSecond),
               0);
 
       if (fieldRelative.getAsBoolean()) {

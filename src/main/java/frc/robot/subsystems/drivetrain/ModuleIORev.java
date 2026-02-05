@@ -34,7 +34,14 @@ public class ModuleIORev implements ModuleIO {
 
   public ModuleIORev(int driveId, int turnId, Rotation2d offset) {
     ControlConstantsBuilder driveControl =
-        ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.0001, 0, 0).sva(0, 0.10411, 0.013093);
+        ControlConstantsBuilder.fromRadiansAndSeconds()
+            .pid(0.00005, 0, 0)
+            .sva(0.11952, 0.10185, 0.010166);
+
+    // ControlConstantsBuilder driveControl =
+    //     ControlConstantsBuilder.fromRadiansAndSeconds()
+    //         .pid(0.00005, 0, 0)
+    //         .sva(0, 0.10185, 0.010166);
 
     // Hardcoded constants for now. If we ever get an actual prototype bot on a rev drivetrain
     // perhaps this can be improved
@@ -65,7 +72,7 @@ public class ModuleIORev implements ModuleIO {
         .apply(driveControl.revClosedLoopConfig())
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
     driveConfig.encoder.positionConversionFactor(1 / factor).velocityConversionFactor(1 / factor);
-    driveConfig.idleMode(IdleMode.kBrake);
+    driveConfig.idleMode(IdleMode.kBrake).inverted(false);
     driveMotor.configure(
         driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 

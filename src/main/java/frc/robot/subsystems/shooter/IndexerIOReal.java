@@ -70,4 +70,9 @@ public class IndexerIOReal implements IndexerIO {
   public void setAngularVelocity(AngularVelocity velocity) {
     closedLoopController.setSetpoint(velocity.in(RPM), ControlType.kVelocity);
   }
+
+  @Override
+  public void coast() {
+    sparkMax.set(0);
+  }
 }

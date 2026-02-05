@@ -4,17 +4,19 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCharacterizations;
 import frc.robot.constants.ModeConstants;
 import frc.robot.constants.VisionConstants;
+import frc.robot.constants.swerve.SwerveConstants;
 import frc.robot.constants.swerve.TunerConstants;
 import frc.robot.subsystems.drivetrain.GyroIO;
 import frc.robot.subsystems.drivetrain.GyroIONavX;
@@ -67,6 +69,7 @@ public class RobotContainer {
                 new ModuleIORev(7, 8, Rotation2d.fromDegrees(270)) {});
 
         shooter = new ShooterSubsystem(new FlywheelIOReal(), new IndexerIOReal());
+        // shooter = new ShooterSubsystem(new FlywheelIO() {}, new IndexerIO() {});
 
         vision =
             new VisionSubsystem(
@@ -149,16 +152,57 @@ public class RobotContainer {
     drivetrain.setDefaultCommand(
         drivetrain.driveSetpiontGeneratorCommand(
             drivetrain.joystickDriveLinear(
+                SwerveConstants.linearTeleopSpeed,
                 primaryJoystick::getLeftX,
                 primaryJoystick::getLeftY,
                 primaryJoystick.start().negate()),
             drivetrain.joystickDriveAngular(primaryJoystick::getRightX)));
 
-    // primaryJoystick.a().whileTrue(DriveCommands.maxSpeedCharacterization(drivetrain));
+    primaryJoystick
+        .a()
+        .whileTrue(
+            Commands.sequence(
+                shooter
+                    .runAtSpeedCommand(RotationsPerSecond.of(48), RotationsPerSecond.of(0))
+                    .withTimeout(0.7),
+                shooter.runAtSpeedCommand(RotationsPerSecond.of(48), RotationsPerSecond.of(40))));
 
-    primaryJoystick.a().whileTrue(shooter.runAtSpeedCommand(RPM.of(2000), RPM.of(2000)));
+    primaryJoystick
+        .y()
+        .whileTrue(
+            Commands.sequence(
+                    shooter
+                        .runAtSpeedCommand(RotationsPerSecond.of(48), RotationsPerSecond.of(0))
+                        .withTimeout(0.7),
+                    shooter
+                        .runAtSpeedCommand(RotationsPerSecond.of(48), RotationsPerSecond.of(40))
+                        .withTimeout(0.2),
+                    Commands.run(
+                            () ->
+                                drivetrain.driveSetpointGenerator(new ChassisSpeeds(0.9, 0.05, 0)),
+                            drivetrain)
+                        .withTimeout(0.65),
+                    Commands.run(
+                            () -> drivetrain.driveSetpointGenerator(new ChassisSpeeds(0, 0, 0)),
+                            drivetrain)
+                        .withTimeout(1.5),
+                    Commands.run(
+                            () ->
+                                drivetrain.driveSetpointGenerator(
+                                    new ChassisSpeeds(-0.9, -0.05, 0)),
+                            drivetrain)
+                        .withTimeout(0.65),
+                    Commands.run(
+                            () -> drivetrain.driveSetpointGenerator(new ChassisSpeeds(0, 0, 0)),
+                            drivetrain)
+                        .withTimeout(0.5))
+                .repeatedly());
 
     primaryJoystick.x().onTrue(Commands.runOnce(gyro::resetYaw));
+
+    // primaryJoystick
+    //     .b()
+    //     .onTrue(DriveCharacterizations.sysIdCharacterization(drivetrain, primaryJoystick.b()));
   }
 
   public Command getAutonomousCommand() {

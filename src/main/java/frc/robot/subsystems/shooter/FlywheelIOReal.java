@@ -34,12 +34,9 @@ public class FlywheelIOReal implements FlywheelIO {
     System.out.println("FlywheelIOReal constructed");
     SparkMaxConfig config = new SparkMaxConfig();
 
-    TunableControls.registerSparkMaxClosedLoopTuning(
-        sparkMax, "Shooter/Flywheel", ShooterConstants.flywheelControl);
-
     config.encoder.positionConversionFactor(ShooterConstants.flywheelGearRatio);
     config.encoder.velocityConversionFactor(ShooterConstants.flywheelGearRatio);
-    config.idleMode(IdleMode.kCoast).inverted(true);
+    config.idleMode(IdleMode.kCoast);
 
     config
         .closedLoop
@@ -50,6 +47,9 @@ public class FlywheelIOReal implements FlywheelIO {
 
     closedLoopController = sparkMax.getClosedLoopController();
     encoder = sparkMax.getEncoder();
+
+    TunableControls.registerSparkMaxClosedLoopTuning(
+        sparkMax, "Shooter/Flywheel", ShooterConstants.flywheelControl);
   }
 
   @Override
@@ -67,5 +67,10 @@ public class FlywheelIOReal implements FlywheelIO {
   @Override
   public void setAngularVelocity(AngularVelocity velocity) {
     closedLoopController.setSetpoint(velocity.in(RPM), ControlType.kVelocity);
+  }
+
+  @Override
+  public void coast() {
+    sparkMax.set(0);
   }
 }

@@ -40,8 +40,6 @@ public class SpindexerIOReal implements SpindexerIO {
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .apply(IndexerConstants.spindexerControl.revClosedLoopConfig());
 
-    config.closedLoop.maxMotion.maxAcceleration(10);
-
     sparkMax.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     closedLoopController = sparkMax.getClosedLoopController();

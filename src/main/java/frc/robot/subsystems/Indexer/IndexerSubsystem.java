@@ -4,7 +4,10 @@
 
 package frc.robot.subsystems.Indexer;
 
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.Logger;
 
 public class IndexerSubsystem extends SubsystemBase {
 
@@ -25,10 +28,10 @@ public class IndexerSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     kickerIO.updateInputs(kickerInputs);
-    Logger.processInputs("Shooter/Flywheel", kickerInputs);
+    Logger.processInputs("Indexer/Kicker", kickerInputs);
 
     spindexerIO.updateInputs(spindexerInputs);
-    Logger.processInputs("Shooter/Indexer", spindexerInputs);
+    Logger.processInputs("Indexer/Spindexer", spindexerInputs);
   }
 
   public Command runAtSpeedCommand(

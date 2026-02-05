@@ -40,8 +40,6 @@ public class KickerIOReal implements KickerIO {
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .apply(IndexerConstants.kickerControl.revClosedLoopConfig());
 
-    config.closedLoop.maxMotion.maxAcceleration(10);
-
     sparkMax.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     closedLoopController = sparkMax.getClosedLoopController();

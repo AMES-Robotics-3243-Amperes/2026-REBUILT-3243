@@ -30,4 +30,6 @@ public interface SpindexerIO {
 
   /** Run the motors at the specified velocity. */
   default void setAngularVelocity(AngularVelocity velocity) {}
+
+  default void coast() {}
 }

@@ -5,6 +5,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.RPM;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -19,6 +20,9 @@ import frc.robot.constants.ModeConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.constants.swerve.TunerConstants;
+import frc.robot.subsystems.Indexer.IndexerSubsystem;
+import frc.robot.subsystems.Indexer.KickerIO;
+import frc.robot.subsystems.Indexer.SpindexerIO;
 import frc.robot.subsystems.drivetrain.GyroIO;
 import frc.robot.subsystems.drivetrain.GyroIONavX;
 import frc.robot.subsystems.drivetrain.GyroIOSim;
@@ -48,6 +52,7 @@ public class RobotContainer {
 
   public final SwerveSubsystem drivetrain;
   public final IntakeSubsystem intake;
+  public final IndexerSubsystem indexer;
   public final ShooterSubsystem shooter;
 
   public final RobotStateMachine stateMachine;
@@ -76,6 +81,8 @@ public class RobotContainer {
 
         shooter = new ShooterSubsystem(new FlywheelIOSim(), new HoodIOSim());
 
+        indexer = new IndexerSubsystem(new KickerIO() {}, new SpindexerIO() {});
+
         new VisionSubsystem(
             drivetrain::addVisionMeasurement,
             VisionConstants.cameras.stream()
@@ -100,6 +107,8 @@ public class RobotContainer {
                 driveSimulation::setSimulationWorldPose);
 
         intake = new IntakeSubsystem(new RollerIO() {});
+
+        indexer = new IndexerSubsystem(new KickerIO() {}, new SpindexerIO() {});
 
         shooter = new ShooterSubsystem(new FlywheelIOSim(), new HoodIOSim());
 
@@ -127,6 +136,8 @@ public class RobotContainer {
                 new ModuleIO() {});
 
         intake = new IntakeSubsystem(new RollerIO() {});
+
+        indexer = new IndexerSubsystem(new KickerIO() {}, new SpindexerIO() {});
 
         shooter = new ShooterSubsystem(new FlywheelIO() {}, new HoodIO() {});
 
@@ -162,6 +173,8 @@ public class RobotContainer {
 
     primaryJoystick.rightTrigger().whileTrue(intake.runAtIntakeSpeedCommand(drivetrain::getSpeed));
     primaryJoystick.leftTrigger().whileTrue(intake.outtakeCommand());
+
+    primaryJoystick.a().whileTrue(indexer.runAtSpeedCommand(RPM.of(2000), RPM.of(2000)));
 
     primaryJoystick.x().onTrue(Commands.runOnce(gyro::resetYaw));
 

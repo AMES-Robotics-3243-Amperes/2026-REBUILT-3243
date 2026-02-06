@@ -35,7 +35,8 @@ public class ShootingCommands {
             () ->
                 shotData.inner =
                     FuelTrajectoryCalculator.getFuelShot(
-                        PointOfInterestManager.flipTranslation(FieldConstants.hubPosition),
+                        PointOfInterestManager.flipTranslationConditionally(
+                            FieldConstants.hubPosition),
                         drivetrain.getPose(),
                         drivetrain.getChassisSpeeds())),
         drivetrain.driveSetpiontGeneratorCommand(

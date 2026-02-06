@@ -20,6 +20,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.constants.IndexerConstants;
+import frc.robot.util.TunableControls;
 
 /** Add your docs here. */
 public class SpindexerIOReal implements SpindexerIO {
@@ -30,6 +31,9 @@ public class SpindexerIOReal implements SpindexerIO {
 
   public SpindexerIOReal() {
     SparkMaxConfig config = new SparkMaxConfig();
+
+    TunableControls.registerSparkMaxClosedLoopTuning(
+        sparkMax, "Spindexer/Indexer", IndexerConstants.spindexerControl);
 
     config.encoder.positionConversionFactor(IndexerConstants.spindexerGearRatio);
     config.encoder.velocityConversionFactor(IndexerConstants.spindexerGearRatio);

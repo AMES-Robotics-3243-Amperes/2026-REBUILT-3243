@@ -24,8 +24,6 @@ public class IndexerConstants {
 
   public static final double spindexerGearRatio = 1;
 
-  public static final AngularVelocity spindexerAbsoluteSpeed = RotationsPerSecond.of(20);
-
   public static final Distance spindexerRadius = Inches.of(1);
 
   public static final ControlConstantsBuilder spindexerControl =
@@ -34,8 +32,6 @@ public class IndexerConstants {
   public static final int kickerId = 1;
 
   public static final double kickerGearRatio = 1.25;
-
-  public static final AngularVelocity kickerAbsoluteSpeed = RotationsPerSecond.of(20);
 
   public static final Distance kickerRadius = Inches.of(1);
 

@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems.Indexer;
+package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
@@ -18,31 +18,34 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import frc.robot.constants.IndexerConstants;
+import frc.robot.constants.IntakeConstants;
+import frc.robot.subsystems.shooter.HoodIO.HoodIOInputs;
 import frc.robot.util.TunableControls;
 
 /** Add your docs here. */
-public class KickerIOReal implements KickerIO {
-  SparkMax sparkMax = new SparkMax(IndexerConstants.kickerId, MotorType.kBrushless);
+public class PivotIOReal implements PivotIO{
+  SparkMax sparkMax = new SparkMax(IntakeConstants.rollerId, MotorType.kBrushless);
 
   SparkClosedLoopController closedLoopController;
   RelativeEncoder encoder;
 
-  public KickerIOReal() {
+  public PivotIOReal(){
+   System.out.println("PivotIOReal constructed");
     SparkMaxConfig config = new SparkMaxConfig();
 
-    TunableControls.registerSparkMaxClosedLoopTuning(
-        sparkMax, "Kicker/Indexer", IndexerConstants.kickerControl);
+    TunableControls.registerSparkMaxClosedLoopTuning(sparkMax, "Intake/Pivot", IntakeConstants.pivotControl);
 
-    config.encoder.positionConversionFactor(IndexerConstants.kickerGearRatio);
-    config.encoder.velocityConversionFactor(IndexerConstants.kickerGearRatio);
+    config.encoder.positionConversionFactor(IntakeConstants.rollerGearRatio);
+    config.encoder.velocityConversionFactor(IntakeConstants.rollerGearRatio);
     config.idleMode(IdleMode.kCoast).inverted(true);
 
     config
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .apply(IndexerConstants.kickerControl.revClosedLoopConfig());
+        .apply(IntakeConstants.rollerControl.revClosedLoopConfig());
 
     sparkMax.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -50,11 +53,17 @@ public class KickerIOReal implements KickerIO {
     encoder = sparkMax.getEncoder();
   }
 
+
   @Override
-  public void updateInputs(KickerIOInputs inputs) {
-    inputs.position = Rotations.of(encoder.getPosition());
-    inputs.velocity = RPM.of(encoder.getVelocity());
+  public void updateInputs(PivotIOInputs inputs) {
+    inputs.angle = Rotations.of(encoder.getPosition());
+    inputs.angularVelocity = RPM.of(encoder.getVelocity());
     inputs.appliedVoltage = Volts.of(sparkMax.getAppliedOutput() * sparkMax.getBusVoltage());
+  }
+
+  @Override
+  public void resetPosition(Angle angle) {
+    encoder.setPosition(angle.in(Rotations));
   }
 
   @Override
@@ -63,7 +72,7 @@ public class KickerIOReal implements KickerIO {
   }
 
   @Override
-  public void setAngularVelocity(AngularVelocity velocity) {
-    closedLoopController.setSetpoint(velocity.in(RPM), ControlType.kVelocity);
-  }
+  public void setAngle(Angle angle) {
+    closedLoopController.setSetpoint(angle.in(Rotations), ControlType.kPosition);  
+    }
 }

@@ -5,8 +5,10 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.Degrees;
 
 import edu.wpi.first.units.VoltageUnit;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Time;
@@ -29,6 +31,18 @@ public class IntakeConstants {
       ControlConstantsBuilder.fromRadiansAndSeconds()
           .pid(0.000002, 0, 0)
           .sva(0, 0.032867, 0.012696);
+
+  public static final int pivotId = 3;
+
+  public static final double pivotGearRatio = 0.0;
+
+  public static final Angle pivotMinRotation = Degrees.of(10);
+  public static final Angle pivotMaxRotation = Degrees.of(50);
+
+  public static final ControlConstantsBuilder pivotControl =
+      ControlConstantsBuilder.fromRadiansAndSeconds()
+          .pid(0.00001, 0, 0)
+          .sva(0, 0.0, 0.0);
 
   public static final Velocity<VoltageUnit> sysIdRampRate = Volts.per(Second).of(0.3);
   public static final Voltage sysIdStepVoltage = Volts.of(1.5);

@@ -31,6 +31,7 @@ import frc.robot.subsystems.drivetrain.ModuleIORev;
 import frc.robot.subsystems.drivetrain.ModuleIOTalonFXSim;
 import frc.robot.subsystems.drivetrain.SwerveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
+import frc.robot.subsystems.intake.PivotIO;
 import frc.robot.subsystems.intake.RollerIO;
 import frc.robot.subsystems.shooter.FlywheelIO;
 import frc.robot.subsystems.shooter.FlywheelIOSim;
@@ -77,7 +78,7 @@ public class RobotContainer {
                 new ModuleIORev(5, 6, Rotation2d.fromDegrees(180)) {},
                 new ModuleIORev(7, 8, Rotation2d.fromDegrees(270)) {});
 
-        intake = new IntakeSubsystem(new RollerIO() {});
+        intake = new IntakeSubsystem(new RollerIO() {}, new PivotIO() {});
 
         shooter = new ShooterSubsystem(new FlywheelIOSim(), new HoodIOSim());
 
@@ -106,7 +107,7 @@ public class RobotContainer {
                 new ModuleIOTalonFXSim(TunerConstants.BackRight, driveSimulation.getModules()[3]),
                 driveSimulation::setSimulationWorldPose);
 
-        intake = new IntakeSubsystem(new RollerIO() {});
+        intake = new IntakeSubsystem(new RollerIO() {}, new PivotIO() {});
 
         indexer = new IndexerSubsystem(new KickerIO() {}, new SpindexerIO() {});
 
@@ -135,7 +136,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {});
 
-        intake = new IntakeSubsystem(new RollerIO() {});
+        intake = new IntakeSubsystem(new RollerIO() {}, new PivotIO() {});
 
         indexer = new IndexerSubsystem(new KickerIO() {}, new SpindexerIO() {});
 
@@ -175,6 +176,9 @@ public class RobotContainer {
     primaryJoystick.leftTrigger().whileTrue(intake.outtakeCommand());
 
     primaryJoystick.a().whileTrue(indexer.runAtSpeedCommand(RPM.of(2000), RPM.of(2000)));
+
+    primaryJoystick.b().whileTrue(intake.setPivotAngleCommand(Degrees.of(0)));
+
 
     primaryJoystick.x().onTrue(Commands.runOnce(gyro::resetYaw));
 

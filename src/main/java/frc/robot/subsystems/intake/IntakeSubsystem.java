@@ -9,7 +9,10 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
+import static edu.wpi.first.units.Units.Degrees;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -18,22 +21,45 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.constants.IntakeConstants;
+import frc.robot.constants.ShooterConstants;
+
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class IntakeSubsystem extends SubsystemBase {
   private final RollerIO rollerIO;
   private final RollerIOInputsAutoLogged rollerInputs = new RollerIOInputsAutoLogged();
+  private final PivotIO pivotIO;
+  private final RollerIOInputsAutoLogged pivotInputs = new RollerIOInputsAutoLogged();
 
   /** Creates a new IntakeSubsystem. */
-  public IntakeSubsystem(RollerIO rollerIO) {
+  public IntakeSubsystem(RollerIO rollerIO, PivotIO pivotIO) {
     this.rollerIO = rollerIO;
+    this.pivotIO = pivotIO;
   }
 
   @Override
   public void periodic() {
     rollerIO.updateInputs(rollerInputs);
     Logger.processInputs("Intake/Roller", rollerInputs);
+  }
+
+  private Angle setPivotAngle(Angle angle) {
+    Angle clampedAngle =
+        Degrees.of(
+            MathUtil.clamp(
+                angle.in(Degrees),
+                IntakeConstants.pivotMinRotation.in(Degrees),
+                IntakeConstants.pivotMaxRotation.in(Degrees)));
+
+    pivotIO.setAngle(clampedAngle);
+    Logger.recordOutput("Intake/Pivot/SetpointAngle", clampedAngle);
+
+    return clampedAngle;
+  }
+
+  public void reset() {
+    setPivotAngle(IntakeConstants.pivotMinRotation);
   }
 
   public Command runAtSpeedCommand(AngularVelocity velocity) {
@@ -64,6 +90,14 @@ public class IntakeSubsystem extends SubsystemBase {
           rollerIO.setAngularVelocity(RadiansPerSecond.of(0));
           Logger.recordOutput("Intake/AbsoluteSetpointSpeed", RadiansPerSecond.of(0));
         });
+  }
+
+  public Command setPivotAngleCommand(Angle angle) {
+    return runEnd(
+        () -> {
+          setPivotAngle(angle);
+        },
+        this::reset);
   }
 
   //

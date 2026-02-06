@@ -42,8 +42,8 @@ public class ShooterConstants {
   public static final double fuelToFlywheelLinearSpeedRatio = 0.5;
 
   public static final Angle hoodPhysicalBottomOutRotation = Degrees.of(25);
-  public static final Angle hoodMinRotation = Degrees.of(26);
-  public static final Angle hoodMaxRotation = Degrees.of(48);
+  public static final Angle hoodMinRotation = Degrees.of(15);
+  public static final Angle hoodMaxRotation = Degrees.of(50);
 
   public static final Angle hoodToleranceWhenShooting = Degrees.of(5);
 

@@ -5,11 +5,16 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Radians;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -29,6 +34,7 @@ import frc.robot.subsystems.drivetrain.ModuleIOTalonFXSim;
 import frc.robot.subsystems.drivetrain.SwerveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.intake.PivotIO;
+import frc.robot.subsystems.intake.PivotIOSim;
 import frc.robot.subsystems.intake.RollerIO;
 import frc.robot.subsystems.shooter.FlywheelIO;
 import frc.robot.subsystems.shooter.FlywheelIOSim;
@@ -57,8 +63,6 @@ public class RobotContainer {
 
   private final LoggedDashboardChooser<Command> autoChooser;
 
-  GyroIONavX gyro = new GyroIONavX();
-
   public RobotContainer() {
     switch (ModeConstants.robotMode) {
       case REAL_COMPETITION:
@@ -67,7 +71,7 @@ public class RobotContainer {
 
         drivetrain =
             new SwerveSubsystem(
-                gyro,
+                new GyroIONavX(),
                 new ModuleIORev(1, 2, Rotation2d.fromDegrees(90)) {},
                 new ModuleIORev(3, 4, Rotation2d.fromDegrees(0)) {},
                 new ModuleIORev(5, 6, Rotation2d.fromDegrees(180)) {},
@@ -102,7 +106,7 @@ public class RobotContainer {
                 new ModuleIOTalonFXSim(TunerConstants.BackRight, driveSimulation.getModules()[3]),
                 driveSimulation::setSimulationWorldPose);
 
-        intake = new IntakeSubsystem(new RollerIO() {}, new PivotIO() {});
+        intake = new IntakeSubsystem(new RollerIO() {}, new PivotIOSim());
 
         // indexer = new IndexerSubsystem(new KickerIO() {}, new SpindexerIO() {});
 
@@ -164,15 +168,31 @@ public class RobotContainer {
   private void configureBindings() {
     new Trigger(DriverStation::isTeleopEnabled).whileTrue(new StateMachine(this).stateCommand());
 
-    primaryJoystick.rightTrigger().whileTrue(intake.runAtIntakeSpeedCommand(drivetrain::getSpeed));
-    primaryJoystick.leftTrigger().whileTrue(intake.outtakeCommand());
+    intake.setDefaultCommand(intake.holdIntakeUpCommand());
+    primaryJoystick
+        .leftTrigger()
+        .whileTrue(intake.intakeAtGroundSpeedCommand(drivetrain::getSpeed));
 
-    // primaryJoystick.a().whileTrue(indexer.runAtSpeedCommand(RPM.of(2000), RPM.of(2000)));
+    // drivetrain.setDefaultCommand(
+    //     drivetrain.driveSetpiontGeneratorCommand(
+    //         drivetrain.joystickDriveLinear(
+    //             SwerveConstants.linearTeleopSpeed,
+    //             primaryJoystick::getLeftX,
+    //             primaryJoystick::getLeftY,
+    //             () -> true),
+    //         drivetrain.joystickDriveAngular(primaryJoystick::getRightX)));
 
-    primaryJoystick.b().whileTrue(intake.setPivotAngleCommand(Degrees.of(0)));
-
-
-    primaryJoystick.x().onTrue(Commands.runOnce(gyro::resetYaw));
+    // primaryJoystick
+    //     .y()
+    //     .whileTrue(
+    //         ShootingCommands.shootHubWithIndependentLinearDriveCommand(
+    //             drivetrain.joystickDriveLinear(
+    //                 SwerveConstants.linearTeleopSpeed,
+    //                 primaryJoystick::getLeftX,
+    //                 primaryJoystick::getLeftY,
+    //                 () -> true),
+    //             drivetrain,
+    //             shooter));
 
     primaryJoystick
         .leftBumper()
@@ -208,5 +228,27 @@ public class RobotContainer {
         "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
     Logger.recordOutput(
         "FieldSimulation/Fuel", SimulatedArena.getInstance().getGamePiecesArrayByType("Fuel"));
+  }
+
+  public void updateComponents() {
+    Logger.recordOutput(
+        "ComponentPoses",
+        new Pose3d[] {
+          new Pose3d(
+              Units.inchesToMeters(4.206652 + 7.266 - 0.1),
+              0,
+              Units.inchesToMeters(17.735146 - 6.980000 - 1.166046 - 0.21),
+              new Rotation3d(0, intake.getPivotAngle().times(-1).in(Radians), 0)),
+          new Pose3d(
+              (Math.sin(Timer.getFPGATimestamp()) + 1) * Units.inchesToMeters(11.5) / 2,
+              0,
+              0,
+              new Rotation3d()),
+          new Pose3d(
+              Units.inchesToMeters(-4.121261 - 0.21),
+              0,
+              Units.inchesToMeters(18.062500 - 0.27),
+              new Rotation3d(0, shooter.getHoodAngle().in(Radians), 0))
+        });
   }
 }

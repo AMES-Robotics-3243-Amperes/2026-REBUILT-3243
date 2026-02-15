@@ -14,7 +14,6 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Angle;
@@ -56,10 +55,7 @@ public class FlywheelIOReal implements FlywheelIO {
     follower.getConfigurator().apply(flywheelConfig);
 
     follower.setControl(
-        new Follower(
-            ShooterConstants.flywheelLeaderId,
-            MotorAlignmentValue
-                .Opposed));
+        new Follower(ShooterConstants.flywheelLeaderId, MotorAlignmentValue.Opposed));
 
     position = leader.getPosition();
     velocity = leader.getVelocity();

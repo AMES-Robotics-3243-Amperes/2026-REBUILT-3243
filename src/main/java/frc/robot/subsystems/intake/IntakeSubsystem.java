@@ -4,12 +4,12 @@
 
 package frc.robot.subsystems.intake;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
-import static edu.wpi.first.units.Units.Degrees;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
@@ -21,27 +21,31 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.constants.IntakeConstants;
-import frc.robot.constants.ShooterConstants;
-
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class IntakeSubsystem extends SubsystemBase {
   private final RollerIO rollerIO;
   private final RollerIOInputsAutoLogged rollerInputs = new RollerIOInputsAutoLogged();
+
   private final PivotIO pivotIO;
-  private final RollerIOInputsAutoLogged pivotInputs = new RollerIOInputsAutoLogged();
+  private final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
 
   /** Creates a new IntakeSubsystem. */
   public IntakeSubsystem(RollerIO rollerIO, PivotIO pivotIO) {
     this.rollerIO = rollerIO;
     this.pivotIO = pivotIO;
+
+    pivotIO.resetPosition(IntakeConstants.pivotMaxRotation);
   }
 
   @Override
   public void periodic() {
     rollerIO.updateInputs(rollerInputs);
     Logger.processInputs("Intake/Roller", rollerInputs);
+
+    pivotIO.updateInputs(pivotInputs);
+    Logger.processInputs("Intake/Pivot", pivotInputs);
   }
 
   private Angle setPivotAngle(Angle angle) {
@@ -58,21 +62,24 @@ public class IntakeSubsystem extends SubsystemBase {
     return clampedAngle;
   }
 
-  public void reset() {
-    setPivotAngle(IntakeConstants.pivotMinRotation);
+  private void setRollerVelocity(AngularVelocity velocity) {
+    rollerIO.setAngularVelocity(velocity);
+    Logger.recordOutput("Intake/AbsoluteSetpointSpeed", velocity);
   }
 
-  public Command runAtSpeedCommand(AngularVelocity velocity) {
+  public Command intakeAtSpeedCommand(AngularVelocity velocity) {
     return runEnd(
-        () -> rollerIO.setAngularVelocity(velocity),
-        () -> rollerIO.setAngularVelocity(RadiansPerSecond.of(0)));
+        () -> {
+          setPivotAngle(IntakeConstants.pivotMinRotation);
+          setRollerVelocity(velocity);
+        },
+        () -> {
+          setPivotAngle(IntakeConstants.pivotMaxRotation);
+          setRollerVelocity(RadiansPerSecond.of(0));
+        });
   }
 
-  public Command outtakeCommand() {
-    return runAtSpeedCommand(IntakeConstants.rollerOuttakeSpeed.times(-1));
-  }
-
-  public Command runAtIntakeSpeedCommand(Supplier<LinearVelocity> drivetrainVelocity) {
+  public Command intakeAtGroundSpeedCommand(Supplier<LinearVelocity> drivetrainVelocity) {
     return runEnd(
         () -> {
           AngularVelocity offsetDriveVelocity =
@@ -83,21 +90,27 @@ public class IntakeSubsystem extends SubsystemBase {
                       .in(MetersPerSecond.per(Meters)));
           AngularVelocity velocity = offsetDriveVelocity.plus(IntakeConstants.rollerAbsoluteSpeed);
 
-          rollerIO.setAngularVelocity(velocity);
-          Logger.recordOutput("Intake/AbsoluteSetpointSpeed", velocity);
+          setPivotAngle(IntakeConstants.pivotMinRotation);
+          setRollerVelocity(velocity);
         },
         () -> {
-          rollerIO.setAngularVelocity(RadiansPerSecond.of(0));
-          Logger.recordOutput("Intake/AbsoluteSetpointSpeed", RadiansPerSecond.of(0));
+          setPivotAngle(IntakeConstants.pivotMaxRotation);
+          setRollerVelocity(RadiansPerSecond.of(0));
         });
   }
 
-  public Command setPivotAngleCommand(Angle angle) {
+  public Command holdIntakeDownCommand() {
     return runEnd(
-        () -> {
-          setPivotAngle(angle);
-        },
-        this::reset);
+        () -> setPivotAngle(IntakeConstants.pivotMinRotation),
+        () -> setPivotAngle(IntakeConstants.pivotMaxRotation));
+  }
+
+  public Command holdIntakeUpCommand() {
+    return run(() -> setPivotAngle(IntakeConstants.pivotMaxRotation));
+  }
+
+  public Angle getPivotAngle() {
+    return pivotInputs.angle;
   }
 
   //

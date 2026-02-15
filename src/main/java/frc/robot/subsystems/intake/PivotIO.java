@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems.intake;
 
-import org.littletonrobotics.junction.AutoLog;
-
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
@@ -13,10 +11,11 @@ import static edu.wpi.first.units.Units.Volts;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
+import org.littletonrobotics.junction.AutoLog;
 
 /** Add your docs here. */
 public interface PivotIO {
-      @AutoLog
+  @AutoLog
   class PivotIOInputs {
     public Angle angle = Rotations.of(0);
     public AngularVelocity angularVelocity = RPM.of(0);
@@ -26,10 +25,12 @@ public interface PivotIO {
   /** Updates the set of loggable inputs. */
   default void updateInputs(PivotIOInputs inputs) {}
 
-    default void resetPosition(Angle angle) {}
+  /* Resets the encoder/position of the pivot. */
+  default void resetPosition(Angle angle) {}
 
-  /** Run the motors at the specified open loop value. */
+  /** Run the roller at the specified open loop value. */
   default void runOpenLoop(double output) {}
 
+  /* Sets the angle of the pivot. */
   default void setAngle(Angle angle) {}
 }

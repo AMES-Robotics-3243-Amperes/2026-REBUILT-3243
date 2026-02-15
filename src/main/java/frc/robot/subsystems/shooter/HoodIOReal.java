@@ -6,7 +6,6 @@ import static edu.wpi.first.units.Units.Volts;
 
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.PersistMode;
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase.ControlType;

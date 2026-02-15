@@ -31,14 +31,14 @@ public class IndexerConstants {
 
   public static final int kickerId = 1;
 
-  public static final double kickerGearRatio = 1.25;
+  public static final double kickerReduction = 1.25;
 
   public static final Distance kickerRadius = Inches.of(1);
 
   public static final ControlConstantsBuilder kickerControl =
       ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.000002, 0, 0).sva(0, 0.0, 0.0);
 
-  public static final Velocity<VoltageUnit> sysIdRampRate = Volts.per(Second).of(0.3);
-  public static final Voltage sysIdStepVoltage = Volts.of(1.5);
+  public static final Velocity<VoltageUnit> sysIdRampRate = Volts.per(Second).of(0.8);
+  public static final Voltage sysIdStepVoltage = Volts.of(4);
   public static final Time sysIdTimeout = Seconds.of(8);
 }

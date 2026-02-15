@@ -38,8 +38,6 @@ public class ShooterSubsystem extends SubsystemBase {
   public ShooterSubsystem(FlywheelIO shooterIO, HoodIO hoodIO) {
     this.flywheelIO = shooterIO;
     this.hoodIO = hoodIO;
-
-    hoodIO.resetPosition(ShooterConstants.hoodPhysicalBottomOutRotation);
   }
 
   @Override

@@ -35,8 +35,8 @@ public class KickerIOReal implements KickerIO {
     TunableControls.registerSparkMaxClosedLoopTuning(
         sparkMax, "Kicker/Indexer", IndexerConstants.kickerControl);
 
-    config.encoder.positionConversionFactor(IndexerConstants.kickerGearRatio);
-    config.encoder.velocityConversionFactor(IndexerConstants.kickerGearRatio);
+    config.encoder.positionConversionFactor(1.0 / IndexerConstants.kickerReduction);
+    config.encoder.velocityConversionFactor(1.0 / IndexerConstants.kickerReduction);
     config.idleMode(IdleMode.kCoast).inverted(true);
 
     config

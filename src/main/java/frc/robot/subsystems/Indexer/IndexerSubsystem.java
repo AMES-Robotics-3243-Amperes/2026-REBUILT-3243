@@ -6,7 +6,18 @@ package frc.robot.subsystems.Indexer;
 
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.constants.IndexerConstants;
+
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Volts;
+
+import java.util.function.Supplier;
+
 import org.littletonrobotics.junction.Logger;
 
 public class IndexerSubsystem extends SubsystemBase {
@@ -45,5 +56,45 @@ public class IndexerSubsystem extends SubsystemBase {
           kickerIO.coast();
           spindexerIO.coast();
         });
+  }
+
+  public Command kickerSysIdCommand(Trigger advanceRoutine) {
+    SysIdRoutine routine =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                IndexerConstants.sysIdRampRate,
+                IndexerConstants.sysIdStepVoltage,
+                IndexerConstants.sysIdTimeout,
+                (state) -> {
+                  Logger.recordOutput("Intake/SysId/State", state.toString());
+
+                  Logger.recordOutput(
+                      "Intake/SysId/PositionRadians", kickerInputs.position.in(Radians));
+                  Logger.recordOutput(
+                      "Intake/SysId/VelocityRadiansPerSecond",
+                      kickerInputs.velocity.in(RadiansPerSecond));
+                  Logger.recordOutput(
+                      "Intake/SysId/AppliedVolts", kickerInputs.appliedVoltage.in(Volts));
+                }),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> kickerIO.runOpenLoop(voltage.in(Volts)), null, this));
+
+    Supplier<Command> waitCommand =
+        () ->
+            Commands.parallel(
+                Commands.waitUntil(advanceRoutine.negate()),
+                Commands.waitSeconds(0.8),
+                runOnce(() -> kickerIO.runOpenLoop(0)));
+
+    return Commands.sequence(
+        // TODO: the drivetrain sysid routine looks the exact same. remove code repetition
+        waitCommand.get(),
+        routine.dynamic(SysIdRoutine.Direction.kForward).until(advanceRoutine),
+        waitCommand.get(),
+        routine.dynamic(SysIdRoutine.Direction.kReverse).until(advanceRoutine),
+        waitCommand.get(),
+        routine.quasistatic(SysIdRoutine.Direction.kForward).until(advanceRoutine),
+        waitCommand.get(),
+        routine.quasistatic(SysIdRoutine.Direction.kReverse).until(advanceRoutine));
   }
 }

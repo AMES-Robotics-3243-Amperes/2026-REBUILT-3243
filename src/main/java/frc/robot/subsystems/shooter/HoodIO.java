@@ -25,9 +25,6 @@ public interface HoodIO {
   /** Updates the set of loggable inputs. */
   default void updateInputs(HoodIOInputs inputs) {}
 
-  /** Resets the tracked position's value. */
-  default void resetPosition(Angle angle) {}
-
   /** Run the hood at the specified open loop value. */
   default void runOpenLoop(double output) {}
 

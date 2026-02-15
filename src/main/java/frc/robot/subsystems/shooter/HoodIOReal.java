@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
@@ -21,24 +22,24 @@ public class HoodIOReal implements HoodIO {
   protected final SparkMax sparkMax = new SparkMax(ShooterConstants.hoodId, MotorType.kBrushless);
 
   private final SparkClosedLoopController closedLoopController;
-  private final RelativeEncoder encoder;
+  private final AbsoluteEncoder encoder;
 
   public HoodIOReal() {
     SparkMaxConfig hoodConfig = new SparkMaxConfig();
 
-    hoodConfig.encoder.positionConversionFactor(1.0 / ShooterConstants.hoodGearReduction);
-    hoodConfig.encoder.velocityConversionFactor(1.0 / ShooterConstants.hoodGearReduction);
+    hoodConfig.encoder.positionConversionFactor(1.0 / ShooterConstants.encoderToHoodReduction);
+    hoodConfig.encoder.velocityConversionFactor(1.0 / ShooterConstants.encoderToHoodReduction);
     hoodConfig.idleMode(IdleMode.kCoast).inverted(false);
 
     hoodConfig
         .closedLoop
-        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+        .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
         .apply(ShooterConstants.hoodControl.revClosedLoopConfig());
 
     sparkMax.configure(hoodConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     closedLoopController = sparkMax.getClosedLoopController();
-    encoder = sparkMax.getEncoder();
+    encoder = sparkMax.getAbsoluteEncoder();
   }
 
   @Override
@@ -46,11 +47,6 @@ public class HoodIOReal implements HoodIO {
     inputs.angle = Rotations.of(encoder.getPosition());
     inputs.angularVelocity = RPM.of(encoder.getVelocity());
     inputs.appliedVoltage = Volts.of(sparkMax.getAppliedOutput() * sparkMax.getBusVoltage());
-  }
-
-  @Override
-  public void resetPosition(Angle angle) {
-    encoder.setPosition(angle.in(Rotations));
   }
 
   @Override

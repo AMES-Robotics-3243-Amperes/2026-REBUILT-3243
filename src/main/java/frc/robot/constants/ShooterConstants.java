@@ -12,6 +12,8 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
+import com.ctre.phoenix6.signals.InvertedValue;
+
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
@@ -27,9 +29,9 @@ import frc.robot.util.ControlConstantsBuilder;
 
 /** Add your docs here. */
 public class ShooterConstants {
-
-  public static final int flywheelLeftId = 11;
-  public static final int flywheelRightId = 12;
+  public static final int flywheelLeaderId = 10;
+  public static final int flywheelFollowerId = 11;
+  public static final InvertedValue shooterFlywheelInverted = InvertedValue.Clockwise_Positive;
 
   public static final int hoodId = 10;
 
@@ -47,7 +49,7 @@ public class ShooterConstants {
 
   public static final Angle hoodToleranceWhenShooting = Degrees.of(5);
 
-  public static final double hoodGearReduction = 475.0 / 6.0;
+  public static final double encoderToHoodReduction = 475.0 / 6.0;
 
   public static final ControlConstantsBuilder flywheelControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()

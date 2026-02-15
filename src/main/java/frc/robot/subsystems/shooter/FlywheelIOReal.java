@@ -9,11 +9,13 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.CoastOut;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -22,8 +24,8 @@ import frc.robot.constants.ShooterConstants;
 
 /** Add your docs here. */
 public class FlywheelIOReal implements FlywheelIO {
-  protected final TalonFX leader = new TalonFX(ShooterConstants.flywheelLeftId);
-  // private final TalonFX follower = new TalonFX(ShooterConstants.flywheelRightId);
+  protected final TalonFX leader = new TalonFX(ShooterConstants.flywheelLeaderId);
+  private final TalonFX follower = new TalonFX(ShooterConstants.flywheelFollowerId);
 
   protected final StatusSignal<Angle> position;
   protected final StatusSignal<AngularVelocity> velocity;
@@ -38,7 +40,7 @@ public class FlywheelIOReal implements FlywheelIO {
 
     flywheelConfig
         .MotorOutput
-        .withInverted(InvertedValue.CounterClockwise_Positive)
+        .withInverted(ShooterConstants.shooterFlywheelInverted)
         .withNeutralMode(NeutralModeValue.Coast);
     flywheelConfig
         .CurrentLimits
@@ -51,13 +53,13 @@ public class FlywheelIOReal implements FlywheelIO {
     flywheelConfig.Feedback.SensorToMechanismRatio = ShooterConstants.flywheelGearReduction;
 
     leader.getConfigurator().apply(flywheelConfig);
-    // follower.getConfigurator().apply(flywheelConfig);
+    follower.getConfigurator().apply(flywheelConfig);
 
-    // follower.setControl(
-    //     new Follower(
-    //         ShooterConstants.flywheelLeftId,
-    //         MotorAlignmentValue
-    //             .Opposed));
+    follower.setControl(
+        new Follower(
+            ShooterConstants.flywheelLeaderId,
+            MotorAlignmentValue
+                .Opposed));
 
     position = leader.getPosition();
     velocity = leader.getVelocity();
@@ -65,7 +67,7 @@ public class FlywheelIOReal implements FlywheelIO {
 
     // Configure periodic frames
     BaseStatusSignal.setUpdateFrequencyForAll(50.0, position, velocity, voltage);
-    ParentDevice.optimizeBusUtilizationForAll(leader);
+    ParentDevice.optimizeBusUtilizationForAll(leader, follower);
   }
 
   @Override

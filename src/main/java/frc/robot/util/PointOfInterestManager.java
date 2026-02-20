@@ -7,7 +7,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import frc.robot.constants.setpoints.FieldConstants;
+import frc.robot.constants.FieldConstants;
 
 public class PointOfInterestManager {
   public enum FlipType {

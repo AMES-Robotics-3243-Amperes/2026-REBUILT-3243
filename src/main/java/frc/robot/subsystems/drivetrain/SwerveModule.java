@@ -26,7 +26,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import frc.robot.constants.swerve.ModuleConstants;
+import frc.robot.constants.choreo.ChoreoVars;
 import frc.robot.subsystems.drivetrain.SwerveSubsystem.SwerveSysIdRoutine;
 import org.littletonrobotics.junction.Logger;
 
@@ -65,7 +65,7 @@ public class SwerveModule {
     odometryPositions = new SwerveModulePosition[sampleCount];
     for (int i = 0; i < sampleCount; i++) {
       double positionMeters =
-          inputs.odometryDrivePositionsRad[i] * ModuleConstants.wheelRadius.in(Meters);
+          inputs.odometryDrivePositionsRad[i] * ChoreoVars.R_WheelRadius.in(Meters);
       Rotation2d angle = inputs.odometryTurnPositions[i];
       odometryPositions[i] = new SwerveModulePosition(positionMeters, angle);
     }
@@ -85,7 +85,7 @@ public class SwerveModule {
 
     // Apply setpoints
     io.setDriveVelocity(
-        RadiansPerSecond.of(state.speedMetersPerSecond / ModuleConstants.wheelRadius.in(Meters)));
+        RadiansPerSecond.of(state.speedMetersPerSecond / ChoreoVars.R_WheelRadius.in(Meters)));
     io.setTurnPosition(state.angle);
   }
 
@@ -101,9 +101,9 @@ public class SwerveModule {
 
     // Apply setpoints
     io.setDriveSetpoint(
-        RadiansPerSecond.of(state.speedMetersPerSecond / ModuleConstants.wheelRadius.in(Meters)),
+        RadiansPerSecond.of(state.speedMetersPerSecond / ChoreoVars.R_WheelRadius.in(Meters)),
         RadiansPerSecondPerSecond.of(
-            feedforwards.in(MetersPerSecondPerSecond) / ModuleConstants.wheelRadius.in(Meters)));
+            feedforwards.in(MetersPerSecondPerSecond) / ChoreoVars.R_WheelRadius.in(Meters)));
     io.setTurnPosition(state.angle);
   }
 
@@ -155,12 +155,12 @@ public class SwerveModule {
 
   /** Returns the current linear drive position of the module. */
   public Distance getLinearDistance() {
-    return ModuleConstants.wheelRadius.times(inputs.drivePosition.in(Radians));
+    return ChoreoVars.R_WheelRadius.times(inputs.drivePosition.in(Radians));
   }
 
   /** Returns the current linear drive velocity of the module. */
   public LinearVelocity getLinearVelocity() {
-    return MetersPerSecond.of(ModuleConstants.wheelRadius.in(Meters))
+    return MetersPerSecond.of(ChoreoVars.R_WheelRadius.in(Meters))
         .times(inputs.driveVelocity.in(RadiansPerSecond));
   }
 

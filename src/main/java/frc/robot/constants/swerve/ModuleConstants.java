@@ -1,7 +1,6 @@
 package frc.robot.constants.swerve;
 
 import static edu.wpi.first.units.Units.Amps;
-import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Volts;
@@ -10,7 +9,6 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.SteerFeedbackType;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.util.ControlConstantsBuilder;
@@ -32,10 +30,7 @@ public class ModuleConstants {
 
   // physical properties. ids and other hardware-specific things go in tuner constants
   public static final double kCoupleRatio = 0;
-
-  public static final double driveGearRatio = 5.79;
-  public static final double steerGearRatio = 25;
-  public static final Distance wheelRadius = Inches.of(1.5); // temp
+  public static final double steerReduction = 25;
 
   public static final ClosedLoopOutputType steerClosedLoopOutput = ClosedLoopOutputType.Voltage;
   public static final ClosedLoopOutputType driveClosedLoopOutput = ClosedLoopOutputType.Voltage;

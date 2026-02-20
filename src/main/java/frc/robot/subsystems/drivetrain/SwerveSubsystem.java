@@ -54,6 +54,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.constants.choreo.ChoreoVars;
 import frc.robot.constants.swerve.ModuleConstants;
 import frc.robot.constants.swerve.SwerveConstants;
 import frc.robot.constants.swerve.SysIdConstants;
@@ -75,8 +76,9 @@ import org.littletonrobotics.junction.Logger;
 public class SwerveSubsystem extends SubsystemBase {
   public static final DriveTrainSimulationConfig mapleSimConfig =
       DriveTrainSimulationConfig.Default()
-          .withRobotMass(SwerveConstants.robotMass)
+          .withRobotMass(ChoreoVars.R_RobotMass)
           .withCustomModuleTranslations(getModuleTranslations())
+          .withBumperSize(ChoreoVars.R_BumperLength, ChoreoVars.R_BumperLength)
           .withGyro(COTS.ofPigeon2())
           .withSwerveModule(
               new SwerveModuleSimulationConfig(
@@ -86,26 +88,26 @@ public class SwerveSubsystem extends SubsystemBase {
                   (ModuleConstants.steerClosedLoopOutput == ClosedLoopOutputType.Voltage
                       ? DCMotor.getFalcon500(1)
                       : DCMotor.getFalcon500Foc(1)),
-                  ModuleConstants.driveGearRatio,
-                  ModuleConstants.steerGearRatio,
+                  ChoreoVars.R_DriveReduction,
+                  ModuleConstants.steerReduction,
                   ModuleConstants.driveFrictionVoltage,
                   ModuleConstants.steerFrictionVoltage,
-                  ModuleConstants.wheelRadius,
+                  ChoreoVars.R_WheelRadius,
                   ModuleConstants.kSteerInertia,
-                  SwerveConstants.wheelCoefficientOfFriction));
+                  ChoreoVars.R_WheelCOF));
 
   public static final RobotConfig pathPlannerConfig =
       new RobotConfig(
-          SwerveConstants.robotMass.in(Kilograms),
-          SwerveConstants.robotMomentOfInertia.in(KilogramSquareMeters),
+          ChoreoVars.R_RobotMass.in(Kilograms),
+          ChoreoVars.R_RobotMOI.in(KilogramSquareMeters),
           new ModuleConfig(
-              ModuleConstants.wheelRadius.in(Meters),
+              ChoreoVars.R_WheelRadius.in(Meters),
               SwerveConstants.speedAt12Volts.in(MetersPerSecond),
-              SwerveConstants.wheelCoefficientOfFriction,
+              ChoreoVars.R_WheelCOF,
               (ModuleConstants.driveClosedLoopOutput == ClosedLoopOutputType.Voltage
                       ? DCMotor.getKrakenX60(1)
                       : DCMotor.getKrakenX60Foc(1))
-                  .withReduction(ModuleConstants.driveGearRatio),
+                  .withReduction(ChoreoVars.R_DriveReduction),
               SwerveConstants.slipCurrent.in(Amps),
               1),
           getModuleTranslations());

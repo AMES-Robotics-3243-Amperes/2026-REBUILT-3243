@@ -1,4 +1,4 @@
-package frc.robot.constants.setpoints;
+package frc.robot.constants.choreo;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -17,20 +17,20 @@ public record ChoreoTraj(
     double totalTimeSecs,
     Pose2d initialPoseBlue,
     Pose2d endPoseBlue) {
-  public static final ChoreoTraj LeftToRight =
+  public static final ChoreoTraj Test =
       new ChoreoTraj(
-          "LeftToRight",
+          "Test",
           OptionalInt.empty(),
-          5.58808,
-          new Pose2d(2.5, 5.5, Rotation2d.fromRadians(-0.6)),
-          new Pose2d(2.5, 2.4, Rotation2d.fromRadians(0.6)));
+          4.63126,
+          new Pose2d(2.004, 5.268, Rotation2d.fromRadians(0.785)),
+          new Pose2d(2.142, 2.608, Rotation2d.fromRadians(2.172)));
 
   /**
    * A map between trajectory names and their corresponding data. This allows for trajectory data to
    * be looked up with strings during runtime.
    */
   public static final Map<String, ChoreoTraj> ALL_TRAJECTORIES =
-      Map.ofEntries(Map.entry("LeftToRight", LeftToRight));
+      Map.ofEntries(Map.entry("Test", Test));
 
   /**
    * Looks up the ChoreoTraj segment of the given overall ChoreoTraj. WARNING: will raise an

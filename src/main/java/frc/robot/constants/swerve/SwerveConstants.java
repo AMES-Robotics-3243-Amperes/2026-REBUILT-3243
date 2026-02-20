@@ -3,12 +3,9 @@ package frc.robot.constants.swerve;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Hertz;
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Milliseconds;
-import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 
@@ -20,9 +17,8 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Frequency;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.units.measure.Mass;
-import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Time;
+import frc.robot.constants.choreo.ChoreoVars;
 import frc.robot.util.ControlConstantsBuilder;
 
 public class SwerveConstants {
@@ -45,19 +41,14 @@ public class SwerveConstants {
   public static final PIDConstants driveControl = new PIDConstants(5, 0, 0);
 
   // physical properties
-  public static final Distance driveBaseFrontLength = Inches.of(26);
-  public static final Distance driveBaseSideLength = Inches.of(26);
-
-  public static final Mass robotMass = Pounds.of(90);
-  public static final MomentOfInertia robotMomentOfInertia = KilogramSquareMeters.of(6);
-  public static final double wheelCoefficientOfFriction = 1.4;
+  public static final LinearVelocity speedAt12Volts = MetersPerSecond.of(5.14);
   public static final Current slipCurrent = Amps.of(120);
-  public static final LinearVelocity speedAt12Volts = MetersPerSecond.of(5.2);
 
   public static final Distance driveBaseRadius =
       Meters.of(
           Math.hypot(
-              driveBaseFrontLength.div(2).in(Meters), driveBaseSideLength.div(2).in(Meters)));
+              ChoreoVars.R_TrackLength.div(2).in(Meters),
+              ChoreoVars.R_TrackLength.div(2).in(Meters)));
 
   // odometry frequency
   public static final Frequency canFdOdometryFrequency = Hertz.of(250);

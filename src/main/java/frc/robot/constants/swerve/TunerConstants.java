@@ -6,6 +6,7 @@ import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.swerve.*;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.*;
 import edu.wpi.first.units.measure.*;
+import frc.robot.constants.choreo.ChoreoVars;
 
 public class TunerConstants {
   private static final boolean kInvertLeftSide = false;
@@ -24,10 +25,10 @@ public class TunerConstants {
       ConstantCreator =
           new SwerveModuleConstantsFactory<
                   TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>()
-              .withDriveMotorGearRatio(ModuleConstants.driveGearRatio)
-              .withSteerMotorGearRatio(ModuleConstants.steerGearRatio)
+              .withDriveMotorGearRatio(ChoreoVars.R_DriveReduction)
+              .withSteerMotorGearRatio(ChoreoVars.R_DriveReduction)
               .withCouplingGearRatio(ModuleConstants.kCoupleRatio)
-              .withWheelRadius(ModuleConstants.wheelRadius)
+              .withWheelRadius(ChoreoVars.R_WheelRadius)
               .withSteerMotorGains(
                   Slot0Configs.from(ModuleConstants.steerControl.talonFXConfigs().getFirst()))
               .withDriveMotorGains(
@@ -60,8 +61,8 @@ public class TunerConstants {
   private static final boolean kFrontLeftSteerMotorInverted = false;
   private static final boolean kFrontLeftEncoderInverted = false;
 
-  private static final Distance kFrontLeftXPos = SwerveConstants.driveBaseSideLength.div(2);
-  private static final Distance kFrontLeftYPos = SwerveConstants.driveBaseFrontLength.div(2);
+  private static final Distance kFrontLeftXPos = ChoreoVars.R_TrackLength.div(2);
+  private static final Distance kFrontLeftYPos = ChoreoVars.R_TrackLength.div(2);
 
   // Front Right
   private static final int kFrontRightDriveMotorId = 3;
@@ -71,9 +72,8 @@ public class TunerConstants {
   private static final boolean kFrontRightSteerMotorInverted = false;
   private static final boolean kFrontRightEncoderInverted = false;
 
-  private static final Distance kFrontRightXPos = SwerveConstants.driveBaseSideLength.div(2);
-  private static final Distance kFrontRightYPos =
-      SwerveConstants.driveBaseFrontLength.div(2).unaryMinus();
+  private static final Distance kFrontRightXPos = ChoreoVars.R_TrackLength.div(2);
+  private static final Distance kFrontRightYPos = ChoreoVars.R_TrackLength.div(2).unaryMinus();
 
   // Back Left
   private static final int kBackLeftDriveMotorId = 5;
@@ -83,9 +83,8 @@ public class TunerConstants {
   private static final boolean kBackLeftSteerMotorInverted = false;
   private static final boolean kBackLeftEncoderInverted = false;
 
-  private static final Distance kBackLeftXPos =
-      SwerveConstants.driveBaseSideLength.div(2).unaryMinus();
-  private static final Distance kBackLeftYPos = SwerveConstants.driveBaseFrontLength.div(2);
+  private static final Distance kBackLeftXPos = ChoreoVars.R_TrackLength.div(2).unaryMinus();
+  private static final Distance kBackLeftYPos = ChoreoVars.R_TrackLength.div(2);
 
   // Back Right
   private static final int kBackRightDriveMotorId = 7;
@@ -95,10 +94,8 @@ public class TunerConstants {
   private static final boolean kBackRightSteerMotorInverted = false;
   private static final boolean kBackRightEncoderInverted = false;
 
-  private static final Distance kBackRightXPos =
-      SwerveConstants.driveBaseSideLength.div(2).unaryMinus();
-  private static final Distance kBackRightYPos =
-      SwerveConstants.driveBaseFrontLength.div(2).unaryMinus();
+  private static final Distance kBackRightXPos = ChoreoVars.R_TrackLength.div(2).unaryMinus();
+  private static final Distance kBackRightYPos = ChoreoVars.R_TrackLength.div(2).unaryMinus();
 
   public static final SwerveModuleConstants<
           TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>

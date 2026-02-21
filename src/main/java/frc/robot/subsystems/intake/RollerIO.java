@@ -25,4 +25,7 @@ public interface RollerIO {
 
   /** Run the motors at the specified velocity. */
   default void setAngularVelocity(AngularVelocity velocity) {}
+
+  /** Coasts the roller. */
+  default void coast() {}
 }

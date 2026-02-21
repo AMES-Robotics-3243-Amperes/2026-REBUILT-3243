@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -16,12 +15,10 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DriveCharacterizations;
 import frc.robot.constants.ModeConstants;
-import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.constants.swerve.TunerConstants;
 import frc.robot.state.StateMachine;
@@ -47,7 +44,6 @@ import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.vision.VisionSubsystem;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
-import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnFly;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -168,52 +164,9 @@ public class RobotContainer {
   private void configureBindings() {
     new Trigger(DriverStation::isTeleopEnabled).whileTrue(new StateMachine(this).stateCommand());
 
-    intake.setDefaultCommand(intake.holdIntakeUpCommand());
     primaryJoystick
         .leftTrigger()
         .whileTrue(intake.intakeAtGroundSpeedCommand(drivetrain::getSpeed));
-
-    // drivetrain.setDefaultCommand(
-    //     drivetrain.driveSetpiontGeneratorCommand(
-    //         drivetrain.joystickDriveLinear(
-    //             SwerveConstants.linearTeleopSpeed,
-    //             primaryJoystick::getLeftX,
-    //             primaryJoystick::getLeftY,
-    //             () -> true),
-    //         drivetrain.joystickDriveAngular(primaryJoystick::getRightX)));
-
-    // primaryJoystick
-    //     .y()
-    //     .whileTrue(
-    //         ShootingCommands.shootHubWithIndependentLinearDriveCommand(
-    //             drivetrain.joystickDriveLinear(
-    //                 SwerveConstants.linearTeleopSpeed,
-    //                 primaryJoystick::getLeftX,
-    //                 primaryJoystick::getLeftY,
-    //                 () -> true),
-    //             drivetrain,
-    //             shooter));
-
-    primaryJoystick
-        .leftBumper()
-        .onTrue(
-            Commands.runOnce(
-                () -> {
-                  RebuiltFuelOnFly fuel =
-                      new RebuiltFuelOnFly(
-                          driveSimulation.getSimulatedDriveTrainPose().getTranslation(),
-                          ShooterConstants.robotToShooter.getTranslation().toTranslation2d(),
-                          driveSimulation.getDriveTrainSimulatedChassisSpeedsFieldRelative(),
-                          driveSimulation
-                              .getSimulatedDriveTrainPose()
-                              .getRotation()
-                              .plus(ShooterConstants.robotToShooter.getRotation().toRotation2d()),
-                          ShooterConstants.robotToShooter.getMeasureZ(),
-                          shooter.getFuelVelocity(),
-                          Degrees.of(90).minus(shooter.getHoodAngle()));
-
-                  SimulatedArena.getInstance().addGamePieceProjectile(fuel);
-                }));
   }
 
   public Command getAutonomousCommand() {

@@ -48,6 +48,7 @@ public class IntakeSubsystem extends SubsystemBase {
     Logger.processInputs("Intake/Pivot", pivotInputs);
   }
 
+  /** Finds the angle clamped to physical limits, sends it to the pivot, and returns it. */
   private Angle setPivotAngle(Angle angle) {
     Angle clampedAngle =
         Degrees.of(
@@ -64,18 +65,25 @@ public class IntakeSubsystem extends SubsystemBase {
 
   private void setRollerVelocity(AngularVelocity velocity) {
     rollerIO.setAngularVelocity(velocity);
-    Logger.recordOutput("Intake/AbsoluteSetpointSpeed", velocity);
+    Logger.recordOutput("Intake/Roller/SetpointSpeed", velocity);
+  }
+
+  private void coastRoller() {
+    rollerIO.coast();
+    Logger.recordOutput("Intake/Roller/SetpointSpeed", RadiansPerSecond.of(0));
   }
 
   public Command intakeAtSpeedCommand(AngularVelocity velocity) {
     return runEnd(
         () -> {
           setPivotAngle(IntakeConstants.pivotMinRotation);
-          setRollerVelocity(velocity);
+
+          if (pivotInputs.angle.isNear(IntakeConstants.pivotMinRotation, Radians.of(1)))
+            setRollerVelocity(velocity);
         },
         () -> {
+          coastRoller();
           setPivotAngle(IntakeConstants.pivotMaxRotation);
-          setRollerVelocity(RadiansPerSecond.of(0));
         });
   }
 
@@ -91,11 +99,14 @@ public class IntakeSubsystem extends SubsystemBase {
           AngularVelocity velocity = offsetDriveVelocity.plus(IntakeConstants.rollerAbsoluteSpeed);
 
           setPivotAngle(IntakeConstants.pivotMinRotation);
-          setRollerVelocity(velocity);
+
+          if (pivotInputs.angle.isNear(
+              IntakeConstants.pivotMinRotation, IntakeConstants.pivotToleranceBeforeRollersEngage))
+            setRollerVelocity(velocity);
         },
         () -> {
+          coastRoller();
           setPivotAngle(IntakeConstants.pivotMaxRotation);
-          setRollerVelocity(RadiansPerSecond.of(0));
         });
   }
 
@@ -103,10 +114,6 @@ public class IntakeSubsystem extends SubsystemBase {
     return runEnd(
         () -> setPivotAngle(IntakeConstants.pivotMinRotation),
         () -> setPivotAngle(IntakeConstants.pivotMaxRotation));
-  }
-
-  public Command holdIntakeUpCommand() {
-    return run(() -> setPivotAngle(IntakeConstants.pivotMaxRotation));
   }
 
   public Angle getPivotAngle() {
@@ -117,7 +124,7 @@ public class IntakeSubsystem extends SubsystemBase {
   // SysId
   //
 
-  public Command sysIdCommand(Trigger advanceRoutine) {
+  public Command rollerSysIdCommand(Trigger advanceRoutine) {
     SysIdRoutine routine =
         new SysIdRoutine(
             new SysIdRoutine.Config(
@@ -125,15 +132,15 @@ public class IntakeSubsystem extends SubsystemBase {
                 IntakeConstants.sysIdStepVoltage,
                 IntakeConstants.sysIdTimeout,
                 (state) -> {
-                  Logger.recordOutput("Intake/SysId/State", state.toString());
+                  Logger.recordOutput("Intake/SysId/Roller/State", state.toString());
 
                   Logger.recordOutput(
-                      "Intake/SysId/PositionRadians", rollerInputs.position.in(Radians));
+                      "Intake/SysId/Roller/PositionRadians", rollerInputs.position.in(Radians));
                   Logger.recordOutput(
-                      "Intake/SysId/VelocityRadiansPerSecond",
+                      "Intake/SysId/Roller/VelocityRadiansPerSecond",
                       rollerInputs.velocity.in(RadiansPerSecond));
                   Logger.recordOutput(
-                      "Intake/SysId/AppliedVolts", rollerInputs.appliedVoltage.in(Volts));
+                      "Intake/SysId/Roller/AppliedVolts", rollerInputs.appliedVoltage.in(Volts));
                 }),
             new SysIdRoutine.Mechanism(
                 (voltage) -> rollerIO.runOpenLoop(voltage.in(Volts)), null, this));

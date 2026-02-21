@@ -25,11 +25,12 @@ public interface KickerIO {
   /** Updates the set of loggable inputs. */
   default void updateInputs(KickerIOInputs inputs) {}
 
-  /** Run the motors at the specified open loop value. */
+  /** Run the motor at the specified open loop value. */
   default void runOpenLoop(double output) {}
 
-  /** Run the motors at the specified velocity. */
+  /** Run the motor at the specified velocity. */
   default void setAngularVelocity(AngularVelocity velocity) {}
 
+  /** Set the motor to coast. */
   default void coast() {}
 }

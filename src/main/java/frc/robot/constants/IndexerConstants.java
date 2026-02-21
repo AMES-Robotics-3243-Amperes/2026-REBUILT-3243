@@ -20,7 +20,7 @@ import frc.robot.util.ControlConstantsBuilder;
 public class IndexerConstants {
   public static final int spindexerId = 0;
 
-  public static final double spindexerGearRatio = 1;
+  public static final double spindexerReduction = 1;
 
   public static final Distance spindexerRadius = Inches.of(1);
 

@@ -139,7 +139,7 @@ public class SwerveSubsystem extends SubsystemBase {
   private final SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(kinematics, rawGyroRotation, lastModulePositions, Pose2d.kZero);
 
-  private final Consumer<Pose2d> resetSimulationPoseCallBack;
+  private final Consumer<Pose2d> resetSimulationPoseCallback;
 
   public SwerveSubsystem(
       GyroIO gyroIO,
@@ -147,14 +147,14 @@ public class SwerveSubsystem extends SubsystemBase {
       ModuleIO frModuleIO,
       ModuleIO blModuleIO,
       ModuleIO brModuleIO,
-      Consumer<Pose2d> resetSimulationPoseCallBack) {
+      Consumer<Pose2d> resetSimulationPoseCallback) {
     this.gyroIO = gyroIO;
     modules[0] = new SwerveModule(flModuleIO, 0);
     modules[1] = new SwerveModule(frModuleIO, 1);
     modules[2] = new SwerveModule(blModuleIO, 2);
     modules[3] = new SwerveModule(brModuleIO, 3);
 
-    this.resetSimulationPoseCallBack = resetSimulationPoseCallBack;
+    this.resetSimulationPoseCallback = resetSimulationPoseCallback;
 
     // Usage reporting for swerve template
     HAL.report(tResourceType.kResourceType_RobotDrive, tInstances.kRobotDriveSwerve_AdvantageKit);
@@ -386,7 +386,7 @@ public class SwerveSubsystem extends SubsystemBase {
   //
 
   public void setPose(Pose2d pose) {
-    resetSimulationPoseCallBack.accept(pose);
+    resetSimulationPoseCallback.accept(pose);
     poseEstimator.resetPosition(rawGyroRotation, getModulePositions(), pose);
   }
 

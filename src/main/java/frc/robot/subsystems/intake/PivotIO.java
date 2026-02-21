@@ -33,4 +33,7 @@ public interface PivotIO {
 
   /* Sets the angle of the pivot. */
   default void setAngle(Angle angle) {}
+
+  /* Sets the pivot to coast. */
+  default void coast() {}
 }

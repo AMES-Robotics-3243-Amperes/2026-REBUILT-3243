@@ -28,7 +28,7 @@ public class HoodIOReal implements HoodIO {
 
     hoodConfig.encoder.positionConversionFactor(1.0 / ShooterConstants.encoderToHoodReduction);
     hoodConfig.encoder.velocityConversionFactor(1.0 / ShooterConstants.encoderToHoodReduction);
-    hoodConfig.idleMode(IdleMode.kCoast).inverted(false);
+    hoodConfig.idleMode(IdleMode.kBrake).inverted(false);
 
     hoodConfig
         .closedLoop
@@ -46,11 +46,6 @@ public class HoodIOReal implements HoodIO {
     inputs.angle = Rotations.of(encoder.getPosition());
     inputs.angularVelocity = RPM.of(encoder.getVelocity());
     inputs.appliedVoltage = Volts.of(sparkMax.getAppliedOutput() * sparkMax.getBusVoltage());
-  }
-
-  @Override
-  public void runOpenLoop(double output) {
-    sparkMax.setVoltage(output);
   }
 
   @Override

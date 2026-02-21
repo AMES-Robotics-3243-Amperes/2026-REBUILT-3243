@@ -20,7 +20,6 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.constants.IndexerConstants;
-import frc.robot.util.TunableControls;
 
 /** Add your docs here. */
 public class KickerIOReal implements KickerIO {
@@ -31,9 +30,6 @@ public class KickerIOReal implements KickerIO {
 
   public KickerIOReal() {
     SparkMaxConfig config = new SparkMaxConfig();
-
-    TunableControls.registerSparkMaxClosedLoopTuning(
-        sparkMax, "Kicker/Indexer", IndexerConstants.kickerControl);
 
     config.encoder.positionConversionFactor(1.0 / IndexerConstants.kickerReduction);
     config.encoder.velocityConversionFactor(1.0 / IndexerConstants.kickerReduction);
@@ -65,5 +61,10 @@ public class KickerIOReal implements KickerIO {
   @Override
   public void setAngularVelocity(AngularVelocity velocity) {
     closedLoopController.setSetpoint(velocity.in(RPM), ControlType.kVelocity);
+  }
+
+  @Override
+  public void coast() {
+    sparkMax.set(0);
   }
 }

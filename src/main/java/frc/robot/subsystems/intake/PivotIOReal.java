@@ -20,11 +20,10 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.units.measure.Angle;
 import frc.robot.constants.IntakeConstants;
-import frc.robot.util.TunableControls;
 
 /** Add your docs here. */
 public class PivotIOReal implements PivotIO {
-  SparkMax sparkMax = new SparkMax(IntakeConstants.rollerId, MotorType.kBrushless);
+  SparkMax sparkMax = new SparkMax(IntakeConstants.pivotId, MotorType.kBrushless);
 
   SparkClosedLoopController closedLoopController;
   RelativeEncoder encoder;
@@ -32,17 +31,14 @@ public class PivotIOReal implements PivotIO {
   public PivotIOReal() {
     SparkMaxConfig config = new SparkMaxConfig();
 
-    TunableControls.registerSparkMaxClosedLoopTuning(
-        sparkMax, "Intake/Pivot", IntakeConstants.pivotControl);
-
-    config.encoder.positionConversionFactor(IntakeConstants.rollerGearRatio);
-    config.encoder.velocityConversionFactor(IntakeConstants.rollerGearRatio);
+    config.encoder.positionConversionFactor(1.0 / IntakeConstants.pivotReduction);
+    config.encoder.velocityConversionFactor(1.0 / IntakeConstants.pivotReduction);
     config.idleMode(IdleMode.kCoast).inverted(true);
 
     config
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .apply(IntakeConstants.rollerControl.revClosedLoopConfig());
+        .apply(IntakeConstants.pivotControl.revClosedLoopConfig());
 
     sparkMax.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -70,5 +66,10 @@ public class PivotIOReal implements PivotIO {
   @Override
   public void setAngle(Angle angle) {
     closedLoopController.setSetpoint(angle.in(Rotations), ControlType.kPosition);
+  }
+
+  @Override
+  public void coast() {
+    sparkMax.set(0);
   }
 }

@@ -27,16 +27,14 @@ public class RollerIOReal implements RollerIO {
     System.out.println("RollerIOReal constructed");
     SparkMaxConfig config = new SparkMaxConfig();
 
-    config.encoder.positionConversionFactor(IntakeConstants.rollerGearRatio);
-    config.encoder.velocityConversionFactor(IntakeConstants.rollerGearRatio);
+    config.encoder.positionConversionFactor(1.0 / IntakeConstants.rollerReduction);
+    config.encoder.velocityConversionFactor(1.0 / IntakeConstants.rollerReduction);
     config.idleMode(IdleMode.kCoast).inverted(true);
 
     config
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
         .apply(IntakeConstants.rollerControl.revClosedLoopConfig());
-
-    config.closedLoop.maxMotion.maxAcceleration(10);
 
     sparkMax.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -59,5 +57,10 @@ public class RollerIOReal implements RollerIO {
   @Override
   public void setAngularVelocity(AngularVelocity velocity) {
     closedLoopController.setSetpoint(velocity.in(RPM), ControlType.kVelocity);
+  }
+
+  @Override
+  public void coast() {
+    sparkMax.set(0);
   }
 }

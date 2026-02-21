@@ -19,9 +19,7 @@ import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class IndexerSubsystem extends SubsystemBase {
-
   private final KickerIO kickerIO;
-
   private final KickerIOInputsAutoLogged kickerInputs = new KickerIOInputsAutoLogged();
 
   private final SpindexerIO spindexerIO;
@@ -33,7 +31,6 @@ public class IndexerSubsystem extends SubsystemBase {
     this.spindexerIO = spindexerIO;
   }
 
-  // eli was here
   @Override
   public void periodic() {
     kickerIO.updateInputs(kickerInputs);
@@ -49,10 +46,16 @@ public class IndexerSubsystem extends SubsystemBase {
         () -> {
           kickerIO.setAngularVelocity(kickerVelocity);
           spindexerIO.setAngularVelocity(spindexerVelocity);
+
+          Logger.recordOutput("Indexer/Kicker/SetpointVelocity", kickerVelocity);
+          Logger.recordOutput("Indexer/Spindexer/SetpointVelocity", spindexerVelocity);
         },
         () -> {
           kickerIO.coast();
           spindexerIO.coast();
+
+          Logger.recordOutput("Indexer/Kicker/SetpointVelocity", RadiansPerSecond.of(0));
+          Logger.recordOutput("Indexer/Spindexer/SetpointVelocity", RadiansPerSecond.of(0));
         });
   }
 
@@ -64,15 +67,15 @@ public class IndexerSubsystem extends SubsystemBase {
                 IndexerConstants.sysIdStepVoltage,
                 IndexerConstants.sysIdTimeout,
                 (state) -> {
-                  Logger.recordOutput("Intake/SysId/State", state.toString());
+                  Logger.recordOutput("Indexer/SysId/Kicker/State", state.toString());
 
                   Logger.recordOutput(
-                      "Intake/SysId/PositionRadians", kickerInputs.position.in(Radians));
+                      "Indexer/SysId/Kicker/PositionRadians", kickerInputs.position.in(Radians));
                   Logger.recordOutput(
-                      "Intake/SysId/VelocityRadiansPerSecond",
+                      "Indexer/SysId/Kicker/VelocityRadiansPerSecond",
                       kickerInputs.velocity.in(RadiansPerSecond));
                   Logger.recordOutput(
-                      "Intake/SysId/AppliedVolts", kickerInputs.appliedVoltage.in(Volts));
+                      "Indexer/SysId/Kicker/AppliedVolts", kickerInputs.appliedVoltage.in(Volts));
                 }),
             new SysIdRoutine.Mechanism(
                 (voltage) -> kickerIO.runOpenLoop(voltage.in(Volts)), null, this));

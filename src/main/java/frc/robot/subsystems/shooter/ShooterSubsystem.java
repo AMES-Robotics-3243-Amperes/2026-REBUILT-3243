@@ -8,7 +8,6 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
@@ -59,15 +58,10 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   private void runFlywheelWithHood(AngularVelocity velocity, Angle targetHoodAngle) {
-    Angle clampedHoodTarget = setHoodAngle(targetHoodAngle);
+    setHoodAngle(targetHoodAngle);
 
-    if (hoodInputs.angle.isNear(clampedHoodTarget, ShooterConstants.hoodToleranceWhenShooting)) {
-      flywheelIO.setAngularVelocity(velocity);
-      Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", velocity);
-    } else {
-      flywheelIO.coast();
-      Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", RotationsPerSecond.of(0));
-    }
+    flywheelIO.setAngularVelocity(velocity);
+    Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", velocity);
   }
 
   private void reset() {

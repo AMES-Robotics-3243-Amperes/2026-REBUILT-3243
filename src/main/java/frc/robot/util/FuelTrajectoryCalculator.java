@@ -93,7 +93,7 @@ public class FuelTrajectoryCalculator {
     // the fuel angle is 0 at the horizon but the hood is 0 when shooting upwards, hence the 90 -
     // fuelAngle
     return new FuelShot(
-        fuelSpeed,
+        fuelSpeed.times(1.05),
         Degrees.of(90).minus(fuelAngle),
         Meters.of(horizontalDistanceToSetpoint).div(fuelSpeed.times(fuelAngleCos)));
   }

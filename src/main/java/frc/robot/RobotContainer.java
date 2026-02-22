@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCharacterizations;
+import frc.robot.constants.FieldConstants;
 import frc.robot.constants.IndexerConstants;
 import frc.robot.constants.ModeConstants;
 import frc.robot.constants.ShooterConstants;
@@ -43,7 +44,6 @@ import frc.robot.subsystems.drivetrain.ModuleIO;
 import frc.robot.subsystems.drivetrain.ModuleIOTalonFXReal;
 import frc.robot.subsystems.drivetrain.ModuleIOTalonFXSim;
 import frc.robot.subsystems.drivetrain.SwerveSubsystem;
-import frc.robot.subsystems.drivetrain.SwerveSubsystem.SwerveSysIdRoutine;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.intake.PivotIO;
 import frc.robot.subsystems.intake.PivotIOSim;
@@ -61,6 +61,8 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.vision.VisionSubsystem;
+import frc.robot.util.FuelTrajectoryCalculator;
+import frc.robot.util.PointOfInterestManager;
 import org.ironmaple.simulation.IntakeSimulation;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -235,27 +237,69 @@ public class RobotContainer {
 
     primaryJoystick.leftTrigger().whileTrue(intake.intakeAtSpeedCommand(RotationsPerSecond.of(10)));
 
+    //
+    // Shooting
+    //
+    primaryJoystick
+        .rightTrigger()
+        .whileTrue(
+            drivetrain.driveCommand(
+                drivetrain.joystickDriveLinear(
+                    SwerveConstants.linearTeleopSpeedWhileShooting,
+                    primaryJoystick::getLeftX,
+                    primaryJoystick::getLeftY,
+                    () -> true),
+                drivetrain.rotateAtAngle(
+                    () ->
+                        PointOfInterestManager.flipTranslationConditionally(
+                                FieldConstants.hubPosition)
+                            .toTranslation2d()
+                            .minus(drivetrain.getPose().getTranslation())
+                            .getAngle())));
+
+    primaryJoystick
+        .rightTrigger()
+        .and(
+            () ->
+                Math.abs(
+                        drivetrain
+                            .getRotation()
+                            .relativeTo(
+                                PointOfInterestManager.flipTranslationConditionally(
+                                        FieldConstants.hubPosition)
+                                    .toTranslation2d()
+                                    .minus(drivetrain.getPose().getTranslation())
+                                    .getAngle())
+                            .getDegrees())
+                    < 2)
+        .whileTrue(
+            indexer.runAtSpeedCommand(
+                MetersPerSecond.of(10), IndexerConstants.spindexerIndexingSpeed));
+
     primaryJoystick
         .rightTrigger()
         .whileTrue(
             shooter.shootCommand(
-                RadiansPerSecond.of(
-                    6
-                        / (ShooterConstants.flywheelRadius.in(Meters)
-                            * ShooterConstants.fuelToFlywheelLinearSpeedRatio)),
-                ShooterConstants.hoodMaxRotation));
-
-    primaryJoystick
-        .b()
-        .whileTrue(
-            indexer.runAtSpeedCommand(
-                MetersPerSecond.of(4), IndexerConstants.spindexerIndexingSpeed));
-
-    primaryJoystick
-        .a()
-        .onTrue(
-            drivetrain.sysIdCommand(
-                SwerveSysIdRoutine.DRIVE_LINEAR_FEEDFORWARD, primaryJoystick.a()));
+                () ->
+                    RadiansPerSecond.of(
+                        FuelTrajectoryCalculator.getFuelShot(
+                                    PointOfInterestManager.flipTranslationConditionally(
+                                        FieldConstants.hubPosition),
+                                    drivetrain.getPose(),
+                                    drivetrain.getChassisSpeeds())
+                                .shooterSetpoint()
+                                .linearFlywheelSpeed()
+                                .in(MetersPerSecond)
+                            / (ShooterConstants.flywheelRadius.in(Meters)
+                                * ShooterConstants.fuelToFlywheelLinearSpeedRatio)),
+                () ->
+                    FuelTrajectoryCalculator.getFuelShot(
+                            PointOfInterestManager.flipTranslationConditionally(
+                                FieldConstants.hubPosition),
+                            drivetrain.getPose(),
+                            drivetrain.getChassisSpeeds())
+                        .shooterSetpoint()
+                        .hoodAngle()));
   }
 
   public Command getAutonomousCommand() {

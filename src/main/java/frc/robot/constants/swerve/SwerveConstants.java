@@ -29,8 +29,9 @@ public class SwerveConstants {
   public static final LinearVelocity linearTeleopSpeed = MetersPerSecond.of(3);
   public static final AngularVelocity angularTeleopSpeed = RotationsPerSecond.of(0.5);
 
+  public static final LinearVelocity linearTeleopSpeedWhileShooting = MetersPerSecond.of(0.5);
+
   // control
-  public static final double rotationFeedforwardCoefficient = 0.8;
   public static final Angle rotationFeedBackTolerance = Degrees.of(0.6);
   public static final ControlConstantsBuilder rotationControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()

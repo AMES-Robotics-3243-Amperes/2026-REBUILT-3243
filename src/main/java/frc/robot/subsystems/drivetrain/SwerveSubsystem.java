@@ -53,7 +53,9 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.SysIdCommand;
 import frc.robot.constants.choreo.ChoreoVars;
 import frc.robot.constants.swerve.ModuleConstants;
 import frc.robot.constants.swerve.SwerveConstants;
@@ -108,7 +110,7 @@ public class SwerveSubsystem extends SubsystemBase {
                       ? DCMotor.getKrakenX60(1)
                       : DCMotor.getKrakenX60Foc(1))
                   .withReduction(ChoreoVars.R_DriveReduction),
-              SwerveConstants.slipCurrent.in(Amps),
+              SwerveConstants.driveCurrentLimit.in(Amps),
               1),
           getModuleTranslations());
 
@@ -461,25 +463,16 @@ public class SwerveSubsystem extends SubsystemBase {
             (voltage) -> runCharacterization(routine, voltage.in(Volts)), null, this));
   }
 
+  public Command sysIdCommand(SwerveSysIdRoutine routine, Trigger advanceRoutine) {
+    return SysIdCommand.sysIdCommand(
+        sysIdRoutine(routine), advanceRoutine, () -> runCharacterization(routine, 0), this);
+  }
+
   /** Runs the SysId characterization of each module with the given output. */
   public void runCharacterization(SwerveSysIdRoutine routine, double output) {
     for (int i = 0; i < 4; i++) {
       modules[i].runCharacterization(routine, output);
     }
-  }
-
-  /** Returns a command to run a quasistatic test in the specified direction. */
-  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return run(() -> runCharacterization(SysIdConstants.activeRoutine, 0.0))
-        .withTimeout(1.0)
-        .andThen(sysIdRoutine(SysIdConstants.activeRoutine).quasistatic(direction));
-  }
-
-  /** Returns a command to run a dynamic test in the specified direction. */
-  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
-    return run(() -> runCharacterization(SysIdConstants.activeRoutine, 0.0))
-        .withTimeout(1.0)
-        .andThen(sysIdRoutine(SysIdConstants.activeRoutine).dynamic(direction));
   }
 
   public Angle getCharacterizationDriveAngle() {

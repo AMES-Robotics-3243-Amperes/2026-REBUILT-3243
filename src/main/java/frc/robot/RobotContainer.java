@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
@@ -16,21 +17,25 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCharacterizations;
 import frc.robot.constants.IndexerConstants;
 import frc.robot.constants.ModeConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.VisionConstants;
+import frc.robot.constants.choreo.ChoreoVars;
 import frc.robot.constants.swerve.SwerveConstants;
 import frc.robot.constants.swerve.TunerConstants;
 import frc.robot.subsystems.Indexer.IndexerSubsystem;
 import frc.robot.subsystems.Indexer.KickerIO;
 import frc.robot.subsystems.Indexer.KickerIOReal;
+import frc.robot.subsystems.Indexer.KickerIOSim;
 import frc.robot.subsystems.Indexer.SpindexerIO;
 import frc.robot.subsystems.Indexer.SpindexerIOReal;
+import frc.robot.subsystems.Indexer.SpindexerIOSim;
 import frc.robot.subsystems.drivetrain.GyroIO;
 import frc.robot.subsystems.drivetrain.GyroIOPigeon2;
 import frc.robot.subsystems.drivetrain.GyroIOSim;
@@ -38,11 +43,13 @@ import frc.robot.subsystems.drivetrain.ModuleIO;
 import frc.robot.subsystems.drivetrain.ModuleIOTalonFXReal;
 import frc.robot.subsystems.drivetrain.ModuleIOTalonFXSim;
 import frc.robot.subsystems.drivetrain.SwerveSubsystem;
+import frc.robot.subsystems.drivetrain.SwerveSubsystem.SwerveSysIdRoutine;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.intake.PivotIO;
 import frc.robot.subsystems.intake.PivotIOSim;
 import frc.robot.subsystems.intake.RollerIO;
 import frc.robot.subsystems.intake.RollerIOReal;
+import frc.robot.subsystems.intake.RollerIOSim;
 import frc.robot.subsystems.shooter.FlywheelIO;
 import frc.robot.subsystems.shooter.FlywheelIOReal;
 import frc.robot.subsystems.shooter.FlywheelIOSim;
@@ -54,8 +61,10 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.vision.VisionSubsystem;
+import org.ironmaple.simulation.IntakeSimulation;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnFly;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -97,6 +106,8 @@ public class RobotContainer {
         break;
 
       case SIM:
+        SimulatedArena.getInstance().placeGamePiecesOnField();
+
         driveSimulation =
             new SwerveDriveSimulation(
                 SwerveSubsystem.mapleSimConfig, new Pose2d(2, 2, new Rotation2d()));
@@ -110,8 +121,20 @@ public class RobotContainer {
                 new ModuleIOTalonFXSim(TunerConstants.BackLeft, driveSimulation.getModules()[2]),
                 new ModuleIOTalonFXSim(TunerConstants.BackRight, driveSimulation.getModules()[3]),
                 driveSimulation::setSimulationWorldPose);
-        intake = new IntakeSubsystem(new RollerIO() {}, new PivotIOSim());
-        indexer = new IndexerSubsystem(new KickerIO() {}, new SpindexerIO() {});
+
+        IntakeSimulation intakeSimulation =
+            IntakeSimulation.OverTheBumperIntake(
+                "Fuel",
+                driveSimulation,
+                ChoreoVars.R_BumperLength,
+                ChoreoVars.R_DeployedHopperX.minus(ChoreoVars.R_BumperLength.div(2)),
+                IntakeSimulation.IntakeSide.FRONT,
+                40);
+        intake =
+            new IntakeSubsystem(
+                new RollerIOSim(intakeSimulation, driveSimulation),
+                new PivotIOSim(intakeSimulation));
+        indexer = new IndexerSubsystem(new KickerIOSim(), new SpindexerIOSim());
         shooter = new ShooterSubsystem(new FlywheelIOSim(), new HoodIOSim());
 
         new VisionSubsystem(
@@ -122,6 +145,42 @@ public class RobotContainer {
                         new VisionIOPhotonVisionSim(
                             config, driveSimulation::getSimulatedDriveTrainPose))
                 .toList());
+
+        CommandScheduler.getInstance()
+            .schedule(
+                Commands.runOnce(
+                        () -> {
+                          if (indexer.getKickerVelocity().isEquivalent(RadiansPerSecond.of(0))
+                              || indexer
+                                  .getSpindexerVelocity()
+                                  .isEquivalent(RadiansPerSecond.of(0))) return;
+
+                          if (!intakeSimulation.obtainGamePieceFromIntake()) return;
+
+                          RebuiltFuelOnFly fuel =
+                              new RebuiltFuelOnFly(
+                                  driveSimulation.getSimulatedDriveTrainPose().getTranslation(),
+                                  ShooterConstants.robotToShooter
+                                      .getTranslation()
+                                      .toTranslation2d(),
+                                  driveSimulation
+                                      .getDriveTrainSimulatedChassisSpeedsFieldRelative(),
+                                  driveSimulation
+                                      .getSimulatedDriveTrainPose()
+                                      .getRotation()
+                                      .plus(
+                                          ShooterConstants.robotToShooter
+                                              .getRotation()
+                                              .toRotation2d()),
+                                  ShooterConstants.robotToShooter.getMeasureZ(),
+                                  shooter.getFuelVelocity(),
+                                  Degrees.of(90).minus(shooter.getHoodAngle()));
+
+                          SimulatedArena.getInstance().addGamePieceProjectile(fuel);
+                        })
+                    .andThen(Commands.waitSeconds(1.0 / 6.0))
+                    .repeatedly()
+                    .ignoringDisable(true));
 
         break;
 
@@ -179,7 +238,7 @@ public class RobotContainer {
     primaryJoystick
         .rightTrigger()
         .whileTrue(
-            shooter.shootAtHoodAngleCommand(
+            shooter.shootCommand(
                 RadiansPerSecond.of(
                     6
                         / (ShooterConstants.flywheelRadius.in(Meters)
@@ -191,6 +250,12 @@ public class RobotContainer {
         .whileTrue(
             indexer.runAtSpeedCommand(
                 MetersPerSecond.of(4), IndexerConstants.spindexerIndexingSpeed));
+
+    primaryJoystick
+        .a()
+        .onTrue(
+            drivetrain.sysIdCommand(
+                SwerveSysIdRoutine.DRIVE_LINEAR_FEEDFORWARD, primaryJoystick.a()));
   }
 
   public Command getAutonomousCommand() {
@@ -208,6 +273,7 @@ public class RobotContainer {
   }
 
   public void updateComponents() {
+    // TODO: replace sim cad with something that has not so terrible offsets
     Logger.recordOutput(
         "ComponentPoses",
         new Pose3d[] {
@@ -217,7 +283,10 @@ public class RobotContainer {
               Units.inchesToMeters(17.735146 - 6.980000 - 1.166046 - 0.21),
               new Rotation3d(0, intake.getPivotAngle().times(-1).in(Radians), 0)),
           new Pose3d(
-              (Math.sin(Timer.getFPGATimestamp()) + 1) * Units.inchesToMeters(11.5) / 2,
+              ChoreoVars.R_DeployedHopperX.in(Meters)
+                  + (ChoreoVars.R_DeployedHopperX.minus(ChoreoVars.R_BumperLength.div(2)).in(Meters)
+                      * Math.cos(intake.getPivotAngle().times(-1).in(Radians) + 0.15))
+                  - 0.5,
               0,
               0,
               new Rotation3d()),

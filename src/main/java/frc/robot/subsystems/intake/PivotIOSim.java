@@ -12,26 +12,30 @@ import static edu.wpi.first.units.Units.Volts;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.units.measure.Angle;
 import frc.robot.constants.IntakeConstants;
+import org.ironmaple.simulation.IntakeSimulation;
 
 /** Add your docs here. */
 public class PivotIOSim implements PivotIO {
-  double maxVelocityRadiansPerSecond = 5;
-  SlewRateLimiter rateLimiter = new SlewRateLimiter(maxVelocityRadiansPerSecond);
-  Angle position = IntakeConstants.pivotMaxRotation;
-  Angle target = IntakeConstants.pivotMaxRotation;
+  private final SlewRateLimiter rateLimiter = new SlewRateLimiter(5);
+  private Angle position = IntakeConstants.pivotMaxRotation;
+  private Angle target = IntakeConstants.pivotMaxRotation;
 
-  public PivotIOSim() {}
+  private final IntakeSimulation intakeSimulation;
+
+  public PivotIOSim(IntakeSimulation intakeSimulation) {
+    this.intakeSimulation = intakeSimulation;
+  }
 
   @Override
   public void updateInputs(PivotIOInputs inputs) {
     position = Radians.of(rateLimiter.calculate(target.in(Radians)));
 
+    if (position.isNear(IntakeConstants.pivotMinRotation, Degrees.of(2)))
+      intakeSimulation.startIntake();
+    else intakeSimulation.stopIntake();
+
     inputs.angle = position;
-    inputs.angularVelocity =
-        position.isEquivalent(target)
-            ? RadiansPerSecond.of(0)
-            : RadiansPerSecond.of(maxVelocityRadiansPerSecond)
-                .times(Math.signum(target.minus(position).in(Degrees)));
+    inputs.angularVelocity = RadiansPerSecond.of(0);
     inputs.appliedVoltage = Volts.of(0);
   }
 

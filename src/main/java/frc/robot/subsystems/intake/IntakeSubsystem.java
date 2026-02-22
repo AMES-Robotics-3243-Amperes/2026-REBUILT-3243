@@ -16,10 +16,9 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.robot.commands.SysIdCommand;
 import frc.robot.constants.IntakeConstants;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
@@ -125,42 +124,24 @@ public class IntakeSubsystem extends SubsystemBase {
   //
 
   public Command rollerSysIdCommand(Trigger advanceRoutine) {
-    SysIdRoutine routine =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(
-                IntakeConstants.sysIdRampRate,
-                IntakeConstants.sysIdStepVoltage,
-                IntakeConstants.sysIdTimeout,
-                (state) -> {
-                  Logger.recordOutput("Intake/SysId/Roller/State", state.toString());
+    return SysIdCommand.sysIdCommand(
+        advanceRoutine,
+        "Indexer/Intake/Roller",
+        voltage -> rollerIO.runOpenLoop(voltage.in(Volts)),
+        () -> rollerInputs.position,
+        () -> rollerInputs.velocity,
+        () -> rollerInputs.appliedVoltage,
+        this);
+  }
 
-                  Logger.recordOutput(
-                      "Intake/SysId/Roller/PositionRadians", rollerInputs.position.in(Radians));
-                  Logger.recordOutput(
-                      "Intake/SysId/Roller/VelocityRadiansPerSecond",
-                      rollerInputs.velocity.in(RadiansPerSecond));
-                  Logger.recordOutput(
-                      "Intake/SysId/Roller/AppliedVolts", rollerInputs.appliedVoltage.in(Volts));
-                }),
-            new SysIdRoutine.Mechanism(
-                (voltage) -> rollerIO.runOpenLoop(voltage.in(Volts)), null, this));
-
-    Supplier<Command> waitCommand =
-        () ->
-            Commands.parallel(
-                Commands.waitUntil(advanceRoutine.negate()),
-                Commands.waitSeconds(0.5),
-                runOnce(() -> rollerIO.runOpenLoop(0)));
-
-    return Commands.sequence(
-        // TODO: the drivetrain sysid routine looks the exact same. remove code repetition
-        waitCommand.get(),
-        routine.dynamic(SysIdRoutine.Direction.kForward).until(advanceRoutine),
-        waitCommand.get(),
-        routine.dynamic(SysIdRoutine.Direction.kReverse).until(advanceRoutine),
-        waitCommand.get(),
-        routine.quasistatic(SysIdRoutine.Direction.kForward).until(advanceRoutine),
-        waitCommand.get(),
-        routine.quasistatic(SysIdRoutine.Direction.kReverse).until(advanceRoutine));
+  public Command pivotSysIdCommand(Trigger advanceRoutine) {
+    return SysIdCommand.sysIdCommand(
+        advanceRoutine,
+        "Indexer/Intake/Pivot",
+        voltage -> pivotIO.runOpenLoop(voltage.in(Volts)),
+        () -> pivotInputs.angle,
+        () -> pivotInputs.angularVelocity,
+        () -> pivotInputs.appliedVoltage,
+        this);
   }
 }

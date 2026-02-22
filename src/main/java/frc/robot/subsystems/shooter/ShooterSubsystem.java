@@ -7,22 +7,16 @@ package frc.robot.subsystems.shooter;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.constants.ShooterConstants;
-import frc.robot.util.FuelTrajectoryCalculator.FuelShot;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -76,60 +70,20 @@ public class ShooterSubsystem extends SubsystemBase {
     }
   }
 
-  private void runFlywheelAtFuelSpeedWithHood(LinearVelocity fuelVelocity, Angle targetHoodAngle) {
-    AngularVelocity angularVelocity =
-        RadiansPerSecond.of(
-            fuelVelocity.div(ShooterConstants.fuelToFlywheelLinearSpeedRatio).in(MetersPerSecond)
-                / ShooterConstants.flywheelRadius.in(Meters));
-
-    runFlywheelWithHood(angularVelocity, targetHoodAngle);
-  }
-
-  private void coastFlywheel() {
+  private void reset() {
     flywheelIO.coast();
-    Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", RotationsPerSecond.of(0));
+    Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", RadiansPerSecond.of(0));
+
+    hoodIO.setAngle(ShooterConstants.hoodMinRotation);
+    Logger.recordOutput("Shooter/Hood/SetpointAngle", ShooterConstants.hoodMinRotation);
   }
 
-  /* Lowers hood and sets shooter to coast. */
-  public void reset() {
-    setHoodAngle(ShooterConstants.hoodMinRotation);
-    coastFlywheel();
+  public Command shootCommand(Supplier<AngularVelocity> flywheelSpeed, Supplier<Angle> hoodAngle) {
+    return runEnd(() -> runFlywheelWithHood(flywheelSpeed.get(), hoodAngle.get()), this::reset);
   }
 
-  public Command setHoodAngleCommand(Angle angle) {
-    return runEnd(
-        () -> {
-          setHoodAngle(angle);
-        },
-        this::reset);
-  }
-
-  public Command shootAtHoodAngleCommand(AngularVelocity velocity, Angle angle) {
-    return runEnd(
-        () -> {
-          Angle clampedAngle = setHoodAngle(angle);
-          runFlywheelWithHood(velocity, clampedAngle);
-        },
-        this::reset);
-  }
-
-  public Command angleHoodForShootCommand(Supplier<FuelShot> setpointSupplier) {
-    return runEnd(
-        () -> {
-          FuelShot setpoint = setpointSupplier.get();
-          setHoodAngle(setpoint.hoodAngle());
-        },
-        this::reset);
-  }
-
-  public Command shootAtSetpointCommand(Supplier<FuelShot> setpointSupplier) {
-    return runEnd(
-        () -> {
-          FuelShot setpoint = setpointSupplier.get();
-          Angle clampedAngle = setHoodAngle(setpoint.hoodAngle());
-          runFlywheelAtFuelSpeedWithHood(setpoint.linearFlywheelSpeed(), clampedAngle);
-        },
-        this::reset);
+  public Command shootCommand(AngularVelocity flywheelSpeed, Angle hoodAngle) {
+    return shootCommand(() -> flywheelSpeed, () -> hoodAngle);
   }
 
   @AutoLogOutput(key = "Shooter/Hood/Angle")
@@ -148,50 +102,5 @@ public class ShooterSubsystem extends SubsystemBase {
         flywheelInputs.velocity.in(RadiansPerSecond)
             * ShooterConstants.flywheelRadius.in(Meters)
             * ShooterConstants.fuelToFlywheelLinearSpeedRatio);
-  }
-
-  //
-  // SysId
-  //
-
-  public Command sysIdCommand(Trigger advanceRoutine) {
-    SysIdRoutine routine =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(
-                ShooterConstants.sysIdRampRate,
-                ShooterConstants.sysIdStepVoltage,
-                ShooterConstants.sysIdTimeout,
-                (state) -> {
-                  Logger.recordOutput("Shooter/SysId/State", state.toString());
-
-                  Logger.recordOutput(
-                      "Shooter/SysId/FlywheelPositionRadians", flywheelInputs.position.in(Radians));
-                  Logger.recordOutput(
-                      "Shooter/SysId/FlywheelVelocityRadiansPerSecond",
-                      flywheelInputs.velocity.in(RadiansPerSecond));
-                  Logger.recordOutput(
-                      "Shooter/SysId/FlywheelAppliedVolts",
-                      flywheelInputs.appliedVoltage.in(Volts));
-                }),
-            new SysIdRoutine.Mechanism(
-                (voltage) -> flywheelIO.runOpenLoop(voltage.in(Volts)), null, this));
-
-    Supplier<Command> waitCommand =
-        () ->
-            Commands.parallel(
-                Commands.waitUntil(advanceRoutine.negate()),
-                Commands.waitSeconds(4),
-                runOnce(flywheelIO::coast));
-
-    return Commands.sequence(
-        // TODO: the drivetrain sysid routine looks the exact same. remove code repetition
-        waitCommand.get(),
-        routine.dynamic(SysIdRoutine.Direction.kForward).until(advanceRoutine),
-        waitCommand.get(),
-        routine.dynamic(SysIdRoutine.Direction.kReverse).until(advanceRoutine),
-        waitCommand.get(),
-        routine.quasistatic(SysIdRoutine.Direction.kForward).until(advanceRoutine),
-        waitCommand.get(),
-        routine.quasistatic(SysIdRoutine.Direction.kReverse).until(advanceRoutine));
   }
 }

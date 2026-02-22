@@ -7,7 +7,6 @@
 
 package frc.robot.commands;
 
-import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
@@ -24,19 +23,13 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.constants.swerve.SwerveConstants;
-import frc.robot.constants.swerve.SysIdConstants;
 import frc.robot.subsystems.drivetrain.SwerveSubsystem;
-import frc.robot.subsystems.drivetrain.SwerveSubsystem.SwerveSysIdRoutine;
-import frc.robot.util.Container;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
@@ -173,62 +166,5 @@ public class DriveCharacterizations {
                       + formatter.format(state.maxVelocityMetersPerSecond)
                       + " meters per second");
             }));
-  }
-
-  /** Measures the robot's slip current. Place robot in front of a solid wall before running. */
-  public static Command slipCurrentCharacterization(SwerveSubsystem drive) {
-    Container<Current> maxCurrent = new Container<Current>(Amps.of(0));
-    SlewRateLimiter accelerationLimiter = new SlewRateLimiter(0.1);
-
-    return Commands.sequence(
-        Commands.runOnce(
-            () -> {
-              maxCurrent.inner = Amps.of(0);
-              accelerationLimiter.reset(0);
-            }),
-        Commands.run(() -> drive.drive(new ChassisSpeeds(0.08, 0, 0)), drive)
-            .withTimeout(Seconds.of(1)),
-        Commands.run(
-                () ->
-                    drive.runCharacterization(
-                        SwerveSysIdRoutine.DRIVE_LINEAR_FEEDFORWARD,
-                        accelerationLimiter.calculate(Double.MAX_VALUE)),
-                drive)
-            .withTimeout(Seconds.of(0.5)),
-        Commands.run(
-                () -> {
-                  drive.runCharacterization(
-                      SwerveSysIdRoutine.DRIVE_LINEAR_FEEDFORWARD,
-                      accelerationLimiter.calculate(Double.MAX_VALUE));
-
-                  Current activeCurrent = drive.getAverageCurrent();
-                  if (maxCurrent.inner.lt(activeCurrent)) {
-                    maxCurrent.inner = activeCurrent;
-                  }
-                },
-                drive)
-            .until(() -> drive.getChassisSpeeds().vxMetersPerSecond > 3e-2),
-        Commands.runOnce(
-            () -> {
-              NumberFormat formatter = new DecimalFormat("#0.000");
-              System.out.println("********** Slip Current Characterization Results **********");
-              System.out.println(
-                  "\tSlip Current: " + formatter.format(maxCurrent.inner.in(Amps)) + " amps");
-            }));
-  }
-
-  /** Runs all SysId routines. The advanceRoutine supplier ends the routine early. */
-  public static Command sysIdCharacterization(SwerveSubsystem drive, Trigger advanceRoutine) {
-    return Commands.sequence(
-        Commands.run(() -> drive.runCharacterization(SysIdConstants.activeRoutine, 0), drive)
-            .withTimeout(Seconds.of(1.5)),
-        Commands.waitUntil(advanceRoutine.negate()),
-        drive.sysIdDynamic(SysIdRoutine.Direction.kForward).until(advanceRoutine),
-        Commands.waitUntil(advanceRoutine.negate()),
-        drive.sysIdDynamic(SysIdRoutine.Direction.kReverse).until(advanceRoutine),
-        Commands.waitUntil(advanceRoutine.negate()),
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward).until(advanceRoutine),
-        Commands.waitUntil(advanceRoutine.negate()),
-        drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse).until(advanceRoutine));
   }
 }

@@ -3,17 +3,10 @@ package frc.robot.constants;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.Second;
-import static edu.wpi.first.units.Units.Seconds;
-import static edu.wpi.first.units.Units.Volts;
 
-import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.units.measure.Velocity;
-import edu.wpi.first.units.measure.Voltage;
 import frc.robot.util.ControlConstantsBuilder;
 
 public class IntakeConstants {
@@ -29,10 +22,6 @@ public class IntakeConstants {
 
   public static final AngularVelocity rollerAbsoluteSpeed = RotationsPerSecond.of(20);
   public static final Angle pivotToleranceBeforeRollersEngage = Degrees.of(5);
-
-  public static final Velocity<VoltageUnit> sysIdRampRate = Volts.per(Second).of(0.3);
-  public static final Voltage sysIdStepVoltage = Volts.of(1.5);
-  public static final Time sysIdTimeout = Seconds.of(8);
 
   // pivot
   public static final int pivotId = 3;

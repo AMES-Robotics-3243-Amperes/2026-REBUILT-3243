@@ -26,7 +26,7 @@ public class SwerveConstants {
   public static final double teleopJoystickDeadband = 0.3;
   public static final double teleopAbsoluteRotationDeadband = 0.5;
 
-  public static final LinearVelocity linearTeleopSpeed = MetersPerSecond.of(1);
+  public static final LinearVelocity linearTeleopSpeed = MetersPerSecond.of(3);
   public static final AngularVelocity angularTeleopSpeed = RotationsPerSecond.of(0.5);
 
   // control
@@ -42,7 +42,7 @@ public class SwerveConstants {
 
   // physical properties
   public static final LinearVelocity speedAt12Volts = MetersPerSecond.of(5.14);
-  public static final Current slipCurrent = Amps.of(120);
+  public static final Current driveCurrentLimit = Amps.of(120);
 
   public static final Distance driveBaseRadius =
       Meters.of(

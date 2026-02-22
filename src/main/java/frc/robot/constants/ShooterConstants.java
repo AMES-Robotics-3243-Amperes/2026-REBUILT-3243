@@ -8,22 +8,15 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
-import static edu.wpi.first.units.Units.Second;
-import static edu.wpi.first.units.Units.Seconds;
-import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.VoltageUnit;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.MomentOfInertia;
-import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.units.measure.Velocity;
-import edu.wpi.first.units.measure.Voltage;
 import frc.robot.util.ControlConstantsBuilder;
 
 /** Add your docs here. */
@@ -42,10 +35,6 @@ public class ShooterConstants {
 
   public static final ControlConstantsBuilder flywheelControl =
       ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.85, 0, 0).sva(10.6, 0, 0);
-
-  public static final Velocity<VoltageUnit> sysIdRampRate = Volts.per(Second).of(0.8);
-  public static final Voltage sysIdStepVoltage = Volts.of(4);
-  public static final Time sysIdTimeout = Seconds.of(8);
 
   // hood
   public static final int hoodId = 5;

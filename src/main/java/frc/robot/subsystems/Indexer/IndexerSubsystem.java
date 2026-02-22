@@ -4,18 +4,14 @@
 
 package frc.robot.subsystems.Indexer;
 
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.SysIdCommand;
-import frc.robot.constants.IndexerConstants;
 import org.littletonrobotics.junction.Logger;
 
 public class IndexerSubsystem extends SubsystemBase {
@@ -48,31 +44,37 @@ public class IndexerSubsystem extends SubsystemBase {
     return kickerInputs.velocity;
   }
 
+  public void setKickerVelocity(AngularVelocity velocity) {
+    kickerIO.setAngularVelocity(velocity);
+    Logger.recordOutput("Indexer/Kicker/SetpointVelocity", velocity);
+  }
+
+  public void setSpindexerVelocity(AngularVelocity velocity) {
+    spindexerIO.setAngularVelocity(velocity);
+    Logger.recordOutput("Indexer/Spindexer/SetpointVelocity", velocity);
+  }
+
+  public void coastKicker() {
+    kickerIO.coast();
+    Logger.recordOutput("Indexer/Kicker/SetpointVelocity", RadiansPerSecond.of(0));
+  }
+
+  public void coastSpindexer() {
+    spindexerIO.coast();
+    Logger.recordOutput("Indexer/Spindexer/SetpointVelocity", RadiansPerSecond.of(0));
+  }
+
   public Command runAtSpeedCommand(
       AngularVelocity kickerVelocity, AngularVelocity spindexerVelocity) {
     return runEnd(
         () -> {
-          kickerIO.setAngularVelocity(kickerVelocity);
-          spindexerIO.setAngularVelocity(spindexerVelocity);
-
-          Logger.recordOutput("Indexer/Kicker/SetpointVelocity", kickerVelocity);
-          Logger.recordOutput("Indexer/Spindexer/SetpointVelocity", spindexerVelocity);
+          setKickerVelocity(kickerVelocity);
+          setSpindexerVelocity(spindexerVelocity);
         },
         () -> {
-          kickerIO.coast();
-          spindexerIO.coast();
-
-          Logger.recordOutput("Indexer/Kicker/SetpointVelocity", RadiansPerSecond.of(0));
-          Logger.recordOutput("Indexer/Spindexer/SetpointVelocity", RadiansPerSecond.of(0));
+          coastKicker();
+          coastSpindexer();
         });
-  }
-
-  public Command runAtSpeedCommand(
-      LinearVelocity fuelSpeedInKicker, AngularVelocity spindexerVelocity) {
-    return runAtSpeedCommand(
-        RadiansPerSecond.of(
-            fuelSpeedInKicker.in(MetersPerSecond) / IndexerConstants.kickerRadius.in(Meters)),
-        spindexerVelocity);
   }
 
   public Command kickerSysIdCommand(Trigger advanceRoutine) {

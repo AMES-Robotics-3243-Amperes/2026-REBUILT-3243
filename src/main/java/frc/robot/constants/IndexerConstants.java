@@ -4,11 +4,9 @@
 
 package frc.robot.constants;
 
-import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.RPM;
 
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Distance;
 import frc.robot.util.ControlConstantsBuilder;
 
 /** Add your docs here. */
@@ -25,7 +23,8 @@ public class IndexerConstants {
 
   public static final int kickerId = 4;
   public static final double kickerReduction = 5.0 / 4.0;
-  public static final Distance kickerRadius = Inches.of(1.125);
+
+  public static final AngularVelocity kickerShootingSpeed = RPM.of(2500);
 
   public static final ControlConstantsBuilder kickerControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()

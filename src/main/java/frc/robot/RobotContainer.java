@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCharacterizations;
+import frc.robot.commands.HoodAngleCharacterization;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.IndexerConstants;
 import frc.robot.constants.ModeConstants;
@@ -237,6 +238,10 @@ public class RobotContainer {
 
     primaryJoystick.leftTrigger().whileTrue(intake.intakeAtSpeedCommand(RotationsPerSecond.of(10)));
 
+    primaryJoystick
+        .a()
+        .onTrue(new HoodAngleCharacterization(drivetrain, shooter, indexer, primaryJoystick));
+
     //
     // Shooting
     //
@@ -274,7 +279,7 @@ public class RobotContainer {
                     < 2)
         .whileTrue(
             indexer.runAtSpeedCommand(
-                MetersPerSecond.of(10), IndexerConstants.spindexerIndexingSpeed));
+                IndexerConstants.kickerShootingSpeed, IndexerConstants.spindexerIndexingSpeed));
 
     primaryJoystick
         .rightTrigger()

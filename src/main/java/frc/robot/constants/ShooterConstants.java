@@ -28,7 +28,7 @@ public class ShooterConstants {
   public static final int flywheelFollowerId = 11;
   public static final InvertedValue shooterFlywheelInverted = InvertedValue.Clockwise_Positive;
 
-  public static final AngularVelocity shootVelocity = RPM.of(3500);
+  public static final AngularVelocity flywheelShootSpeed = RPM.of(3500);
 
   public static final Distance flywheelRadius = Inches.of(2);
   public static final double flywheelGearReduction = 4.0 / 3.0;

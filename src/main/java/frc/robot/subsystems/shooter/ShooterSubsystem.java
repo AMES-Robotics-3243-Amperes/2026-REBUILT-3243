@@ -43,7 +43,7 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   /* Clamps the given angle to the allowed range, sets the hood to the clamped angle, and returns the clamped angle. */
-  private Angle setHoodAngle(Angle angle) {
+  public Angle setHoodAngle(Angle angle) {
     Angle clampedAngle =
         Degrees.of(
             MathUtil.clamp(
@@ -57,16 +57,20 @@ public class ShooterSubsystem extends SubsystemBase {
     return clampedAngle;
   }
 
-  private void runFlywheelWithHood(AngularVelocity velocity, Angle targetHoodAngle) {
+  public void runFlywheelWithHood(AngularVelocity velocity, Angle targetHoodAngle) {
     setHoodAngle(targetHoodAngle);
 
     flywheelIO.setAngularVelocity(velocity);
     Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", velocity);
   }
 
-  private void reset() {
+  public void coastFlywheel() {
     flywheelIO.coast();
     Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", RadiansPerSecond.of(0));
+  }
+
+  public void reset() {
+    coastFlywheel();
 
     hoodIO.setAngle(ShooterConstants.hoodMinRotation);
     Logger.recordOutput("Shooter/Hood/SetpointAngle", ShooterConstants.hoodMinRotation);

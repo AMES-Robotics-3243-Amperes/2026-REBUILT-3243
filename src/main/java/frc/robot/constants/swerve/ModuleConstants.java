@@ -16,13 +16,11 @@ import frc.robot.util.ControlConstantsBuilder;
 public class ModuleConstants {
   // drive
   public static final ControlConstantsBuilder driveControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(0.11247, 0, 0)
-          .sva(0.12082, 0.09818, 0.0084962);
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(6, 0, 0).sva(1.8, 0, 0);
 
   // turn
   public static final ControlConstantsBuilder steerControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(5, 0.6, 0.2).sva(0, 0.3, 0);
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(5, 0, 0).sva(0, 0, 0);
 
   public static final Current steerStatorCurrentLimit = Amps.of(60);
 
@@ -33,7 +31,8 @@ public class ModuleConstants {
   public static final double steerReduction = 25;
 
   public static final ClosedLoopOutputType steerClosedLoopOutput = ClosedLoopOutputType.Voltage;
-  public static final ClosedLoopOutputType driveClosedLoopOutput = ClosedLoopOutputType.Voltage;
+  public static final ClosedLoopOutputType driveClosedLoopOutput =
+      ClosedLoopOutputType.TorqueCurrentFOC;
 
   public static final SteerFeedbackType steerFeedbackType = SteerFeedbackType.RemoteCANcoder;
 

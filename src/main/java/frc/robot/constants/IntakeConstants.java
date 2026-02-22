@@ -19,11 +19,13 @@ import frc.robot.util.ControlConstantsBuilder;
 public class IntakeConstants {
   // roller
   public static final int rollerId = 2;
-  public static final double rollerReduction = 0.5;
+  public static final double rollerReduction = 2.0;
   public static final Distance rollerRadius = Inches.of(1);
 
   public static final ControlConstantsBuilder rollerControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.000002, 0, 0).sva(0, 0, 0);
+      ControlConstantsBuilder.fromRadiansAndSeconds()
+          .pid(0.000002, 0, 0)
+          .sva(0.30224, 0.039192, 0.0051602);
 
   public static final AngularVelocity rollerAbsoluteSpeed = RotationsPerSecond.of(20);
   public static final Angle pivotToleranceBeforeRollersEngage = Degrees.of(5);

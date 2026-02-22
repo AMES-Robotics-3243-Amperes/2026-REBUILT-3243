@@ -28,39 +28,40 @@ import frc.robot.util.ControlConstantsBuilder;
 
 /** Add your docs here. */
 public class ShooterConstants {
+  // flywheel
   public static final int flywheelLeaderId = 10;
   public static final int flywheelFollowerId = 11;
   public static final InvertedValue shooterFlywheelInverted = InvertedValue.Clockwise_Positive;
-
-  public static final int hoodId = 10;
 
   public static final Current flywheelSupplyCurrentLimit = Amps.of(70);
 
   public static final Distance flywheelRadius = Inches.of(2);
   public static final double flywheelGearReduction = 4.0 / 3.0;
 
-  // the ratio of speed transferred into a fuel to linear speed of the flywheel
   public static final double fuelToFlywheelLinearSpeedRatio = 0.5;
 
-  public static final Angle hoodPhysicalBottomOutRotation = Degrees.of(25);
-  public static final Angle hoodMinRotation = Degrees.of(15);
-  public static final Angle hoodMaxRotation = Degrees.of(50);
-
-  public static final Angle hoodToleranceWhenShooting = Degrees.of(5);
-
-  public static final double encoderToHoodReduction = 475.0 / 6.0;
-
   public static final ControlConstantsBuilder flywheelControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(0.1, 0, 0)
-          .sva(0.13976, 0.023548, 0.0013083);
-
-  public static final ControlConstantsBuilder hoodControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(1, 0, 0.05).sva(0, 0, 0);
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.85, 0, 0).sva(10.6, 0, 0);
 
   public static final Velocity<VoltageUnit> sysIdRampRate = Volts.per(Second).of(0.8);
   public static final Voltage sysIdStepVoltage = Volts.of(4);
   public static final Time sysIdTimeout = Seconds.of(8);
+
+  // hood
+  public static final int hoodId = 5;
+
+  public static final Angle hoodAbsoluteEncoderZeroedRotation = Degrees.of(20);
+  public static final Angle hoodMinRotation = Degrees.of(20);
+  public static final Angle hoodMaxRotation = Degrees.of(45);
+
+  public static final Angle hoodToleranceWhenShooting = Degrees.of(5);
+
+  public static final double encoderToHoodReduction = 320.0 / 24.0;
+  public static final double motorToEncoderHoodReduction = 15.0 / 1.0;
+
+  public static final Angle hoodTolerance = Degrees.of(0.05);
+  public static final ControlConstantsBuilder hoodControl =
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(10, 0.02, 0.05);
 
   // fuel trajectory calculation
   public static final Distance extraPointHorizontalOffset = Inches.of(4);

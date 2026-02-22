@@ -24,7 +24,6 @@ public class RollerIOReal implements RollerIO {
   RelativeEncoder encoder;
 
   public RollerIOReal() {
-    System.out.println("RollerIOReal constructed");
     SparkMaxConfig config = new SparkMaxConfig();
 
     config.encoder.positionConversionFactor(1.0 / IntakeConstants.rollerReduction);

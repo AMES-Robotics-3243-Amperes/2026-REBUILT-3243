@@ -5,11 +5,13 @@
 package frc.robot.constants;
 
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.VoltageUnit;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Velocity;
@@ -18,25 +20,26 @@ import frc.robot.util.ControlConstantsBuilder;
 
 /** Add your docs here. */
 public class IndexerConstants {
-  public static final int spindexerId = 0;
+  public static final int spindexerId = 1;
+  public static final double spindexerReduction = 1.0;
 
-  public static final double spindexerReduction = 1;
-
-  public static final Distance spindexerRadius = Inches.of(1);
+  public static final AngularVelocity spindexerIndexingSpeed = RPM.of(120);
 
   public static final ControlConstantsBuilder spindexerControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.000002, 0, 0).sva(0, 0.0, 0.0);
+      ControlConstantsBuilder.fromRadiansAndSeconds()
+          .pid(0.000002, 0, 0)
+          .sva(0.43878, 0.020483, 0.0021611);
 
-  public static final int kickerId = 1;
-
-  public static final double kickerReduction = 1.25;
-
-  public static final Distance kickerRadius = Inches.of(1);
+  public static final int kickerId = 4;
+  public static final double kickerReduction = 5.0 / 4.0;
+  public static final Distance kickerRadius = Inches.of(1.125);
 
   public static final ControlConstantsBuilder kickerControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.000002, 0, 0).sva(0, 0.0, 0.0);
+      ControlConstantsBuilder.fromRadiansAndSeconds()
+          .pid(0.000002, 0, 0)
+          .sva(0.39338, 0.023391, 0.0025287);
 
-  public static final Velocity<VoltageUnit> sysIdRampRate = Volts.per(Second).of(0.8);
-  public static final Voltage sysIdStepVoltage = Volts.of(4);
+  public static final Velocity<VoltageUnit> sysIdRampRate = Volts.per(Second).of(0.4);
+  public static final Voltage sysIdStepVoltage = Volts.of(2);
   public static final Time sysIdTimeout = Seconds.of(8);
 }

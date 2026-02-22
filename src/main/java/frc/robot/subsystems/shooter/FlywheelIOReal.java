@@ -10,7 +10,7 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -20,6 +20,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.constants.ShooterConstants;
+import frc.robot.util.TunableControls;
 
 /** Add your docs here. */
 public class FlywheelIOReal implements FlywheelIO {
@@ -31,7 +32,8 @@ public class FlywheelIOReal implements FlywheelIO {
   protected final StatusSignal<Voltage> voltage;
 
   private final VoltageOut voltageRequest = new VoltageOut(0);
-  private final VelocityVoltage velocityRequest = new VelocityVoltage(0);
+  private final VelocityTorqueCurrentFOC velocityTorqueCurrentRequest =
+      new VelocityTorqueCurrentFOC(0);
   private final CoastOut coastRequest = new CoastOut();
 
   public FlywheelIOReal() {
@@ -64,6 +66,9 @@ public class FlywheelIOReal implements FlywheelIO {
     // Configure periodic frames
     BaseStatusSignal.setUpdateFrequencyForAll(50.0, position, velocity, voltage);
     ParentDevice.optimizeBusUtilizationForAll(leader, follower);
+
+    TunableControls.registerTalonFXSlotTuning(
+        leader, 0, "Shooter/Flywheel", ShooterConstants.flywheelControl);
   }
 
   @Override
@@ -82,7 +87,7 @@ public class FlywheelIOReal implements FlywheelIO {
 
   @Override
   public void setAngularVelocity(AngularVelocity velocity) {
-    leader.setControl(velocityRequest.withVelocity(velocity));
+    leader.setControl(velocityTorqueCurrentRequest.withVelocity(velocity));
   }
 
   @Override

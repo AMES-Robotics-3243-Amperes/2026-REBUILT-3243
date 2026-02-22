@@ -112,8 +112,8 @@
    "R_WheelCOF":{
     "dimension":"Number",
     "var":{
-     "exp":"1",
-     "val":1.0
+     "exp":"0.8",
+     "val":0.8
     }
    },
    "R_WheelRadius":{
@@ -230,7 +230,7 @@
   },
   "cof":{
    "exp":"R_WheelCOF",
-   "val":1.0
+   "val":0.8
   },
   "bumper":{
    "front":{

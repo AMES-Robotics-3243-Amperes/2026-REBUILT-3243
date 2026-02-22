@@ -4,7 +4,11 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -12,16 +16,21 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DriveCharacterizations;
+import frc.robot.constants.IndexerConstants;
 import frc.robot.constants.ModeConstants;
+import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.VisionConstants;
+import frc.robot.constants.swerve.SwerveConstants;
 import frc.robot.constants.swerve.TunerConstants;
-import frc.robot.state.StateMachine;
+import frc.robot.subsystems.Indexer.IndexerSubsystem;
+import frc.robot.subsystems.Indexer.KickerIO;
+import frc.robot.subsystems.Indexer.KickerIOReal;
+import frc.robot.subsystems.Indexer.SpindexerIO;
+import frc.robot.subsystems.Indexer.SpindexerIOReal;
 import frc.robot.subsystems.drivetrain.GyroIO;
 import frc.robot.subsystems.drivetrain.GyroIOPigeon2;
 import frc.robot.subsystems.drivetrain.GyroIOSim;
@@ -33,9 +42,12 @@ import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.intake.PivotIO;
 import frc.robot.subsystems.intake.PivotIOSim;
 import frc.robot.subsystems.intake.RollerIO;
+import frc.robot.subsystems.intake.RollerIOReal;
 import frc.robot.subsystems.shooter.FlywheelIO;
+import frc.robot.subsystems.shooter.FlywheelIOReal;
 import frc.robot.subsystems.shooter.FlywheelIOSim;
 import frc.robot.subsystems.shooter.HoodIO;
+import frc.robot.subsystems.shooter.HoodIOReal;
 import frc.robot.subsystems.shooter.HoodIOSim;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.subsystems.vision.VisionIO;
@@ -52,7 +64,7 @@ public class RobotContainer {
 
   public final SwerveSubsystem drivetrain;
   public final IntakeSubsystem intake;
-  // public final IndexerSubsystem indexer;
+  public final IndexerSubsystem indexer;
   public final ShooterSubsystem shooter;
 
   private final SwerveDriveSimulation driveSimulation;
@@ -72,12 +84,9 @@ public class RobotContainer {
                 new ModuleIOTalonFXReal(TunerConstants.FrontRight),
                 new ModuleIOTalonFXReal(TunerConstants.BackLeft),
                 new ModuleIOTalonFXReal(TunerConstants.BackRight));
-
-        intake = new IntakeSubsystem(new RollerIO() {}, new PivotIO() {});
-
-        shooter = new ShooterSubsystem(new FlywheelIO() {}, new HoodIO() {});
-
-        // indexer = new IndexerSubsystem(new KickerIO() {}, new SpindexerIO() {});
+        intake = new IntakeSubsystem(new RollerIOReal(), new PivotIO() {});
+        shooter = new ShooterSubsystem(new FlywheelIOReal(), new HoodIOReal());
+        indexer = new IndexerSubsystem(new KickerIOReal(), new SpindexerIOReal());
 
         new VisionSubsystem(
             drivetrain::addVisionMeasurement,
@@ -101,11 +110,8 @@ public class RobotContainer {
                 new ModuleIOTalonFXSim(TunerConstants.BackLeft, driveSimulation.getModules()[2]),
                 new ModuleIOTalonFXSim(TunerConstants.BackRight, driveSimulation.getModules()[3]),
                 driveSimulation::setSimulationWorldPose);
-
         intake = new IntakeSubsystem(new RollerIO() {}, new PivotIOSim());
-
-        // indexer = new IndexerSubsystem(new KickerIO() {}, new SpindexerIO() {});
-
+        indexer = new IndexerSubsystem(new KickerIO() {}, new SpindexerIO() {});
         shooter = new ShooterSubsystem(new FlywheelIOSim(), new HoodIOSim());
 
         new VisionSubsystem(
@@ -130,11 +136,8 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-
         intake = new IntakeSubsystem(new RollerIO() {}, new PivotIO() {});
-
-        // indexer = new IndexerSubsystem(new KickerIO() {}, new SpindexerIO() {});
-
+        indexer = new IndexerSubsystem(new KickerIO() {}, new SpindexerIO() {});
         shooter = new ShooterSubsystem(new FlywheelIO() {}, new HoodIO() {});
 
         new VisionSubsystem(
@@ -162,11 +165,32 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-    new Trigger(DriverStation::isTeleopEnabled).whileTrue(new StateMachine(this).stateCommand());
+    drivetrain.setDefaultCommand(
+        drivetrain.driveSetpiontGeneratorCommand(
+            drivetrain.joystickDriveLinear(
+                SwerveConstants.linearTeleopSpeed,
+                primaryJoystick::getLeftX,
+                primaryJoystick::getLeftY,
+                () -> true),
+            drivetrain.joystickDriveAngular(primaryJoystick::getRightX)));
+
+    primaryJoystick.leftTrigger().whileTrue(intake.intakeAtSpeedCommand(RotationsPerSecond.of(10)));
 
     primaryJoystick
-        .leftTrigger()
-        .whileTrue(intake.intakeAtGroundSpeedCommand(drivetrain::getSpeed));
+        .rightTrigger()
+        .whileTrue(
+            shooter.shootAtHoodAngleCommand(
+                RadiansPerSecond.of(
+                    6
+                        / (ShooterConstants.flywheelRadius.in(Meters)
+                            * ShooterConstants.fuelToFlywheelLinearSpeedRatio)),
+                ShooterConstants.hoodMaxRotation));
+
+    primaryJoystick
+        .b()
+        .whileTrue(
+            indexer.runAtSpeedCommand(
+                MetersPerSecond.of(4), IndexerConstants.spindexerIndexingSpeed));
   }
 
   public Command getAutonomousCommand() {

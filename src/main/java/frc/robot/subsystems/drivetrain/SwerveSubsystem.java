@@ -142,6 +142,13 @@ public class SwerveSubsystem extends SubsystemBase {
 
   private final Consumer<Pose2d> resetSimulationPoseCallback;
 
+  private double poseConfidence = 0.0;
+  private double lastPeriodicTimeSec = Timer.getFPGATimestamp();
+  private double lastVisionTimeSec = 0.0;
+
+  private static final double kConfidenceDecaySec = 2.0;
+  private static final double kBaseConfidenceBump = 0.35;
+
   public SwerveSubsystem(
       GyroIO gyroIO,
       ModuleIO flModuleIO,
@@ -251,6 +258,13 @@ public class SwerveSubsystem extends SubsystemBase {
     }
 
     gyroDisconnectedAlert.set(!gyroInputs.connected);
+
+    double now = Timer.getFPGATimestamp();
+    double dt = Math.max(0.0, now - lastPeriodicTimeSec);
+    lastPeriodicTimeSec = now;
+
+    poseConfidence *= Math.exp(-dt / kConfidenceDecaySec);
+    poseConfidence = MathUtil.clamp(poseConfidence, 0.0, 1.0);
   }
 
   private void resetSetpointGenerator() {
@@ -397,11 +411,29 @@ public class SwerveSubsystem extends SubsystemBase {
       Matrix<N3, N1> visionMeasurementStdDevs) {
     poseEstimator.addVisionMeasurement(
         visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
+
+    lastVisionTimeSec = Timer.getFPGATimestamp();
+    double sx = visionMeasurementStdDevs.get(0, 0);
+    double sy = visionMeasurementStdDevs.get(1, 0);
+    double positionStdDev = Math.hypot(sx, sy);
+    double measurementQuality = 1.0 / (1.0 + positionStdDev);
+    poseConfidence =
+        MathUtil.clamp(poseConfidence + (kBaseConfidenceBump * measurementQuality), 0.0, 1.0);
   }
 
   @AutoLogOutput(key = "Drivetrain/EstimatedPose")
   public Pose2d getPose() {
     return poseEstimator.getEstimatedPosition();
+  }
+
+  @AutoLogOutput(key = "Drivetrain/PoseConfidence")
+  public double getPoseConfidence() {
+    return poseConfidence;
+  }
+
+  @AutoLogOutput(key = "Drivetrain/TimeSinceVision")
+  public double getTimeSinceVision() {
+    return Timer.getFPGATimestamp() - lastVisionTimeSec;
   }
 
   public Rotation2d getRotation() {

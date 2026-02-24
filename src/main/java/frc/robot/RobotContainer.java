@@ -7,11 +7,14 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -222,6 +225,11 @@ public class RobotContainer {
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
+    Pose2d blueStagingPose = new Pose2d(1, 1, new Rotation2d());
+    Pose2d stagingPose = PointOfInterestManager.flipPoseConditionally(blueStagingPose);
+
+    autoChooser.addOption("Confidence Gate", buildConfidenceGatedAuto("Trench", stagingPose, 0.75));
+
     if (ModeConstants.robotMode == ModeConstants.Mode.SIM) {
       autoChooser.addOption(
           "Drive Wheel Radius Characterization",
@@ -306,6 +314,27 @@ public class RobotContainer {
                             drivetrain.getChassisSpeeds())
                         .shooterSetpoint()
                         .hoodAngle()));
+  }
+
+  private Command buildConfidenceGatedAuto(
+      String autoName, Pose2d stagingPose, double requiredConfidence) {
+
+    PathConstraints stageConstraints =
+        new PathConstraints(
+            MetersPerSecond.of(1),
+            MetersPerSecondPerSecond.of(4),
+            RotationsPerSecond.of(0.5),
+            RotationsPerSecondPerSecond.of(2));
+
+    Command runAuto = AutoBuilder.buildAuto(autoName);
+
+    Command gate =
+        AutoBuilder.pathfindToPose(stagingPose, stageConstraints)
+            .andThen(
+                Commands.waitUntil(() -> drivetrain.getPoseConfidence() >= requiredConfidence));
+
+    return Commands.either(
+        runAuto, gate.andThen(runAuto), () -> drivetrain.getPoseConfidence() >= requiredConfidence);
   }
 
   public Command getAutonomousCommand() {

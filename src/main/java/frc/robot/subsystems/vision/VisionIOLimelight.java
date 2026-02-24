@@ -12,6 +12,7 @@ import static edu.wpi.first.units.Units.Microseconds;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoubleArraySubscriber;
@@ -33,6 +34,7 @@ import java.util.function.Supplier;
 public class VisionIOLimelight extends VisionIO {
   private final Supplier<Rotation2d> rotationSupplier;
   private final DoubleArrayPublisher orientationPublisher;
+  private final DoubleArrayPublisher cameraOffsetPublisher;
 
   private final DoubleSubscriber latencySubscriber;
   private final DoubleSubscriber txSubscriber;
@@ -42,6 +44,7 @@ public class VisionIOLimelight extends VisionIO {
   private final DoubleArraySubscriber standardDeviationsSubscriber;
 
   protected final NetworkTable table;
+  private final Transform3d cameraPoseInRobotSpace;
 
   /**
    * Creates a new VisionIOLimelight.
@@ -53,10 +56,12 @@ public class VisionIOLimelight extends VisionIO {
       CameraConfiguration configuration, Supplier<Rotation2d> rotationSupplier) {
     super(configuration);
 
+    this.cameraPoseInRobotSpace = configuration.robotToCamera();
     this.table = NetworkTableInstance.getDefault().getTable(this.configuration.name());
 
     this.rotationSupplier = rotationSupplier;
     orientationPublisher = table.getDoubleArrayTopic("robot_orientation_set").publish();
+    cameraOffsetPublisher = table.getDoubleArrayTopic("camerapose_robotspace_set").publish();
     latencySubscriber = table.getDoubleTopic("tl").subscribe(0.0);
     txSubscriber = table.getDoubleTopic("tx").subscribe(0.0);
     tySubscriber = table.getDoubleTopic("ty").subscribe(0.0);
@@ -79,6 +84,7 @@ public class VisionIOLimelight extends VisionIO {
             Rotation2d.fromDegrees(txSubscriber.get()), Rotation2d.fromDegrees(tySubscriber.get()));
 
     // Update orientation for MegaTag 2
+    cameraOffsetPublisher.accept(parseTransform(cameraPoseInRobotSpace));
     orientationPublisher.accept(
         new double[] {rotationSupplier.get().getDegrees(), 0.0, 0.0, 0.0, 0.0, 0.0});
     NetworkTableInstance.getDefault()
@@ -113,7 +119,9 @@ public class VisionIOLimelight extends VisionIO {
       poseObservations.add(
           new PoseObservation(
               // Timestamp, based on server timestamp of publish and latency
-              rawMegaTagOneSample.timestamp * 1e-6 - rawMegaTagOneSample.value[6] * 1e-3,
+              rawMegaTagOneSample.timestamp * 1e-6
+                  - rawMegaTagOneSample.value[6] * 1e-3
+                  - rawMegaTagOneSample.value[7] * 1e-3,
 
               // 3D pose estimate
               parsePose(rawMegaTagOneSample.value),
@@ -165,7 +173,9 @@ public class VisionIOLimelight extends VisionIO {
       poseObservations.add(
           new PoseObservation(
               // Timestamp, based on server timestamp of publish and latency
-              rawMegaTagTwoSample.timestamp * 1e-6 - rawMegaTagTwoSample.value[6] * 1e-3,
+              rawMegaTagTwoSample.timestamp * 1e-6
+                  - rawMegaTagTwoSample.value[6] * 1e-3
+                  - rawMegaTagTwoSample.value[7] * 1e-3,
 
               // 3D pose estimate
               parsePose(rawMegaTagTwoSample.value),
@@ -217,5 +227,18 @@ public class VisionIOLimelight extends VisionIO {
             Units.degreesToRadians(rawLLArray[3]),
             Units.degreesToRadians(rawLLArray[4]),
             Units.degreesToRadians(rawLLArray[5])));
+  }
+
+  /** Parses the 3D transform into a Limelight botpose array. */
+  private static double[] parseTransform(Transform3d transform) {
+    Rotation3d rotation = transform.getRotation();
+    return new double[] {
+      transform.getX(),
+      transform.getY(),
+      transform.getZ(),
+      Units.radiansToDegrees(rotation.getX()),
+      Units.radiansToDegrees(rotation.getY()),
+      Units.radiansToDegrees(rotation.getZ()),
+    };
   }
 }

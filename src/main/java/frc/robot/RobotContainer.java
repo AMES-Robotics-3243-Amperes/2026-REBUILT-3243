@@ -22,12 +22,12 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.DriveCharacterizations;
-import frc.robot.commands.HoodAngleCharacterization;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.IndexerConstants;
 import frc.robot.constants.ModeConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.VisionConstants;
+import frc.robot.constants.VisionConstants.CameraType;
 import frc.robot.constants.choreo.ChoreoVars;
 import frc.robot.constants.swerve.SwerveConstants;
 import frc.robot.constants.swerve.TunerConstants;
@@ -60,6 +60,7 @@ import frc.robot.subsystems.shooter.HoodIOSim;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOLimelight;
+import frc.robot.subsystems.vision.VisionIOLimelightFour;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.vision.VisionSubsystem;
 import frc.robot.util.FuelTrajectoryCalculator;
@@ -103,7 +104,11 @@ public class RobotContainer {
         new VisionSubsystem(
             drivetrain::addVisionMeasurement,
             VisionConstants.cameras.stream()
-                .<VisionIO>map(config -> new VisionIOLimelight(config, drivetrain::getRotation))
+                .<VisionIO>map(
+                    config ->
+                        config.type() == CameraType.LimelightFour
+                            ? new VisionIOLimelightFour(config, drivetrain::getRotation)
+                            : new VisionIOLimelight(config, drivetrain::getRotation))
                 .toList());
 
         break;
@@ -237,10 +242,6 @@ public class RobotContainer {
             drivetrain.joystickDriveAngular(primaryJoystick::getRightX)));
 
     primaryJoystick.leftTrigger().whileTrue(intake.intakeAtSpeedCommand(RotationsPerSecond.of(10)));
-
-    primaryJoystick
-        .a()
-        .onTrue(new HoodAngleCharacterization(drivetrain, shooter, indexer, primaryJoystick));
 
     //
     // Shooting

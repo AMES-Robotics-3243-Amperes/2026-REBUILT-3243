@@ -23,7 +23,13 @@ import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
 import java.util.List;
 
 public class VisionConstants {
-  public record CameraConfiguration(String name, Transform3d robotToCamera, double stdDevFactor) {}
+  public enum CameraType {
+    LimelightTwo,
+    LimelightFour
+  }
+
+  public record CameraConfiguration(
+      String name, Transform3d robotToCamera, double stdDevFactor, CameraType type) {}
 
   // Map from camera names to their configuration
   public static final List<CameraConfiguration> cameras =
@@ -31,11 +37,24 @@ public class VisionConstants {
           new CameraConfiguration(
               "limelight-four",
               new Transform3d(
-                  Units.inchesToMeters(12.5),
-                  0,
-                  Units.inchesToMeters(6),
-                  new Rotation3d(0, Units.degreesToRadians(-8), 0)),
-              2));
+                  -Units.inchesToMeters(1.327779),
+                  Units.inchesToMeters(0),
+                  Units.inchesToMeters(18.427671 + 1.8),
+                  new Rotation3d(0, Units.degreesToRadians(180 - 65 - 90), 0)),
+              2,
+              CameraType.LimelightFour),
+          new CameraConfiguration(
+              "limelight-two",
+              new Transform3d(
+                  -Units.inchesToMeters(11.694),
+                  -Units.inchesToMeters(9.937452),
+                  Units.inchesToMeters(9.948125 + 1.8),
+                  new Rotation3d(
+                      0,
+                      -Units.degreesToRadians(180 - 145.891948),
+                      -Units.degreesToRadians(7.5 + 180))),
+              4,
+              CameraType.LimelightTwo));
 
   // Basic filtering thresholds
   public static final Time maxTimestampError = Milliseconds.of(2);
@@ -84,7 +103,7 @@ public class VisionConstants {
   }
 
   // Throttling the limelight while disabled helps with thermals
-  public static int limelightFourThrottle = 150;
+  public static int limelightFourThrottle = 300;
   public static Time limelightFourThrottleDebounce = Milliseconds.of(100);
 
   // AprilTag layout

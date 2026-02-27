@@ -16,6 +16,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.ShooterConstants;
+import frc.robot.util.FuelTrajectoryCalculator;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -82,6 +83,23 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public Command shootCommand(AngularVelocity flywheelSpeed, Angle hoodAngle) {
     return shootCommand(() -> flywheelSpeed, () -> hoodAngle);
+  }
+
+  public Command shootFuelAtSpeedCommand(
+      Supplier<LinearVelocity> flywheelSpeed, Supplier<Angle> hoodAngle) {
+    return shootCommand(
+        () ->
+            RadiansPerSecond.of(
+                flywheelSpeed.get().in(MetersPerSecond)
+                    / (ShooterConstants.flywheelRadius.in(Meters)
+                        * ShooterConstants.fuelToFlywheelLinearSpeedRatio)),
+        hoodAngle::get);
+  }
+
+  public Command shootInHubCommand() {
+    return shootFuelAtSpeedCommand(
+        () -> FuelTrajectoryCalculator.getHubShot().shooterSetpoint().linearFlywheelSpeed(),
+        () -> FuelTrajectoryCalculator.getHubShot().shooterSetpoint().hoodAngle());
   }
 
   @AutoLogOutput(key = "Shooter/Hood/Angle")

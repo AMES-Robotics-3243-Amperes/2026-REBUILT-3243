@@ -7,7 +7,6 @@ package frc.robot.subsystems.intake;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -77,8 +76,8 @@ public class IntakeSubsystem extends SubsystemBase {
         () -> {
           setPivotAngle(IntakeConstants.pivotMinRotation);
 
-          if (pivotInputs.angle.isNear(IntakeConstants.pivotMinRotation, Radians.of(1)))
-            setRollerVelocity(velocity);
+          // TODO: if (pivotInputs.angle.isNear(IntakeConstants.pivotMinRotation, Radians.of(1)))
+          setRollerVelocity(velocity);
         },
         () -> {
           coastRoller();
@@ -113,6 +112,14 @@ public class IntakeSubsystem extends SubsystemBase {
     return runEnd(
         () -> setPivotAngle(IntakeConstants.pivotMinRotation),
         () -> setPivotAngle(IntakeConstants.pivotMaxRotation));
+  }
+
+  public Command runPivotUp() {
+    return runEnd(() -> pivotIO.runOpenLoop(2), () -> pivotIO.runOpenLoop(0));
+  }
+
+  public Command runPivotDown() {
+    return runEnd(() -> pivotIO.runOpenLoop(-2), () -> pivotIO.runOpenLoop(0));
   }
 
   public Angle getPivotAngle() {

@@ -61,6 +61,7 @@ import frc.robot.constants.swerve.ModuleConstants;
 import frc.robot.constants.swerve.SwerveConstants;
 import frc.robot.constants.swerve.SysIdConstants;
 import frc.robot.constants.swerve.TunerConstants;
+import frc.robot.util.Container;
 import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -109,7 +110,7 @@ public class SwerveSubsystem extends SubsystemBase {
                       ? DCMotor.getKrakenX60(1)
                       : DCMotor.getKrakenX60Foc(1))
                   .withReduction(ChoreoVars.R_DriveReduction),
-              SwerveConstants.driveCurrentLimit.in(Amps),
+              ModuleConstants.driveCurrentLimit.in(Amps),
               1),
           getModuleTranslations());
 
@@ -453,6 +454,15 @@ public class SwerveSubsystem extends SubsystemBase {
     return MetersPerSecond.of(Math.sqrt(x * x + y * y));
   }
 
+  public boolean isLookingAt(Translation2d point) {
+    Pose2d pose = getPose();
+    return pose.getRotation()
+            .relativeTo(point.minus(pose.getTranslation()).getAngle())
+            .getMeasure()
+            .abs(Degrees)
+        < SwerveConstants.rotationToleranceBeforeShooting.in(Degrees);
+  }
+
   //
   // SysID
   //
@@ -601,9 +611,9 @@ public class SwerveSubsystem extends SubsystemBase {
           new ChassisSpeeds(rawSpeeds.get(0) * velocityMps, rawSpeeds.get(1) * velocityMps, 0);
 
       if (fieldRelative.getAsBoolean()) {
-        boolean isFlipped =
-            DriverStation.getAlliance().isPresent()
-                && DriverStation.getAlliance().get() == Alliance.Red;
+        boolean isFlipped = false;
+        // DriverStation.getAlliance().isPresent()
+        //     && DriverStation.getAlliance().get() == Alliance.Red;
 
         speeds =
             ChassisSpeeds.fromFieldRelativeSpeeds(
@@ -630,20 +640,29 @@ public class SwerveSubsystem extends SubsystemBase {
         SwerveConstants.rotationControl.profiledPIDController(
             Radians, Degrees.of(-180), Degrees.of(180));
     pidController.enableContinuousInput(-Math.PI, Math.PI);
-    pidController.setTolerance(SwerveConstants.rotationFeedBackTolerance.in(Radians));
+    pidController.setTolerance(SwerveConstants.rotationFeedbackTolerance.in(Radians));
     pidController.reset(getRotation().getRadians());
 
     Timer timeSinceLastLoop = new Timer();
     timeSinceLastLoop.restart();
 
+    Container<Rotation2d> previousTarget = new Container<Rotation2d>(targetSupplier.get());
+
     return () -> {
+      double elapsedTime = timeSinceLastLoop.get();
+
       // four loops is picked arbitrarily
       if (timeSinceLastLoop.hasElapsed(0.08)) pidController.reset(getRotation().getRadians());
 
       timeSinceLastLoop.restart();
 
+      Rotation2d target = targetSupplier.get();
+      Angle rotationDelta = target.relativeTo(previousTarget.inner).getMeasure();
+      previousTarget.inner = target;
+
       return RadiansPerSecond.of(
-          pidController.calculate(getRotation().getRadians(), targetSupplier.get().getRadians()));
+          pidController.calculate(getRotation().getRadians(), targetSupplier.get().getRadians())
+              + rotationDelta.div(elapsedTime).in(Radians));
     };
   }
 }

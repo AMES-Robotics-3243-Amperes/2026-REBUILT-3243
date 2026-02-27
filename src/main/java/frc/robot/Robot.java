@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.constants.GitConstants;
 import frc.robot.constants.ModeConstants;
+import frc.robot.util.FuelTrajectoryCalculator;
 import frc.robot.util.LocalADStarAK;
 import frc.robot.util.TunableControls;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -76,6 +77,7 @@ public class Robot extends LoggedRobot {
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
     TunableControls.periodic();
+    FuelTrajectoryCalculator.clearSavedShots();
   }
 
   @Override

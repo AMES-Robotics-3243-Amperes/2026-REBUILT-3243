@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -24,9 +25,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.DriveCharacterizations;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.IndexerConstants;
+import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.ModeConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.VisionConstants;
@@ -50,6 +51,7 @@ import frc.robot.subsystems.drivetrain.ModuleIOTalonFXSim;
 import frc.robot.subsystems.drivetrain.SwerveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.intake.PivotIO;
+import frc.robot.subsystems.intake.PivotIOReal;
 import frc.robot.subsystems.intake.PivotIOSim;
 import frc.robot.subsystems.intake.RollerIO;
 import frc.robot.subsystems.intake.RollerIOReal;
@@ -100,7 +102,7 @@ public class RobotContainer {
                 new ModuleIOTalonFXReal(TunerConstants.FrontRight),
                 new ModuleIOTalonFXReal(TunerConstants.BackLeft),
                 new ModuleIOTalonFXReal(TunerConstants.BackRight));
-        intake = new IntakeSubsystem(new RollerIOReal(), new PivotIO() {});
+        intake = new IntakeSubsystem(new RollerIOReal(), new PivotIOReal());
         shooter = new ShooterSubsystem(new FlywheelIOReal(), new HoodIOReal());
         indexer = new IndexerSubsystem(new KickerIOReal(), new SpindexerIOReal());
 
@@ -225,16 +227,8 @@ public class RobotContainer {
     // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
 
-    Pose2d blueStagingPose = new Pose2d(1, 1, new Rotation2d());
-    Pose2d stagingPose = PointOfInterestManager.flipPoseConditionally(blueStagingPose);
-
-    autoChooser.addOption("Confidence Gate", buildConfidenceGatedAuto("Trench", stagingPose, 0.75));
-
-    if (ModeConstants.robotMode == ModeConstants.Mode.SIM) {
-      autoChooser.addOption(
-          "Drive Wheel Radius Characterization",
-          DriveCharacterizations.wheelRadiusCharacterization(drivetrain));
-    }
+    FuelTrajectoryCalculator.robotPose = drivetrain::getPose;
+    FuelTrajectoryCalculator.robotSpeeds = drivetrain::getChassisSpeeds;
 
     configureBindings();
   }
@@ -249,7 +243,12 @@ public class RobotContainer {
                 () -> true),
             drivetrain.joystickDriveAngular(primaryJoystick::getRightX)));
 
-    primaryJoystick.leftTrigger().whileTrue(intake.intakeAtSpeedCommand(RotationsPerSecond.of(10)));
+    primaryJoystick
+        .leftTrigger()
+        .whileTrue(intake.intakeAtSpeedCommand(IntakeConstants.rollerAbsoluteSpeed));
+
+    primaryJoystick.leftBumper().whileTrue(intake.runPivotUp());
+    primaryJoystick.rightBumper().whileTrue(intake.runPivotDown());
 
     //
     // Shooting
@@ -273,47 +272,24 @@ public class RobotContainer {
 
     primaryJoystick
         .rightTrigger()
-        .and(
-            () ->
-                Math.abs(
-                        drivetrain
-                            .getRotation()
-                            .relativeTo(
+        .whileTrue(
+            Commands.parallel(
+                shooter.shootInHubCommand(),
+                indexer
+                    .runAtSpeedCommand(
+                        IndexerConstants.kickerShootingSpeed,
+                        IndexerConstants.spindexerIndexingSpeed)
+                    .onlyWhile(
+                        () ->
+                            drivetrain.isLookingAt(
                                 PointOfInterestManager.flipTranslationConditionally(
                                         FieldConstants.hubPosition)
-                                    .toTranslation2d()
-                                    .minus(drivetrain.getPose().getTranslation())
-                                    .getAngle())
-                            .getDegrees())
-                    < 2)
-        .whileTrue(
-            indexer.runAtSpeedCommand(
-                IndexerConstants.kickerShootingSpeed, IndexerConstants.spindexerIndexingSpeed));
+                                    .toTranslation2d()))
+                    .repeatedly()));
 
     primaryJoystick
-        .rightTrigger()
-        .whileTrue(
-            shooter.shootCommand(
-                () ->
-                    RadiansPerSecond.of(
-                        FuelTrajectoryCalculator.getFuelShot(
-                                    PointOfInterestManager.flipTranslationConditionally(
-                                        FieldConstants.hubPosition),
-                                    drivetrain.getPose(),
-                                    drivetrain.getChassisSpeeds())
-                                .shooterSetpoint()
-                                .linearFlywheelSpeed()
-                                .in(MetersPerSecond)
-                            / (ShooterConstants.flywheelRadius.in(Meters)
-                                * ShooterConstants.fuelToFlywheelLinearSpeedRatio)),
-                () ->
-                    FuelTrajectoryCalculator.getFuelShot(
-                            PointOfInterestManager.flipTranslationConditionally(
-                                FieldConstants.hubPosition),
-                            drivetrain.getPose(),
-                            drivetrain.getChassisSpeeds())
-                        .shooterSetpoint()
-                        .hoodAngle()));
+        .a()
+        .whileTrue(indexer.runAtSpeedCommand(IndexerConstants.kickerShootingSpeed, RPM.of(0)));
   }
 
   private Command buildConfidenceGatedAuto(

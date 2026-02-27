@@ -9,7 +9,6 @@ import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
-import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
@@ -46,7 +45,6 @@ public class HoodIOReal implements HoodIO {
     hoodConfig
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .allowedClosedLoopError(ShooterConstants.hoodTolerance.in(Rotations), ClosedLoopSlot.kSlot0)
         .apply(ShooterConstants.hoodControl.revClosedLoopConfig());
 
     sparkMax.configure(hoodConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);

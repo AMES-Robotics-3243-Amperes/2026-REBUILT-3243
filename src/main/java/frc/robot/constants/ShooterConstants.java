@@ -35,22 +35,21 @@ public class ShooterConstants {
 
   public static final Current flywheelSupplyCurrentLimit = Amps.of(70);
 
-  public static final double fuelToFlywheelLinearSpeedRatio = 0.5;
+  public static final double fuelToFlywheelLinearSpeedRatio = 0.495;
 
   public static final ControlConstantsBuilder flywheelControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.85, 0, 0).sva(10.6, 0, 0);
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.95, 0, 0).sva(10.6, 0, 0);
 
   // hood
   public static final int hoodId = 5;
 
-  public static final Angle hoodAbsoluteEncoderZeroedRotation = Degrees.of(20);
-  public static final Angle hoodMinRotation = Degrees.of(20);
-  public static final Angle hoodMaxRotation = Degrees.of(45);
+  public static final Angle hoodAbsoluteEncoderZeroedRotation = Degrees.of(21);
+  public static final Angle hoodMinRotation = Degrees.of(17);
+  public static final Angle hoodMaxRotation = Degrees.of(44);
 
   public static final double encoderToHoodReduction = 320.0 / 24.0;
   public static final double motorToEncoderHoodReduction = 15.0 / 1.0;
 
-  public static final Angle hoodTolerance = Degrees.of(0.05);
   public static final ControlConstantsBuilder hoodControl =
       ControlConstantsBuilder.fromRadiansAndSeconds().pid(10, 0.02, 0.05);
 

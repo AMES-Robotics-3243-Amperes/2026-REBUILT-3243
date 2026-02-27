@@ -24,7 +24,9 @@ import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
+import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShooterConstants;
+import java.util.function.Supplier;
 
 public class FuelTrajectoryCalculator {
   /* The data behind a fuel shot; i.e. the shooter setpoint values. */
@@ -113,7 +115,7 @@ public class FuelTrajectoryCalculator {
     return robotPoseWithCorrectRotation.transformBy(ShooterConstants.robotToShooter);
   }
 
-  public static FuelShotSetpoints getFuelShot(
+  private static FuelShotSetpoints getFuelShot(
       Translation3d goal, Pose2d robotPose, ChassisSpeeds chassisSpeeds) {
     // the approach here is to run secant method on trajectoryTime(lookaheadTime) - lookaheadTime
 
@@ -173,5 +175,28 @@ public class FuelTrajectoryCalculator {
     }
 
     return new FuelShotSetpoints(trajectory1, shotStart.getRotation().toRotation2d());
+  }
+
+  //
+  // Caching
+  //
+  private static FuelShotSetpoints hubShot = null;
+
+  public static Supplier<Pose2d> robotPose = () -> new Pose2d();
+  public static Supplier<ChassisSpeeds> robotSpeeds = () -> new ChassisSpeeds();
+
+  public static void clearSavedShots() {
+    hubShot = null;
+  }
+
+  public static FuelShotSetpoints getHubShot() {
+    if (hubShot == null)
+      hubShot =
+          getFuelShot(
+              PointOfInterestManager.flipTranslationConditionally(FieldConstants.hubPosition),
+              robotPose.get(),
+              robotSpeeds.get());
+
+    return hubShot;
   }
 }

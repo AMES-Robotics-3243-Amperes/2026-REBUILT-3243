@@ -1,6 +1,5 @@
 package frc.robot.constants.swerve;
 
-import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Hertz;
 import static edu.wpi.first.units.Units.Meters;
@@ -13,7 +12,6 @@ import com.ctre.phoenix6.CANBus;
 import com.pathplanner.lib.config.PIDConstants;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Frequency;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -22,19 +20,20 @@ import frc.robot.constants.choreo.ChoreoVars;
 import frc.robot.util.ControlConstantsBuilder;
 
 public class SwerveConstants {
-  // teleop
-  public static final double teleopJoystickDeadband = 0;
+  public static final double teleopJoystickDeadband = 0.03;
 
-  public static final LinearVelocity linearTeleopSpeed = MetersPerSecond.of(3);
+  public static final LinearVelocity linearTeleopSpeed = MetersPerSecond.of(4.5);
   public static final AngularVelocity angularTeleopSpeed = RotationsPerSecond.of(0.5);
 
-  public static final LinearVelocity linearTeleopSpeedWhileShooting = MetersPerSecond.of(0.5);
+  public static final LinearVelocity linearTeleopSpeedWhileShooting = MetersPerSecond.of(1);
+
+  public static final Angle rotationToleranceBeforeShooting = Degrees.of(2);
 
   // control
-  public static final Angle rotationFeedBackTolerance = Degrees.of(0.6);
+  public static final Angle rotationFeedbackTolerance = Degrees.of(0.5);
   public static final ControlConstantsBuilder rotationControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(4.8, 0, 0.07)
+          .pid(5.4, 0, 0.15)
           .iZone(1)
           .constraints(RotationsPerSecond.of(3), RotationsPerSecondPerSecond.of(9));
 
@@ -42,7 +41,6 @@ public class SwerveConstants {
 
   // physical properties
   public static final LinearVelocity speedAt12Volts = MetersPerSecond.of(5.14);
-  public static final Current driveCurrentLimit = Amps.of(120);
 
   public static final Distance driveBaseRadius =
       Meters.of(
@@ -52,7 +50,7 @@ public class SwerveConstants {
 
   // odometry frequency
   public static final Frequency canFdOdometryFrequency = Hertz.of(250);
-  public static final Frequency baseOdometryFrequency = Hertz.of(120);
+  public static final Frequency baseOdometryFrequency = Hertz.of(100);
 
   public static final Frequency odometryFrequency() {
     return swerveCANBus.isNetworkFD() ? canFdOdometryFrequency : baseOdometryFrequency;

@@ -22,7 +22,8 @@ public class ModuleConstants {
   public static final ControlConstantsBuilder steerControl =
       ControlConstantsBuilder.fromRadiansAndSeconds().pid(5, 0, 0).sva(0, 0, 0);
 
-  public static final Current steerStatorCurrentLimit = Amps.of(60);
+  public static final Current steerStatorCurrentLimit = Amps.of(30);
+  public static final Current driveCurrentLimit = Amps.of(60);
 
   public static final AngularVelocity maxSetpointGeneratorModuleRotation = RotationsPerSecond.of(5);
 

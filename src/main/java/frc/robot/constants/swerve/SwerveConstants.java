@@ -4,12 +4,14 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Hertz;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 
 import com.ctre.phoenix6.CANBus;
 import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -22,7 +24,7 @@ import frc.robot.util.ControlConstantsBuilder;
 public class SwerveConstants {
   public static final double teleopJoystickDeadband = 0.03;
 
-  public static final LinearVelocity linearTeleopSpeed = MetersPerSecond.of(4.5);
+  public static final LinearVelocity linearTeleopSpeed = MetersPerSecond.of(3);
   public static final AngularVelocity angularTeleopSpeed = RotationsPerSecond.of(0.5);
 
   public static final LinearVelocity linearTeleopSpeedWhileShooting = MetersPerSecond.of(1);
@@ -38,6 +40,15 @@ public class SwerveConstants {
           .constraints(RotationsPerSecond.of(3), RotationsPerSecondPerSecond.of(9));
 
   public static final PIDConstants driveControl = new PIDConstants(5, 0, 0);
+
+  // pathfinding
+  public static final Distance trenchTraversalOffset = Meters.of(1.3);
+  public static final PathConstraints automaticsConstraints =
+      new PathConstraints(
+          MetersPerSecond.of(1),
+          MetersPerSecondPerSecond.of(1),
+          RotationsPerSecond.of(0.5),
+          RotationsPerSecondPerSecond.of(1));
 
   // physical properties
   public static final LinearVelocity speedAt12Volts = MetersPerSecond.of(5.14);

@@ -6,23 +6,30 @@ package frc.robot.constants;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RPM;
 
 import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.MomentOfInertia;
 import frc.robot.util.ControlConstantsBuilder;
 
 /** Add your docs here. */
 public class ShooterConstants {
+  public static final Translation2d bottomBlueAllianceZoneShot =
+      new Translation2d(FieldConstants.barrierLeftX.div(2), FieldConstants.trenchWidth);
+  public static final Translation2d bottomBlueNeutralZoneShot =
+      new Translation2d(FieldConstants.fieldLength.div(2), FieldConstants.trenchWidth);
+
+  public static final AngularVelocity flywheelVelocityTolerance = DegreesPerSecond.of(90);
+
   // flywheel
   public static final int flywheelLeaderId = 10;
   public static final int flywheelFollowerId = 11;
@@ -33,7 +40,7 @@ public class ShooterConstants {
   public static final Distance flywheelRadius = Inches.of(2);
   public static final double flywheelGearReduction = 4.0 / 3.0;
 
-  public static final Current flywheelSupplyCurrentLimit = Amps.of(70);
+  public static final Current flywheelSupplyCurrentLimit = Amps.of(60);
 
   public static final double fuelToFlywheelLinearSpeedRatio = 0.495;
 
@@ -61,7 +68,4 @@ public class ShooterConstants {
       new Transform3d(Units.inchesToMeters(-8), 0, Units.inchesToMeters(20), new Rotation3d());
 
   public static final int secantMethodIterations = 3;
-
-  // only used for simulation
-  public static final MomentOfInertia hoodMomentOfIntertia = KilogramSquareMeters.of(0.5);
 }

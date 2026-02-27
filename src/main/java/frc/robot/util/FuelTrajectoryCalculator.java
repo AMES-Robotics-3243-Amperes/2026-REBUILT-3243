@@ -26,6 +26,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ShooterConstants;
+import frc.robot.util.PointOfInterestManager.FlipType;
 import java.util.function.Supplier;
 
 public class FuelTrajectoryCalculator {
@@ -181,22 +182,59 @@ public class FuelTrajectoryCalculator {
   // Caching
   //
   private static FuelShotSetpoints hubShot = null;
+  private static FuelShotSetpoints allianceZoneShot = null;
+  private static FuelShotSetpoints neutralZoneShot = null;
 
   public static Supplier<Pose2d> robotPose = () -> new Pose2d();
   public static Supplier<ChassisSpeeds> robotSpeeds = () -> new ChassisSpeeds();
 
   public static void clearSavedShots() {
     hubShot = null;
+    allianceZoneShot = null;
+    neutralZoneShot = null;
   }
 
   public static FuelShotSetpoints getHubShot() {
     if (hubShot == null)
       hubShot =
           getFuelShot(
-              PointOfInterestManager.flipTranslationConditionally(FieldConstants.hubPosition),
+              PointOfInterestManager.flipTranslationConditionally(
+                  FieldConstants.hubPosition, FlipType.REFLECT_FOR_OTHER_ALLIANCE),
               robotPose.get(),
               robotSpeeds.get());
 
     return hubShot;
+  }
+
+  public static FuelShotSetpoints getAllianceShot() {
+    if (allianceZoneShot == null) {
+      Translation2d translation =
+          PointOfInterestManager.flipTranslationConditionally(
+              ShooterConstants.bottomBlueAllianceZoneShot, FlipType.REFLECT_X);
+      translation =
+          robotPose.get().getY() > FieldConstants.fieldWidth.div(2).in(Meters)
+              ? PointOfInterestManager.flipTranslation(translation, FlipType.REFLECT_Y)
+              : translation;
+      allianceZoneShot =
+          getFuelShot(new Translation3d(translation), robotPose.get(), robotSpeeds.get());
+    }
+
+    return allianceZoneShot;
+  }
+
+  public static FuelShotSetpoints getNeutralShot() {
+    if (neutralZoneShot == null) {
+      Translation2d translation =
+          PointOfInterestManager.flipTranslationConditionally(
+              ShooterConstants.bottomBlueNeutralZoneShot, FlipType.REFLECT_X);
+      translation =
+          robotPose.get().getY() > FieldConstants.fieldWidth.div(2).in(Meters)
+              ? PointOfInterestManager.flipTranslation(translation, FlipType.REFLECT_Y)
+              : translation;
+      neutralZoneShot =
+          getFuelShot(new Translation3d(translation), robotPose.get(), robotSpeeds.get());
+    }
+
+    return neutralZoneShot;
   }
 }

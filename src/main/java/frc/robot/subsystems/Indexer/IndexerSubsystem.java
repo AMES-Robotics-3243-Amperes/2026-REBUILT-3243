@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.SysIdCommand;
+import frc.robot.constants.IndexerConstants;
 import org.littletonrobotics.junction.Logger;
 
 public class IndexerSubsystem extends SubsystemBase {
@@ -62,6 +63,11 @@ public class IndexerSubsystem extends SubsystemBase {
   public void coastSpindexer() {
     spindexerIO.coast();
     Logger.recordOutput("Indexer/Spindexer/SetpointVelocity", RadiansPerSecond.of(0));
+  }
+
+  public Command indexCommand() {
+    return runAtSpeedCommand(
+        IndexerConstants.kickerShootingSpeed, IndexerConstants.spindexerIndexingSpeed);
   }
 
   public Command runAtSpeedCommand(

@@ -6,16 +6,10 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
-import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -25,8 +19,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.constants.FieldConstants;
-import frc.robot.constants.IndexerConstants;
+import frc.robot.commands.DriveUnderTrenchCommand;
 import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.ModeConstants;
 import frc.robot.constants.ShooterConstants;
@@ -69,7 +62,7 @@ import frc.robot.subsystems.vision.VisionIOLimelightFour;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.vision.VisionSubsystem;
 import frc.robot.util.FuelTrajectoryCalculator;
-import frc.robot.util.PointOfInterestManager;
+import frc.robot.util.RobotLocationManager;
 import org.ironmaple.simulation.IntakeSimulation;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -78,7 +71,12 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
+  //
+  // JOYSTICKS, SUBSYSTEMS, CONSTRUCTION, AND SIMULATION
+  //
+
   public final CommandXboxController primaryJoystick = new CommandXboxController(0);
+  public final CommandXboxController secondaryController = new CommandXboxController(1);
 
   public final SwerveSubsystem drivetrain;
   public final IntakeSubsystem intake;
@@ -86,8 +84,8 @@ public class RobotContainer {
   public final ShooterSubsystem shooter;
 
   private final SwerveDriveSimulation driveSimulation;
-
   private final LoggedDashboardChooser<Command> autoChooser;
+  private final RobotLocationManager robotLocationManager;
 
   public RobotContainer() {
     switch (ModeConstants.robotMode) {
@@ -200,7 +198,6 @@ public class RobotContainer {
       case REPLAY:
         driveSimulation = null;
 
-        // Replayed robot, disable IO implementations
         drivetrain =
             new SwerveSubsystem(
                 new GyroIO() {},
@@ -224,8 +221,8 @@ public class RobotContainer {
         throw new RuntimeException("Invalid robot mode");
     }
 
-    // Set up auto routines
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+    robotLocationManager = new RobotLocationManager(() -> drivetrain.getPose().getTranslation());
 
     FuelTrajectoryCalculator.robotPose = drivetrain::getPose;
     FuelTrajectoryCalculator.robotSpeeds = drivetrain::getChassisSpeeds;
@@ -233,85 +230,96 @@ public class RobotContainer {
     configureBindings();
   }
 
+  //
+  // ===== BINDINGS =====
+  //
+
   private void configureBindings() {
+    //
+    // State management
+    //
+    secondaryController.a().whileTrue(robotLocationManager.setLocationAsAllianceZone());
+    secondaryController
+        .x()
+        .or(secondaryController.b())
+        .whileTrue(robotLocationManager.setLocationAsNeutralZone());
+    secondaryController.y().whileTrue(robotLocationManager.setLocationAsOpponentZone());
+
     drivetrain.setDefaultCommand(
         drivetrain.driveSetpiontGeneratorCommand(
-            drivetrain.joystickDriveLinear(
-                SwerveConstants.linearTeleopSpeed,
-                primaryJoystick::getLeftX,
-                primaryJoystick::getLeftY,
-                () -> true),
+            drivetrain.joystickDriveLinear(SwerveConstants.linearTeleopSpeed, primaryJoystick),
             drivetrain.joystickDriveAngular(primaryJoystick::getRightX)));
 
     primaryJoystick
         .leftTrigger()
         .whileTrue(intake.intakeAtSpeedCommand(IntakeConstants.rollerAbsoluteSpeed));
 
-    primaryJoystick.leftBumper().whileTrue(intake.runPivotUp());
-    primaryJoystick.rightBumper().whileTrue(intake.runPivotDown());
+    // primaryJoystick.leftBumper().whileTrue(intake.runPivotUp());
+    // primaryJoystick.rightBumper().whileTrue(intake.runPivotDown());
+
+    primaryJoystick
+        .rightBumper()
+        .whileTrue(
+            DriveUnderTrenchCommand.driveUnderNearestTrenchCommand(
+                drivetrain::getPose,
+                drivetrain::getChassisSpeeds,
+                robotLocationManager::robotLocation));
 
     //
     // Shooting
     //
     primaryJoystick
         .rightTrigger()
+        .and(robotLocationManager.inAllianceZone())
         .whileTrue(
-            drivetrain.driveCommand(
-                drivetrain.joystickDriveLinear(
-                    SwerveConstants.linearTeleopSpeedWhileShooting,
-                    primaryJoystick::getLeftX,
-                    primaryJoystick::getLeftY,
-                    () -> true),
-                drivetrain.rotateAtAngle(
-                    () ->
-                        PointOfInterestManager.flipTranslationConditionally(
-                                FieldConstants.hubPosition)
-                            .toTranslation2d()
-                            .minus(drivetrain.getPose().getTranslation())
-                            .getAngle())));
+            Commands.parallel(
+                shooter.shootInHubCommand(),
+                drivetrain.driveCommand(
+                    drivetrain.joystickDriveLinear(
+                        SwerveConstants.linearTeleopSpeedWhileShooting, primaryJoystick),
+                    drivetrain.rotateAtAngle(
+                        () -> FuelTrajectoryCalculator.getHubShot().fuelGroundSpeedRotation()))));
+
+    primaryJoystick
+        .rightTrigger()
+        .and(robotLocationManager.innNeutralZone())
+        .whileTrue(
+            Commands.parallel(
+                shooter.shootInAllianceZoneCommand(),
+                drivetrain.driveCommand(
+                    drivetrain.joystickDriveLinear(
+                        SwerveConstants.linearTeleopSpeedWhileShooting, primaryJoystick),
+                    drivetrain.rotateAtAngle(
+                        () ->
+                            FuelTrajectoryCalculator.getAllianceShot()
+                                .fuelGroundSpeedRotation()))));
+
+    primaryJoystick
+        .rightTrigger()
+        .and(robotLocationManager.inOpponentZone())
+        .whileTrue(
+            Commands.parallel(
+                shooter.shootInNeutralZoneCommand(),
+                drivetrain.driveCommand(
+                    drivetrain.joystickDriveLinear(
+                        SwerveConstants.linearTeleopSpeedWhileShooting, primaryJoystick),
+                    drivetrain.rotateAtAngle(
+                        () ->
+                            FuelTrajectoryCalculator.getNeutralShot().fuelGroundSpeedRotation()))));
 
     primaryJoystick
         .rightTrigger()
         .whileTrue(
-            Commands.parallel(
-                shooter.shootInHubCommand(),
-                indexer
-                    .runAtSpeedCommand(
-                        IndexerConstants.kickerShootingSpeed,
-                        IndexerConstants.spindexerIndexingSpeed)
-                    .onlyWhile(
-                        () ->
-                            drivetrain.isLookingAt(
-                                PointOfInterestManager.flipTranslationConditionally(
-                                        FieldConstants.hubPosition)
-                                    .toTranslation2d()))
-                    .repeatedly()));
-
-    primaryJoystick
-        .a()
-        .whileTrue(indexer.runAtSpeedCommand(IndexerConstants.kickerShootingSpeed, RPM.of(0)));
+            indexer
+                .indexCommand()
+                .onlyWhile(drivetrain::atRotationSetpoint)
+                .onlyWhile(shooter::flywheelSpunUp)
+                .repeatedly());
   }
 
-  private Command buildConfidenceGatedAuto(
-      String autoName, Pose2d stagingPose, double requiredConfidence) {
-
-    PathConstraints stageConstraints =
-        new PathConstraints(
-            MetersPerSecond.of(1),
-            MetersPerSecondPerSecond.of(4),
-            RotationsPerSecond.of(0.5),
-            RotationsPerSecondPerSecond.of(2));
-
-    Command runAuto = AutoBuilder.buildAuto(autoName);
-
-    Command gate =
-        AutoBuilder.pathfindToPose(stagingPose, stageConstraints)
-            .andThen(
-                Commands.waitUntil(() -> drivetrain.getPoseConfidence() >= requiredConfidence));
-
-    return Commands.either(
-        runAuto, gate.andThen(runAuto), () -> drivetrain.getPoseConfidence() >= requiredConfidence);
-  }
+  //
+  // ===== MISC =====
+  //
 
   public Command getAutonomousCommand() {
     return autoChooser.get();

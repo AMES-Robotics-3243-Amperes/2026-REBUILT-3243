@@ -53,6 +53,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.SysIdCommand;
@@ -65,7 +66,6 @@ import frc.robot.util.Container;
 import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -146,6 +146,8 @@ public class SwerveSubsystem extends SubsystemBase {
   private double poseConfidence = 0.0;
   private double lastPeriodicTimeSec = Timer.getFPGATimestamp();
   private double lastVisionTimeSec = 0.0;
+
+  private boolean atRotationSetpoint = false;
 
   private static final double kConfidenceDecaySec = 2.0;
   private static final double kBaseConfidenceBump = 0.35;
@@ -454,13 +456,8 @@ public class SwerveSubsystem extends SubsystemBase {
     return MetersPerSecond.of(Math.sqrt(x * x + y * y));
   }
 
-  public boolean isLookingAt(Translation2d point) {
-    Pose2d pose = getPose();
-    return pose.getRotation()
-            .relativeTo(point.minus(pose.getTranslation()).getAngle())
-            .getMeasure()
-            .abs(Degrees)
-        < SwerveConstants.rotationToleranceBeforeShooting.in(Degrees);
+  public boolean atRotationSetpoint() {
+    return atRotationSetpoint;
   }
 
   //
@@ -589,15 +586,12 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Supplier<Translation2d> joystickDriveLinear(
-      LinearVelocity velocity,
-      DoubleSupplier leftJoystickX,
-      DoubleSupplier leftJoystickY,
-      BooleanSupplier fieldRelative) {
+      LinearVelocity velocity, CommandXboxController controller) {
     final double velocityMps = velocity.in(MetersPerSecond);
 
     return () -> {
-      double fieldX = -leftJoystickY.getAsDouble();
-      double fieldY = -leftJoystickX.getAsDouble();
+      double fieldX = -controller.getLeftY();
+      double fieldY = -controller.getLeftX();
 
       Vector<N2> rawSpeeds =
           MathUtil.applyDeadband(
@@ -610,15 +604,13 @@ public class SwerveSubsystem extends SubsystemBase {
       ChassisSpeeds speeds =
           new ChassisSpeeds(rawSpeeds.get(0) * velocityMps, rawSpeeds.get(1) * velocityMps, 0);
 
-      if (fieldRelative.getAsBoolean()) {
-        boolean isFlipped = false;
-        // DriverStation.getAlliance().isPresent()
-        //     && DriverStation.getAlliance().get() == Alliance.Red;
+      boolean isFlipped =
+          DriverStation.getAlliance().isPresent()
+              && DriverStation.getAlliance().get() == Alliance.Red;
 
-        speeds =
-            ChassisSpeeds.fromFieldRelativeSpeeds(
-                speeds, isFlipped ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation());
-      }
+      speeds =
+          ChassisSpeeds.fromFieldRelativeSpeeds(
+              speeds, isFlipped ? getRotation().plus(new Rotation2d(Math.PI)) : getRotation());
 
       return new Translation2d(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
     };
@@ -653,6 +645,10 @@ public class SwerveSubsystem extends SubsystemBase {
 
       // four loops is picked arbitrarily
       if (timeSinceLastLoop.hasElapsed(0.08)) pidController.reset(getRotation().getRadians());
+
+      atRotationSetpoint =
+          Math.abs(pidController.getPositionError())
+              < SwerveConstants.rotationToleranceBeforeShooting.in(Radians);
 
       timeSinceLastLoop.restart();
 

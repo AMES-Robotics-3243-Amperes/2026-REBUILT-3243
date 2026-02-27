@@ -28,6 +28,8 @@ public class ShooterSubsystem extends SubsystemBase {
   private final HoodIO hoodIO;
   private final HoodIOInputsAutoLogged hoodInputs = new HoodIOInputsAutoLogged();
 
+  private AngularVelocity flywheelSetpoint = RadiansPerSecond.of(0);
+
   /** Creates a new ShooterSubsystem. */
   public ShooterSubsystem(FlywheelIO shooterIO, HoodIO hoodIO) {
     this.flywheelIO = shooterIO;
@@ -62,12 +64,12 @@ public class ShooterSubsystem extends SubsystemBase {
     setHoodAngle(targetHoodAngle);
 
     flywheelIO.setAngularVelocity(velocity);
-    Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", velocity);
+    flywheelSetpoint = velocity;
   }
 
   public void coastFlywheel() {
     flywheelIO.coast();
-    Logger.recordOutput("Shooter/Flywheel/SetpointVelocity", RadiansPerSecond.of(0));
+    flywheelSetpoint = RadiansPerSecond.of(0);
   }
 
   public void reset() {
@@ -75,6 +77,34 @@ public class ShooterSubsystem extends SubsystemBase {
 
     hoodIO.setAngle(ShooterConstants.hoodMinRotation);
     Logger.recordOutput("Shooter/Hood/SetpointAngle", ShooterConstants.hoodMinRotation);
+  }
+
+  @AutoLogOutput(key = "Shooter/Hood/Angle")
+  public Angle getHoodAngle() {
+    return hoodInputs.angle;
+  }
+
+  @AutoLogOutput(key = "Shooter/Flywheel/SetpointVelocity")
+  public AngularVelocity flywheelSetpointVelocity() {
+    return flywheelSetpoint;
+  }
+
+  public boolean flywheelSpunUp() {
+    return flywheelInputs.velocity.isNear(
+        flywheelSetpoint, ShooterConstants.flywheelVelocityTolerance);
+  }
+
+  @AutoLogOutput(key = "Shooter/Flywheel/FlywheelVelocity")
+  public AngularVelocity getFlywheelVelocity() {
+    return flywheelInputs.velocity;
+  }
+
+  @AutoLogOutput(key = "Shooter/Flywheel/FuelVelocity")
+  public LinearVelocity getFuelVelocity() {
+    return MetersPerSecond.of(
+        flywheelInputs.velocity.in(RadiansPerSecond)
+            * ShooterConstants.flywheelRadius.in(Meters)
+            * ShooterConstants.fuelToFlywheelLinearSpeedRatio);
   }
 
   public Command shootCommand(Supplier<AngularVelocity> flywheelSpeed, Supplier<Angle> hoodAngle) {
@@ -102,21 +132,15 @@ public class ShooterSubsystem extends SubsystemBase {
         () -> FuelTrajectoryCalculator.getHubShot().shooterSetpoint().hoodAngle());
   }
 
-  @AutoLogOutput(key = "Shooter/Hood/Angle")
-  public Angle getHoodAngle() {
-    return hoodInputs.angle;
+  public Command shootInAllianceZoneCommand() {
+    return shootFuelAtSpeedCommand(
+        () -> FuelTrajectoryCalculator.getAllianceShot().shooterSetpoint().linearFlywheelSpeed(),
+        () -> FuelTrajectoryCalculator.getAllianceShot().shooterSetpoint().hoodAngle());
   }
 
-  @AutoLogOutput(key = "Shooter/Flywheel/FlywheelVelocity")
-  public AngularVelocity getFlywheelVelocity() {
-    return flywheelInputs.velocity;
-  }
-
-  @AutoLogOutput(key = "Shooter/Flywheel/FuelVelocity")
-  public LinearVelocity getFuelVelocity() {
-    return MetersPerSecond.of(
-        flywheelInputs.velocity.in(RadiansPerSecond)
-            * ShooterConstants.flywheelRadius.in(Meters)
-            * ShooterConstants.fuelToFlywheelLinearSpeedRatio);
+  public Command shootInNeutralZoneCommand() {
+    return shootFuelAtSpeedCommand(
+        () -> FuelTrajectoryCalculator.getNeutralShot().shooterSetpoint().linearFlywheelSpeed(),
+        () -> FuelTrajectoryCalculator.getNeutralShot().shooterSetpoint().hoodAngle());
   }
 }

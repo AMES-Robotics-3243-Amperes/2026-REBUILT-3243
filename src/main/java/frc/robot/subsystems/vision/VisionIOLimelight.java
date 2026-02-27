@@ -16,10 +16,12 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoubleArraySubscriber;
+import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.TimestampedDoubleArray;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.constants.VisionConstants;
 import frc.robot.constants.VisionConstants.CameraConfiguration;
@@ -35,6 +37,8 @@ public class VisionIOLimelight extends VisionIO {
   private final Supplier<Rotation2d> rotationSupplier;
   private final DoubleArrayPublisher orientationPublisher;
   private final DoubleArrayPublisher cameraOffsetPublisher;
+  private final DoublePublisher rewindEnablePublisher;
+  private final DoublePublisher throttlePublisher;
 
   private final DoubleSubscriber latencySubscriber;
   private final DoubleSubscriber txSubscriber;
@@ -62,6 +66,8 @@ public class VisionIOLimelight extends VisionIO {
     this.rotationSupplier = rotationSupplier;
     orientationPublisher = table.getDoubleArrayTopic("robot_orientation_set").publish();
     cameraOffsetPublisher = table.getDoubleArrayTopic("camerapose_robotspace_set").publish();
+    rewindEnablePublisher = table.getDoubleTopic("rewind_enable_set").publish();
+        throttlePublisher = table.getDoubleTopic("throttle_set").publish();
     latencySubscriber = table.getDoubleTopic("tl").subscribe(0.0);
     txSubscriber = table.getDoubleTopic("tx").subscribe(0.0);
     tySubscriber = table.getDoubleTopic("ty").subscribe(0.0);
@@ -87,6 +93,14 @@ public class VisionIOLimelight extends VisionIO {
     cameraOffsetPublisher.accept(parseTransform(cameraPoseInRobotSpace));
     orientationPublisher.accept(
         new double[] {rotationSupplier.get().getDegrees(), 0.0, 0.0, 0.0, 0.0, 0.0});
+        rewindEnablePublisher.accept(0.0);
+
+        if (DriverStation.isEnabled()) {
+      throttlePublisher.accept(0); // no throttle
+    } else if (DriverStation.isDisabled()) {
+      throttlePublisher.accept(VisionConstants.limelightFourThrottle);
+    }
+        
     NetworkTableInstance.getDefault()
         .flush(); // Increases network traffic but recommended by Limelight
 

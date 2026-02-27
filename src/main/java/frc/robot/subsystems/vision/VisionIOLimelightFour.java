@@ -13,32 +13,24 @@ import java.util.function.Supplier;
 
 public class VisionIOLimelightFour extends VisionIOLimelight {
   private final DoublePublisher imuModePublisher;
-  private final DoublePublisher throttlePublisher;
-
-  // 100ms picked arbitrarily. Used to avoid any potential issues involving rapid changing of
-  // settings on the limelight
-  private final Debouncer enabledDebouncer =
-      new Debouncer(
-          VisionConstants.limelightFourThrottleDebounce.in(Seconds), DebounceType.kFalling);
-  private final Debouncer disabledDebouncer =
-      new Debouncer(VisionConstants.limelightFourThrottleDebounce.in(Seconds));
+  private final DoublePublisher imuAssistPublisher;
 
   public VisionIOLimelightFour(
       CameraConfiguration configuration, Supplier<Rotation2d> rotationSupplier) {
     super(configuration, rotationSupplier);
 
     imuModePublisher = table.getDoubleTopic("imumode_set").publish();
-    throttlePublisher = table.getDoubleTopic("throttle_set").publish();
+    imuAssistPublisher = table.getDoubleTopic("imuassistalpha_set").publish();
   }
 
   @Override
-  public void update() {
-    if (enabledDebouncer.calculate(DriverStation.isEnabled())) {
-      throttlePublisher.accept(0); // no throttle
+  public void updateInputs(VisionIOInputs inputs) {
+    super.updateInputs(inputs);
 
-      // imuModePublisher.accept(2); // use limelight 4 builtin imu
-    } else if (disabledDebouncer.calculate(DriverStation.isDisabled())) {
-      throttlePublisher.accept(VisionConstants.limelightFourThrottle);
+    imuAssistPublisher.accept(VisionConstants.limelightFourImuAssist);
+    if (DriverStation.isEnabled()) {
+      imuModePublisher.accept(4); // use limelight 4 builtin imu
+    } else {
       imuModePublisher.accept(1); // use external rotation estimate (gyro + megatag1 estimate)
     }
   }

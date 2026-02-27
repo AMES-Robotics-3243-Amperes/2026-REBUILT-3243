@@ -44,7 +44,7 @@ public class Robot extends LoggedRobot {
       case REAL_COMPETITION:
       case REAL:
         Logger.addDataReceiver(new NT4Publisher());
-        Logger.addDataReceiver(new WPILOGWriter("/home/lvuser/logs"));
+        Logger.addDataReceiver(new WPILOGWriter());
         break;
 
       case SIM:

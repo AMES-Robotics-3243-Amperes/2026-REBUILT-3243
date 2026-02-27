@@ -7,7 +7,9 @@
 
 package frc.robot.constants;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Milliseconds;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -17,6 +19,8 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import frc.robot.subsystems.vision.VisionIO.PoseObservation;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
@@ -58,8 +62,9 @@ public class VisionConstants {
 
   // Basic filtering thresholds
   public static final Time maxTimestampError = Milliseconds.of(2);
+  public static final AngularVelocity maxAngularVelocity = RotationsPerSecond.of(1);
   public static final double maxAmbiguity = 0.2;
-  public static final double maxZError = 0.5;
+  public static final double maxZError = 0.15;
 
   public static final Vector<N3> calculateStdDev(
       PoseObservation observation, CameraConfiguration config) {
@@ -102,9 +107,8 @@ public class VisionConstants {
     return VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev);
   }
 
-  // Throttling the limelight while disabled helps with thermals
-  public static int limelightFourThrottle = 300;
-  public static Time limelightFourThrottleDebounce = Milliseconds.of(100);
+  public static int limelightFourThrottle = 200;
+  public static double limelightFourImuAssist = 0.002;
 
   // AprilTag layout
   public static final AprilTagFieldLayout aprilTagLayout =

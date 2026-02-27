@@ -106,6 +106,7 @@ public class RobotContainer {
 
         new VisionSubsystem(
             drivetrain::addVisionMeasurement,
+            drivetrain::getChassisSpeeds,
             VisionConstants.cameras.stream()
                 .<VisionIO>map(
                     config ->
@@ -150,6 +151,7 @@ public class RobotContainer {
 
         new VisionSubsystem(
             drivetrain::addVisionMeasurement,
+            drivetrain::getChassisSpeeds,
             VisionConstants.cameras.stream()
                 .<VisionIO>map(
                     config ->
@@ -211,6 +213,7 @@ public class RobotContainer {
 
         new VisionSubsystem(
             drivetrain::addVisionMeasurement,
+            drivetrain::getChassisSpeeds,
             VisionConstants.cameras.stream()
                 .<VisionIO>map(config -> new VisionIO(config) {})
                 .toList());

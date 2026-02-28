@@ -73,7 +73,4 @@ public abstract class VisionIO {
   }
 
   public void updateInputs(VisionIOInputs inputs) {}
-
-  /** Called periodically. Implementation/purpose varies by camera implementation. */
-  public void update() {}
 }

@@ -77,15 +77,15 @@
    "R_MaxDriveRPM":{
     "dimension":"AngVel",
     "var":{
-     "exp":"6000 RPM",
-     "val":628.3185307179587
+     "exp":"4800 RPM",
+     "val":502.6548245743669
     }
    },
    "R_MaxDriveTorque":{
     "dimension":"Torque",
     "var":{
-     "exp":"1.2 N * m",
-     "val":1.2
+     "exp":"1 N * m",
+     "val":1.0
     }
    },
    "R_RobotMOI":{
@@ -112,8 +112,8 @@
    "R_WheelCOF":{
     "dimension":"Number",
     "var":{
-     "exp":"1.2",
-     "val":1.2
+     "exp":"1",
+     "val":1.0
     }
    },
    "R_WheelRadius":{
@@ -222,15 +222,15 @@
   },
   "vmax":{
    "exp":"R_MaxDriveRPM",
-   "val":628.3185307179587
+   "val":502.6548245743669
   },
   "tmax":{
    "exp":"R_MaxDriveTorque",
-   "val":1.2
+   "val":1.0
   },
   "cof":{
    "exp":"R_WheelCOF",
-   "val":1.2
+   "val":1.0
   },
   "bumper":{
    "front":{

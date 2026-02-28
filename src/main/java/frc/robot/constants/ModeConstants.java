@@ -11,7 +11,7 @@ public class ModeConstants {
   }
 
   public static final Mode realMode = Mode.REAL;
-  public static final Mode simMode = Mode.SIM;
+  public static final Mode simMode = Mode.REPLAY;
 
   public static final Mode robotMode = RobotBase.isReal() ? realMode : simMode;
 }

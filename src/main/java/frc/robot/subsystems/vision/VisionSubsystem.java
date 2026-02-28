@@ -7,6 +7,8 @@
 
 package frc.robot.subsystems.vision;
 
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -20,14 +22,10 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO.PoseObservation;
-
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
-
 import org.littletonrobotics.junction.Logger;
 
 public class VisionSubsystem extends SubsystemBase {
@@ -38,7 +36,8 @@ public class VisionSubsystem extends SubsystemBase {
 
   private final Supplier<ChassisSpeeds> chassisSpeeds;
 
-  public VisionSubsystem(VisionConsumer consumer, Supplier<ChassisSpeeds> chassisSpeeds, List<VisionIO> io) {
+  public VisionSubsystem(
+      VisionConsumer consumer, Supplier<ChassisSpeeds> chassisSpeeds, List<VisionIO> io) {
     this.consumer = consumer;
     this.chassisSpeeds = chassisSpeeds;
     this.io = io.toArray(VisionIO[]::new);
@@ -73,8 +72,6 @@ public class VisionSubsystem extends SubsystemBase {
     for (int i = 0; i < io.length; i++) {
       io[i].updateInputs(inputs[i]);
       Logger.processInputs("Vision/" + io[i].configuration.name(), inputs[i]);
-
-      io[i].update();
     }
 
     // Initialize logging values
@@ -108,16 +105,15 @@ public class VisionSubsystem extends SubsystemBase {
         ChassisSpeeds speeds = chassisSpeeds.get();
         boolean rejectPose =
             observation.tagCount() == 0 // Must have at least one tag
-
                 || (observation.tagCount() == 1
                     && observation.ambiguity()
                         > VisionConstants.maxAmbiguity) // Cannot be high ambiguity
-
                 || Math.abs(observation.pose().getZ())
                     > VisionConstants.maxZError // Must have realistic Z coordinate
 
                 // can't be rotating too fast
-                || Math.abs(speeds.omegaRadiansPerSecond) < VisionConstants.maxAngularVelocity.in(RadiansPerSecond)
+                || Math.abs(speeds.omegaRadiansPerSecond)
+                    > VisionConstants.maxAngularVelocity.in(RadiansPerSecond)
 
                 // Must be within the field boundaries
                 || observation.pose().getX() < 0.0

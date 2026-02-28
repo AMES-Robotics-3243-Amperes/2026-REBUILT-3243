@@ -18,7 +18,7 @@ public class SysIdConstants {
     switch (routine) {
       case DRIVE_LINEAR_FEEDFORWARD:
       case AZIMUTH_FEEDFORWARD:
-        return Volts.per(Second).of(0.2);
+        return Volts.per(Second).of(0.4);
     }
 
     return null;
@@ -28,7 +28,7 @@ public class SysIdConstants {
     switch (routine) {
       case DRIVE_LINEAR_FEEDFORWARD:
       case AZIMUTH_FEEDFORWARD:
-        return Volts.of(1);
+        return Volts.of(2.5);
     }
 
     return null;

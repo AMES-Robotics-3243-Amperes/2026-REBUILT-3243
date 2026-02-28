@@ -7,6 +7,7 @@
 
 package frc.robot.subsystems.vision;
 
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Microseconds;
 
 import edu.wpi.first.math.geometry.Pose3d;
@@ -21,6 +22,7 @@ import edu.wpi.first.networktables.DoubleSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.TimestampedDoubleArray;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import frc.robot.constants.VisionConstants;
@@ -35,6 +37,8 @@ import java.util.function.Supplier;
 /** IO implementation for real Limelight hardware. */
 public class VisionIOLimelight extends VisionIO {
   private final Supplier<Rotation2d> rotationSupplier;
+  private final Supplier<AngularVelocity> rotationRateSupplier;
+
   private final DoubleArrayPublisher orientationPublisher;
   private final DoubleArrayPublisher cameraOffsetPublisher;
   private final DoublePublisher rewindEnablePublisher;
@@ -57,17 +61,21 @@ public class VisionIOLimelight extends VisionIO {
    * @param rotationSupplier Supplier for the current estimated rotation, used for MegaTag 2.
    */
   public VisionIOLimelight(
-      CameraConfiguration configuration, Supplier<Rotation2d> rotationSupplier) {
+      CameraConfiguration configuration,
+      Supplier<Rotation2d> rotationSupplier,
+      Supplier<AngularVelocity> rotationRateSupplier) {
     super(configuration);
 
     this.cameraPoseInRobotSpace = configuration.robotToCamera();
     this.table = NetworkTableInstance.getDefault().getTable(this.configuration.name());
 
     this.rotationSupplier = rotationSupplier;
+    this.rotationRateSupplier = rotationRateSupplier;
+
     orientationPublisher = table.getDoubleArrayTopic("robot_orientation_set").publish();
     cameraOffsetPublisher = table.getDoubleArrayTopic("camerapose_robotspace_set").publish();
     rewindEnablePublisher = table.getDoubleTopic("rewind_enable_set").publish();
-        throttlePublisher = table.getDoubleTopic("throttle_set").publish();
+    throttlePublisher = table.getDoubleTopic("throttle_set").publish();
     latencySubscriber = table.getDoubleTopic("tl").subscribe(0.0);
     txSubscriber = table.getDoubleTopic("tx").subscribe(0.0);
     tySubscriber = table.getDoubleTopic("ty").subscribe(0.0);
@@ -92,15 +100,22 @@ public class VisionIOLimelight extends VisionIO {
     // Update orientation for MegaTag 2
     cameraOffsetPublisher.accept(parseTransform(cameraPoseInRobotSpace));
     orientationPublisher.accept(
-        new double[] {rotationSupplier.get().getDegrees(), 0.0, 0.0, 0.0, 0.0, 0.0});
-        rewindEnablePublisher.accept(0.0);
+        new double[] {
+          rotationSupplier.get().getDegrees(),
+          rotationRateSupplier.get().in(DegreesPerSecond),
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        });
+    rewindEnablePublisher.accept(0.0);
 
-        if (DriverStation.isEnabled()) {
+    if (DriverStation.isEnabled()) {
       throttlePublisher.accept(0); // no throttle
     } else if (DriverStation.isDisabled()) {
       throttlePublisher.accept(VisionConstants.limelightFourThrottle);
     }
-        
+
     NetworkTableInstance.getDefault()
         .flush(); // Increases network traffic but recommended by Limelight
 

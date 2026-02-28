@@ -50,7 +50,9 @@ public class ModuleIOTalonFXSim extends ModuleIOTalonFX {
         .withSteerMotorClosedLoopOutput(ClosedLoopOutputType.Voltage)
         .withDriveMotorClosedLoopOutput(ClosedLoopOutputType.Voltage)
         .withDriveMotorGains(
-            Slot0Configs.from(SimConstants.simDriveControl.talonFXConfigs().getFirst()));
+            Slot0Configs.from(SimConstants.simDriveControl.talonFXConfigs().getFirst()))
+        .withSteerMotorGains(
+            Slot0Configs.from(SimConstants.simSteerControl.talonFXConfigs().getFirst()));
   }
 
   private final SwerveModuleSimulation simulation;

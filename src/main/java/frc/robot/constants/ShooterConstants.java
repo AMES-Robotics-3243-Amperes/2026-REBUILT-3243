@@ -6,8 +6,9 @@ package frc.robot.constants;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -18,6 +19,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Time;
 import frc.robot.util.ControlConstantsBuilder;
 
 /** Add your docs here. */
@@ -27,7 +29,7 @@ public class ShooterConstants {
   public static final Translation2d bottomBlueNeutralZoneShot =
       new Translation2d(FieldConstants.fieldLength.div(2), FieldConstants.trenchWidth);
 
-  public static final AngularVelocity flywheelVelocityTolerance = DegreesPerSecond.of(180);
+  public static final AngularVelocity flywheelVelocityTolerance = RotationsPerSecond.of(0.6);
 
   // flywheel
   public static final int flywheelLeaderId = 10;
@@ -37,12 +39,15 @@ public class ShooterConstants {
   public static final Distance flywheelRadius = Inches.of(2);
   public static final double flywheelGearReduction = 4.0 / 3.0;
 
-  public static final Current flywheelSupplyCurrentLimit = Amps.of(60);
+  public static final Current flywheelSupplyCurrentLimit = Amps.of(55);
 
-  public static final double fuelToFlywheelLinearSpeedRatio = 0.49;
+  public static final double fuelToFlywheelLinearSpeedRatio = 0.495;
 
   public static final ControlConstantsBuilder flywheelControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(1.2, 0, 0).sva(10.6, 0, 0);
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(2.05, 0, 0).sva(4.32, 0, 0);
+
+  public static final AngularVelocity idleFlywheelSpeed = RotationsPerSecond.of(2.5);
+  public static final Time timeCoastingBeforeIdle = Seconds.of(1.5);
 
   // hood
   public static final int hoodId = 5;

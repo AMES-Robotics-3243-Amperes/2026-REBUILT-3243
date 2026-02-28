@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.Indexer;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
@@ -34,6 +35,8 @@ public class KickerIOReal implements KickerIO {
     config.encoder.positionConversionFactor(1.0 / IndexerConstants.kickerReduction);
     config.encoder.velocityConversionFactor(1.0 / IndexerConstants.kickerReduction);
     config.idleMode(IdleMode.kCoast).inverted(true);
+
+    config.smartCurrentLimit((int) Math.round(IndexerConstants.kickerCurrentLimit.in(Amps)));
 
     config
         .closedLoop

@@ -20,8 +20,8 @@ public final class ChoreoVars {
   public static final Distance R_BumperTolerance = Units.Meters.of(0.102);
   public static final Distance R_DeployedHopperX = Units.Meters.of(0.635);
   public static final double R_DriveReduction = 5.79;
-  public static final AngularVelocity R_MaxDriveRPM = Units.RadiansPerSecond.of(502.655);
-  public static final Torque R_MaxDriveTorque = Units.NewtonMeters.of(1);
+  public static final AngularVelocity R_MaxDriveRPM = Units.RadiansPerSecond.of(544.543);
+  public static final Torque R_MaxDriveTorque = Units.NewtonMeters.of(0.8);
   public static final MomentOfInertia R_RobotMOI = Units.KilogramSquareMeters.of(7);
   public static final Mass R_RobotMass = Units.Kilograms.of(52.163);
   public static final Distance R_TrackLength = Units.Meters.of(0.546);

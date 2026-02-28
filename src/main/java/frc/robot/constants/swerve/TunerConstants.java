@@ -26,7 +26,7 @@ public class TunerConstants {
           new SwerveModuleConstantsFactory<
                   TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>()
               .withDriveMotorGearRatio(ChoreoVars.R_DriveReduction)
-              .withSteerMotorGearRatio(ChoreoVars.R_DriveReduction)
+              .withSteerMotorGearRatio(ModuleConstants.steerReduction)
               .withCouplingGearRatio(ModuleConstants.kCoupleRatio)
               .withWheelRadius(ChoreoVars.R_WheelRadius)
               .withSteerMotorGains(
@@ -45,8 +45,8 @@ public class TunerConstants {
                   new TalonFXConfiguration()
                       .withCurrentLimits(
                           new CurrentLimitsConfigs()
-                              .withStatorCurrentLimit(ModuleConstants.steerStatorCurrentLimit)
-                              .withStatorCurrentLimitEnable(true)))
+                              .withSupplyCurrentLimit(ModuleConstants.steerStatorCurrentLimit)
+                              .withSupplyCurrentLimitEnable(true)))
               .withEncoderInitialConfigs(new CANcoderConfiguration())
               .withSteerInertia(ModuleConstants.kSteerInertia)
               .withDriveInertia(ModuleConstants.kDriveInertia)

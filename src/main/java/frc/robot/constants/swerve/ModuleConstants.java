@@ -3,6 +3,7 @@ package frc.robot.constants.swerve;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
@@ -16,14 +17,16 @@ import frc.robot.util.ControlConstantsBuilder;
 public class ModuleConstants {
   // drive
   public static final ControlConstantsBuilder driveControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(6, 0, 0).sva(1.8, 0, 0);
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(11.5, 0, 0).sva(5.8, 0, 0);
 
   // turn
   public static final ControlConstantsBuilder steerControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(5, 0, 0).sva(0, 0, 0);
+      ControlConstantsBuilder.fromRadiansAndSeconds()
+          .pid(24, 0, 0)
+          .constraints(RotationsPerSecond.of(25), RotationsPerSecondPerSecond.of(250));
 
   public static final Current steerStatorCurrentLimit = Amps.of(30);
-  public static final Current driveCurrentLimit = Amps.of(60);
+  public static final Current driveCurrentLimit = Amps.of(80);
 
   public static final AngularVelocity maxSetpointGeneratorModuleRotation = RotationsPerSecond.of(5);
 
@@ -35,7 +38,7 @@ public class ModuleConstants {
   public static final ClosedLoopOutputType driveClosedLoopOutput =
       ClosedLoopOutputType.TorqueCurrentFOC;
 
-  public static final SteerFeedbackType steerFeedbackType = SteerFeedbackType.RemoteCANcoder;
+  public static final SteerFeedbackType steerFeedbackType = SteerFeedbackType.FusedCANcoder;
 
   // simulation
   public static final MomentOfInertia kSteerInertia = KilogramSquareMeters.of(0.01);

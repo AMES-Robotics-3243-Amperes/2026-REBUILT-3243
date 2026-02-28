@@ -618,6 +618,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public Supplier<AngularVelocity> joystickDriveAngular(DoubleSupplier rightJoystickX) {
     return () -> {
+      atRotationSetpoint = false;
+
       double withDeadband =
           MathUtil.applyDeadband(
               -rightJoystickX.getAsDouble(), SwerveConstants.teleopJoystickDeadband);

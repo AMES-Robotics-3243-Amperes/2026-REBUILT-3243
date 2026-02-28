@@ -26,6 +26,7 @@ import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.constants.VisionConstants.CameraType;
 import frc.robot.constants.choreo.ChoreoVars;
+import frc.robot.constants.swerve.ModuleConstants;
 import frc.robot.constants.swerve.SwerveConstants;
 import frc.robot.constants.swerve.TunerConstants;
 import frc.robot.subsystems.Indexer.IndexerSubsystem;
@@ -42,7 +43,6 @@ import frc.robot.subsystems.drivetrain.ModuleIO;
 import frc.robot.subsystems.drivetrain.ModuleIOTalonFXReal;
 import frc.robot.subsystems.drivetrain.ModuleIOTalonFXSim;
 import frc.robot.subsystems.drivetrain.SwerveSubsystem;
-import frc.robot.subsystems.drivetrain.SwerveSubsystem.SwerveSysIdRoutine;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.intake.PivotIO;
 import frc.robot.subsystems.intake.PivotIOReal;
@@ -63,7 +63,10 @@ import frc.robot.subsystems.vision.VisionIOLimelightFour;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.vision.VisionSubsystem;
 import frc.robot.util.FuelTrajectoryCalculator;
+import frc.robot.util.PointOfInterestManager;
+import frc.robot.util.PointOfInterestManager.FlipType;
 import frc.robot.util.RobotLocationManager;
+import frc.robot.util.TunableControls;
 import org.ironmaple.simulation.IntakeSimulation;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -76,7 +79,7 @@ public class RobotContainer {
   // JOYSTICKS, SUBSYSTEMS, CONSTRUCTION, AND SIMULATION
   //
 
-  public final CommandXboxController primaryJoystick = new CommandXboxController(0);
+  public final CommandXboxController primaryController = new CommandXboxController(0);
   public final CommandXboxController secondaryController = new CommandXboxController(1);
 
   public final SwerveSubsystem drivetrain;
@@ -94,13 +97,21 @@ public class RobotContainer {
       case REAL:
         driveSimulation = null;
 
-        drivetrain =
-            new SwerveSubsystem(
-                new GyroIOPigeon2(),
-                new ModuleIOTalonFXReal(TunerConstants.FrontLeft),
-                new ModuleIOTalonFXReal(TunerConstants.FrontRight),
-                new ModuleIOTalonFXReal(TunerConstants.BackLeft),
-                new ModuleIOTalonFXReal(TunerConstants.BackRight));
+        ModuleIOTalonFXReal fl = new ModuleIOTalonFXReal(TunerConstants.FrontLeft);
+        ModuleIOTalonFXReal fr = new ModuleIOTalonFXReal(TunerConstants.FrontRight);
+        ModuleIOTalonFXReal bl = new ModuleIOTalonFXReal(TunerConstants.BackLeft);
+        ModuleIOTalonFXReal br = new ModuleIOTalonFXReal(TunerConstants.BackRight);
+
+        TunableControls.registerTalonFXSlotTuning(
+            0,
+            "Drivetrain/Azimuth",
+            ModuleConstants.steerControl,
+            fl.turnTalon,
+            fr.turnTalon,
+            bl.turnTalon,
+            br.turnTalon);
+
+        drivetrain = new SwerveSubsystem(new GyroIOPigeon2(), fl, fr, bl, br);
         intake = new IntakeSubsystem(new RollerIOReal(), new PivotIOReal());
         shooter = new ShooterSubsystem(new FlywheelIOReal(), new HoodIOReal());
         indexer = new IndexerSubsystem(new KickerIOReal(), new SpindexerIOReal());
@@ -259,19 +270,28 @@ public class RobotContainer {
         .whileTrue(robotLocationManager.setLocationAsNeutralZone());
     secondaryController.y().whileTrue(robotLocationManager.setLocationAsOpponentZone());
 
+    //
+    // Misc binds
+    //
     drivetrain.setDefaultCommand(
         drivetrain.driveSetpiontGeneratorCommand(
-            drivetrain.joystickDriveLinear(SwerveConstants.linearTeleopSpeed, primaryJoystick),
-            drivetrain.joystickDriveAngular(primaryJoystick::getRightX)));
+            drivetrain.joystickDriveLinear(SwerveConstants.linearTeleopSpeed, primaryController),
+            drivetrain.joystickDriveAngular(primaryController::getRightX)));
 
-    primaryJoystick
+    // shooter.setDefaultCommand(
+    //     Commands.waitTime(ShooterConstants.timeCoastingBeforeIdle)
+    //         .andThen(
+    //             shooter.shootCommand(
+    //                 ShooterConstants.idleFlywheelSpeed, ShooterConstants.hoodMinRotation)));
+
+    primaryController
         .leftTrigger()
         .whileTrue(intake.intakeAtSpeedCommand(IntakeConstants.rollerAbsoluteSpeed));
 
     // primaryJoystick.leftBumper().whileTrue(intake.runPivotUp());
     // primaryJoystick.rightBumper().whileTrue(intake.runPivotDown());
 
-    primaryJoystick
+    primaryController
         .rightBumper()
         .whileTrue(
             DriveUnderTrenchCommand.driveUnderNearestTrenchCommand(
@@ -290,10 +310,14 @@ public class RobotContainer {
             Commands.runEnd(
                 () -> intake.pivotIO.runOpenLoop(-4), () -> intake.pivotIO.runOpenLoop(0)));
 
+    secondaryController
+        .leftTrigger()
+        .whileTrue(intake.intakeAtSpeedCommand(IntakeConstants.rollerAbsoluteSpeed));
+
     //
     // Shooting
     //
-    primaryJoystick
+    primaryController
         .rightTrigger()
         .and(robotLocationManager.inAllianceZone())
         .whileTrue(
@@ -301,11 +325,11 @@ public class RobotContainer {
                 shooter.shootInHubCommand(),
                 drivetrain.driveSetpiontGeneratorCommand(
                     drivetrain.joystickDriveLinear(
-                        SwerveConstants.linearTeleopSpeedWhileShooting, primaryJoystick),
+                        SwerveConstants.linearTeleopSpeedWhileShooting, primaryController),
                     drivetrain.rotateAtAngle(
                         () -> FuelTrajectoryCalculator.getHubShot().fuelGroundSpeedRotation()))));
 
-    primaryJoystick
+    primaryController
         .rightTrigger()
         .and(robotLocationManager.innNeutralZone())
         .whileTrue(
@@ -313,13 +337,13 @@ public class RobotContainer {
                 shooter.shootInAllianceZoneCommand(),
                 drivetrain.driveSetpiontGeneratorCommand(
                     drivetrain.joystickDriveLinear(
-                        SwerveConstants.linearTeleopSpeedWhileShooting, primaryJoystick),
+                        SwerveConstants.linearTeleopSpeedWhileShooting, primaryController),
                     drivetrain.rotateAtAngle(
                         () ->
                             FuelTrajectoryCalculator.getAllianceShot()
                                 .fuelGroundSpeedRotation()))));
 
-    primaryJoystick
+    primaryController
         .rightTrigger()
         .and(robotLocationManager.inOpponentZone())
         .whileTrue(
@@ -327,25 +351,29 @@ public class RobotContainer {
                 shooter.shootInNeutralZoneCommand(),
                 drivetrain.driveSetpiontGeneratorCommand(
                     drivetrain.joystickDriveLinear(
-                        SwerveConstants.linearTeleopSpeedWhileShooting, primaryJoystick),
+                        SwerveConstants.linearTeleopSpeedWhileShooting, primaryController),
                     drivetrain.rotateAtAngle(
                         () ->
                             FuelTrajectoryCalculator.getNeutralShot().fuelGroundSpeedRotation()))));
 
-    primaryJoystick
+    primaryController
         .rightTrigger()
         .whileTrue(
-            indexer
-                .indexCommand()
-                .onlyWhile(drivetrain::atRotationSetpoint)
-                .onlyWhile(shooter::flywheelSpunUp)
-                .repeatedly());
+            Commands.waitSeconds(0.3)
+                .andThen(
+                    indexer
+                        .indexCommand()
+                        .onlyIf(drivetrain::atRotationSetpoint)
+                        .onlyIf(shooter::flywheelSpunUp)
+                        .repeatedly()));
 
-    primaryJoystick
-        .a()
-        .onTrue(
-            drivetrain.sysIdCommand(
-                SwerveSysIdRoutine.DRIVE_LINEAR_FEEDFORWARD, primaryJoystick.a()));
+    primaryController
+        .x()
+        .whileTrue(
+            AutoBuilder.pathfindToPose(
+                PointOfInterestManager.flipPoseConditionally(
+                    new Pose2d(2, 1, Rotation2d.kZero), FlipType.REFLECT_FOR_OTHER_ALLIANCE),
+                SwerveConstants.automaticsConstraints));
   }
 
   //

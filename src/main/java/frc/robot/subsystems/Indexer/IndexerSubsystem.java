@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.SysIdCommand;
@@ -66,8 +67,22 @@ public class IndexerSubsystem extends SubsystemBase {
   }
 
   public Command indexCommand() {
-    return runAtSpeedCommand(
-        IndexerConstants.kickerShootingSpeed, IndexerConstants.spindexerIndexingSpeed);
+    return Commands.sequence(
+            run(() -> {
+                  setKickerVelocity(IndexerConstants.kickerShootingSpeed);
+                  coastSpindexer();
+                })
+                .withTimeout(0.1), // TODO: constants
+            run(
+                () -> {
+                  setKickerVelocity(IndexerConstants.kickerShootingSpeed);
+                  setSpindexerVelocity(IndexerConstants.spindexerIndexingSpeed);
+                }))
+        .finallyDo(
+            () -> {
+              coastKicker();
+              coastSpindexer();
+            });
   }
 
   public Command runAtSpeedCommand(

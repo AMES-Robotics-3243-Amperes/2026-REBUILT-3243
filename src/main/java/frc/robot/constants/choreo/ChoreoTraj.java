@@ -17,20 +17,27 @@ public record ChoreoTraj(
     double totalTimeSecs,
     Pose2d initialPoseBlue,
     Pose2d endPoseBlue) {
+  public static final ChoreoTraj Loop =
+      new ChoreoTraj(
+          "Loop",
+          OptionalInt.empty(),
+          7.16122,
+          new Pose2d(2.004, 5.268, Rotation2d.fromRadians(0.785)),
+          new Pose2d(2.142, 2.608, Rotation2d.fromRadians(2.172)));
   public static final ChoreoTraj Test =
       new ChoreoTraj(
           "Test",
           OptionalInt.empty(),
-          7.16121,
-          new Pose2d(2.004, 5.268, Rotation2d.fromRadians(0.785)),
-          new Pose2d(2.142, 2.608, Rotation2d.fromRadians(2.172)));
+          1.79157,
+          new Pose2d(2, 1, Rotation2d.fromRadians(0)),
+          new Pose2d(2.8, 4.63, Rotation2d.fromRadians(-0.01)));
 
   /**
    * A map between trajectory names and their corresponding data. This allows for trajectory data to
    * be looked up with strings during runtime.
    */
   public static final Map<String, ChoreoTraj> ALL_TRAJECTORIES =
-      Map.ofEntries(Map.entry("Test", Test));
+      Map.ofEntries(Map.entry("Loop", Loop), Map.entry("Test", Test));
 
   /**
    * Looks up the ChoreoTraj segment of the given overall ChoreoTraj. WARNING: will raise an

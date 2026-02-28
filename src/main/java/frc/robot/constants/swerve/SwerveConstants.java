@@ -25,17 +25,17 @@ public class SwerveConstants {
   public static final double teleopJoystickDeadband = 0.03;
 
   public static final LinearVelocity linearTeleopSpeed = MetersPerSecond.of(3);
-  public static final AngularVelocity angularTeleopSpeed = RotationsPerSecond.of(0.5);
+  public static final AngularVelocity angularTeleopSpeed = RotationsPerSecond.of(1);
 
   public static final LinearVelocity linearTeleopSpeedWhileShooting = MetersPerSecond.of(1);
 
-  public static final Angle rotationToleranceBeforeShooting = Degrees.of(5);
+  public static final Angle rotationToleranceBeforeShooting = Degrees.of(1);
 
   // control
   public static final Angle rotationFeedbackTolerance = Degrees.of(1.5);
   public static final ControlConstantsBuilder rotationControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(5.0, 0, 0.3)
+          .pid(4.8, 0, 0.5)
           .iZone(1)
           .constraints(RotationsPerSecond.of(3), RotationsPerSecondPerSecond.of(9));
 
@@ -45,8 +45,8 @@ public class SwerveConstants {
   public static final Distance trenchTraversalOffset = Meters.of(2);
   public static final PathConstraints automaticsConstraints =
       new PathConstraints(
-          MetersPerSecond.of(2),
-          MetersPerSecondPerSecond.of(4),
+          MetersPerSecond.of(1),
+          MetersPerSecondPerSecond.of(2),
           RotationsPerSecond.of(1),
           RotationsPerSecondPerSecond.of(2));
 
@@ -61,7 +61,7 @@ public class SwerveConstants {
 
   // odometry frequency
   public static final Frequency canFdOdometryFrequency = Hertz.of(250);
-  public static final Frequency baseOdometryFrequency = Hertz.of(100);
+  public static final Frequency baseOdometryFrequency = Hertz.of(80);
 
   public static final Frequency odometryFrequency() {
     return swerveCANBus.isNetworkFD() ? canFdOdometryFrequency : baseOdometryFrequency;

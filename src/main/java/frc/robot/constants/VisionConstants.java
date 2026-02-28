@@ -66,22 +66,23 @@ public class VisionConstants {
 
   public static final Vector<N3> calculateStdDev(
       PoseObservation observation, CameraConfiguration config) {
-    double minCameraStdDev = 0.3;
+    double minCameraPosStdDev = 0.3;
+    double minCameraRotStdDev = 1;
     if (observation.type() == PoseObservationType.MEGATAG_1
         && observation.cameraReportedStdDevs().present()) {
       return VecBuilder.fill(
-          Double.max(minCameraStdDev, observation.cameraReportedStdDevs().x())
+          Double.max(minCameraPosStdDev, observation.cameraReportedStdDevs().x())
               * config.stdDevFactor(),
-          Double.max(minCameraStdDev, observation.cameraReportedStdDevs().y())
+          Double.max(minCameraPosStdDev, observation.cameraReportedStdDevs().y())
               * config.stdDevFactor(),
-          Double.max(minCameraStdDev, observation.cameraReportedStdDevs().yawRadians())
+          Double.max(minCameraRotStdDev, observation.cameraReportedStdDevs().yawRadians())
               * config.stdDevFactor());
     } else if (observation.type() == PoseObservationType.MEGATAG_2
         && observation.cameraReportedStdDevs().present()) {
       return VecBuilder.fill(
-          Double.max(minCameraStdDev, observation.cameraReportedStdDevs().x())
+          Double.max(minCameraPosStdDev, observation.cameraReportedStdDevs().x())
               * config.stdDevFactor(),
-          Double.max(minCameraStdDev, observation.cameraReportedStdDevs().y())
+          Double.max(minCameraPosStdDev, observation.cameraReportedStdDevs().y())
               * config.stdDevFactor(),
           Double.POSITIVE_INFINITY);
     }

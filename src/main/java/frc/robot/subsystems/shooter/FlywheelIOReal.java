@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.RPM;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -21,6 +23,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.util.TunableControls;
+import org.littletonrobotics.junction.Logger;
 
 /** Add your docs here. */
 public class FlywheelIOReal implements FlywheelIO {
@@ -65,6 +68,7 @@ public class FlywheelIOReal implements FlywheelIO {
 
     // Configure periodic frames
     BaseStatusSignal.setUpdateFrequencyForAll(50.0, position, velocity, voltage);
+    BaseStatusSignal.setUpdateFrequencyForAll(100.0, leader.getTorqueCurrent());
     ParentDevice.optimizeBusUtilizationForAll(leader, follower);
 
     TunableControls.registerTalonFXSlotTuning(
@@ -74,6 +78,8 @@ public class FlywheelIOReal implements FlywheelIO {
   @Override
   public void updateInputs(FlywheelIOInputs inputs) {
     BaseStatusSignal.refreshAll(position, velocity, voltage);
+
+    Logger.recordOutput("flywheelError", goal.minus(velocity.getValue()));
 
     inputs.position = position.getValue();
     inputs.velocity = velocity.getValue();
@@ -85,13 +91,17 @@ public class FlywheelIOReal implements FlywheelIO {
     leader.setControl(voltageRequest.withOutput(output));
   }
 
+  AngularVelocity goal = RPM.of(0);
+
   @Override
   public void setAngularVelocity(AngularVelocity velocity) {
+    goal = velocity;
     leader.setControl(velocityTorqueCurrentRequest.withVelocity(velocity));
   }
 
   @Override
   public void coast() {
+    goal = RPM.of(0);
     leader.setControl(coastRequest);
   }
 }

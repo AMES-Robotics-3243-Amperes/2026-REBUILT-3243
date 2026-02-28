@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.Indexer;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
@@ -34,6 +35,8 @@ public class SpindexerIOReal implements SpindexerIO {
     config.encoder.positionConversionFactor(1.0 / IndexerConstants.spindexerReduction);
     config.encoder.velocityConversionFactor(1.0 / IndexerConstants.spindexerReduction);
     config.idleMode(IdleMode.kCoast).inverted(true);
+
+    config.smartCurrentLimit((int) Math.round(IndexerConstants.spindexerCurrentLimit.in(Amps)));
 
     config
         .closedLoop

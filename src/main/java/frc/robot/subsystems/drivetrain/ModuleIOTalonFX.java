@@ -23,6 +23,7 @@ import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
+import frc.robot.constants.swerve.ModuleConstants;
 import frc.robot.constants.swerve.SwerveConstants;
 import java.util.function.Supplier;
 
@@ -32,8 +33,8 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
       constants;
 
   // Hardware objects eli programmed this
-  protected final TalonFX driveTalon;
-  protected final TalonFX turnTalon;
+  public final TalonFX driveTalon;
+  public final TalonFX turnTalon;
   protected final CANcoder cancoder;
 
   // Voltage control requests
@@ -92,8 +93,8 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
     driveConfig.Feedback.SensorToMechanismRatio = constants.DriveMotorGearRatio;
     driveConfig.TorqueCurrent.PeakForwardTorqueCurrent = constants.SlipCurrent;
     driveConfig.TorqueCurrent.PeakReverseTorqueCurrent = -constants.SlipCurrent;
-    driveConfig.CurrentLimits.StatorCurrentLimit = constants.SlipCurrent;
-    driveConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+    driveConfig.CurrentLimits.SupplyCurrentLimit = constants.SlipCurrent;
+    driveConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
     driveConfig.MotorOutput.Inverted =
         constants.DriveMotorInverted
             ? InvertedValue.Clockwise_Positive
@@ -114,9 +115,7 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
           default -> throw new RuntimeException("Invalid feedback source");
         };
     turnConfig.Feedback.RotorToSensorRatio = constants.SteerMotorGearRatio;
-    turnConfig.MotionMagic.MotionMagicCruiseVelocity = 100 / constants.SteerMotorGearRatio;
-    turnConfig.MotionMagic.MotionMagicAcceleration =
-        turnConfig.MotionMagic.MotionMagicCruiseVelocity * 10;
+    turnConfig.MotionMagic = ModuleConstants.steerControl.talonFXConfigs().getSecond();
     turnConfig.MotionMagic.MotionMagicExpo_kV = constants.SteerMotorGains.kV;
     turnConfig.MotionMagic.MotionMagicExpo_kA = constants.SteerMotorGains.kA;
     turnConfig.ClosedLoopGeneral.ContinuousWrap = true;

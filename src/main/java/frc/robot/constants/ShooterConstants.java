@@ -8,7 +8,6 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.RPM;
 
 import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -28,30 +27,28 @@ public class ShooterConstants {
   public static final Translation2d bottomBlueNeutralZoneShot =
       new Translation2d(FieldConstants.fieldLength.div(2), FieldConstants.trenchWidth);
 
-  public static final AngularVelocity flywheelVelocityTolerance = DegreesPerSecond.of(90);
+  public static final AngularVelocity flywheelVelocityTolerance = DegreesPerSecond.of(180);
 
   // flywheel
   public static final int flywheelLeaderId = 10;
   public static final int flywheelFollowerId = 11;
   public static final InvertedValue shooterFlywheelInverted = InvertedValue.Clockwise_Positive;
 
-  public static final AngularVelocity flywheelShootSpeed = RPM.of(3500);
-
   public static final Distance flywheelRadius = Inches.of(2);
   public static final double flywheelGearReduction = 4.0 / 3.0;
 
   public static final Current flywheelSupplyCurrentLimit = Amps.of(60);
 
-  public static final double fuelToFlywheelLinearSpeedRatio = 0.495;
+  public static final double fuelToFlywheelLinearSpeedRatio = 0.49;
 
   public static final ControlConstantsBuilder flywheelControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.95, 0, 0).sva(10.6, 0, 0);
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(1.2, 0, 0).sva(10.6, 0, 0);
 
   // hood
   public static final int hoodId = 5;
 
   public static final Angle hoodAbsoluteEncoderZeroedRotation = Degrees.of(21);
-  public static final Angle hoodMinRotation = Degrees.of(17);
+  public static final Angle hoodMinRotation = Degrees.of(16.5);
   public static final Angle hoodMaxRotation = Degrees.of(44);
 
   public static final double encoderToHoodReduction = 320.0 / 24.0;
@@ -62,7 +59,7 @@ public class ShooterConstants {
 
   // fuel trajectory calculation
   public static final Distance extraPointHorizontalOffset = Inches.of(4);
-  public static final Distance extraPointVerticalOffset = Inches.of(5);
+  public static final Distance extraPointVerticalOffset = Inches.of(6.5);
 
   public static final Transform3d robotToShooter =
       new Transform3d(Units.inchesToMeters(-8), 0, Units.inchesToMeters(20), new Rotation3d());

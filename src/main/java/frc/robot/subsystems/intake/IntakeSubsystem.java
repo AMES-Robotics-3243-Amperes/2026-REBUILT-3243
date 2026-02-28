@@ -26,7 +26,7 @@ public class IntakeSubsystem extends SubsystemBase {
   private final RollerIO rollerIO;
   private final RollerIOInputsAutoLogged rollerInputs = new RollerIOInputsAutoLogged();
 
-  private final PivotIO pivotIO;
+  public final PivotIO pivotIO;
   private final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
 
   /** Creates a new IntakeSubsystem. */

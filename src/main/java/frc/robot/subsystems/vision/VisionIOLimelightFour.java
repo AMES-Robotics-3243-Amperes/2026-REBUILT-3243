@@ -1,9 +1,5 @@
 package frc.robot.subsystems.vision;
 
-import static edu.wpi.first.units.Units.Seconds;
-
-import edu.wpi.first.math.filter.Debouncer;
-import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -29,7 +25,7 @@ public class VisionIOLimelightFour extends VisionIOLimelight {
 
     imuAssistPublisher.accept(VisionConstants.limelightFourImuAssist);
     if (DriverStation.isEnabled()) {
-      imuModePublisher.accept(4); // use limelight 4 builtin imu
+      // imuModePublisher.accept(4); // use limelight 4 builtin imu
     } else {
       imuModePublisher.accept(1); // use external rotation estimate (gyro + megatag1 estimate)
     }

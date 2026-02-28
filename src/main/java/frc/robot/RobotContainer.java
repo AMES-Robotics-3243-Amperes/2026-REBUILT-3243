@@ -268,6 +268,17 @@ public class RobotContainer {
                 drivetrain::getChassisSpeeds,
                 robotLocationManager::robotLocation));
 
+    secondaryController
+        .leftBumper()
+        .whileTrue(
+            Commands.runEnd(
+                () -> intake.pivotIO.runOpenLoop(4), () -> intake.pivotIO.runOpenLoop(0)));
+    secondaryController
+        .rightBumper()
+        .whileTrue(
+            Commands.runEnd(
+                () -> intake.pivotIO.runOpenLoop(-4), () -> intake.pivotIO.runOpenLoop(0)));
+
     //
     // Shooting
     //
@@ -277,7 +288,7 @@ public class RobotContainer {
         .whileTrue(
             Commands.parallel(
                 shooter.shootInHubCommand(),
-                drivetrain.driveCommand(
+                drivetrain.driveSetpiontGeneratorCommand(
                     drivetrain.joystickDriveLinear(
                         SwerveConstants.linearTeleopSpeedWhileShooting, primaryJoystick),
                     drivetrain.rotateAtAngle(
@@ -289,7 +300,7 @@ public class RobotContainer {
         .whileTrue(
             Commands.parallel(
                 shooter.shootInAllianceZoneCommand(),
-                drivetrain.driveCommand(
+                drivetrain.driveSetpiontGeneratorCommand(
                     drivetrain.joystickDriveLinear(
                         SwerveConstants.linearTeleopSpeedWhileShooting, primaryJoystick),
                     drivetrain.rotateAtAngle(
@@ -303,7 +314,7 @@ public class RobotContainer {
         .whileTrue(
             Commands.parallel(
                 shooter.shootInNeutralZoneCommand(),
-                drivetrain.driveCommand(
+                drivetrain.driveSetpiontGeneratorCommand(
                     drivetrain.joystickDriveLinear(
                         SwerveConstants.linearTeleopSpeedWhileShooting, primaryJoystick),
                     drivetrain.rotateAtAngle(

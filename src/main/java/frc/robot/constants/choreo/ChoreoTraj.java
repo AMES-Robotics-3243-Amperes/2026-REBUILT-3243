@@ -21,9 +21,9 @@ public record ChoreoTraj(
       new ChoreoTraj(
           "Test",
           OptionalInt.empty(),
-          4.83392,
-          new Pose2d(2.004, 5.268, Rotation2d.fromRadians(0.785)),
-          new Pose2d(2.142, 2.608, Rotation2d.fromRadians(2.172)));
+          8.57286,
+          new Pose2d(1.91, 4.161, Rotation2d.fromRadians(0)),
+          new Pose2d(1.897, 4.161, Rotation2d.fromRadians(-0.01)));
 
   /**
    * A map between trajectory names and their corresponding data. This allows for trajectory data to

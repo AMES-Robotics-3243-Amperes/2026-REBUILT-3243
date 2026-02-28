@@ -67,7 +67,7 @@ public class VisionIOLimelight extends VisionIO {
     orientationPublisher = table.getDoubleArrayTopic("robot_orientation_set").publish();
     cameraOffsetPublisher = table.getDoubleArrayTopic("camerapose_robotspace_set").publish();
     rewindEnablePublisher = table.getDoubleTopic("rewind_enable_set").publish();
-        throttlePublisher = table.getDoubleTopic("throttle_set").publish();
+    throttlePublisher = table.getDoubleTopic("throttle_set").publish();
     latencySubscriber = table.getDoubleTopic("tl").subscribe(0.0);
     txSubscriber = table.getDoubleTopic("tx").subscribe(0.0);
     tySubscriber = table.getDoubleTopic("ty").subscribe(0.0);
@@ -93,14 +93,14 @@ public class VisionIOLimelight extends VisionIO {
     cameraOffsetPublisher.accept(parseTransform(cameraPoseInRobotSpace));
     orientationPublisher.accept(
         new double[] {rotationSupplier.get().getDegrees(), 0.0, 0.0, 0.0, 0.0, 0.0});
-        rewindEnablePublisher.accept(0.0);
+    rewindEnablePublisher.accept(0.0);
 
-        if (DriverStation.isEnabled()) {
+    if (DriverStation.isEnabled()) {
       throttlePublisher.accept(0); // no throttle
     } else if (DriverStation.isDisabled()) {
       throttlePublisher.accept(VisionConstants.limelightFourThrottle);
     }
-        
+
     NetworkTableInstance.getDefault()
         .flush(); // Increases network traffic but recommended by Limelight
 

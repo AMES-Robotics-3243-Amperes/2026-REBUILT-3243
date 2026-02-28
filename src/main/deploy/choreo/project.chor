@@ -56,8 +56,8 @@
    "R_BumperTolerance":{
     "dimension":"Length",
     "var":{
-     "exp":"3 in",
-     "val":0.07619999999999999
+     "exp":"4 in",
+     "val":0.1016
     }
    },
    "R_DeployedHopperX":{
@@ -77,15 +77,15 @@
    "R_MaxDriveRPM":{
     "dimension":"AngVel",
     "var":{
-     "exp":"6000 RPM",
-     "val":628.3185307179587
+     "exp":"4800 RPM",
+     "val":502.6548245743669
     }
    },
    "R_MaxDriveTorque":{
     "dimension":"Torque",
     "var":{
-     "exp":"1.2 N * m",
-     "val":1.2
+     "exp":"1 N * m",
+     "val":1.0
     }
    },
    "R_RobotMOI":{
@@ -112,15 +112,15 @@
    "R_WheelCOF":{
     "dimension":"Number",
     "var":{
-     "exp":"1.2",
-     "val":1.2
+     "exp":"1",
+     "val":1.0
     }
    },
    "R_WheelRadius":{
     "dimension":"Length",
     "var":{
-     "exp":"2 in",
-     "val":0.0508
+     "exp":"1.975 in",
+     "val":0.050165
     }
    }
   },
@@ -218,32 +218,32 @@
   },
   "radius":{
    "exp":"R_WheelRadius",
-   "val":0.0508
+   "val":0.050165
   },
   "vmax":{
    "exp":"R_MaxDriveRPM",
-   "val":628.3185307179587
+   "val":502.6548245743669
   },
   "tmax":{
    "exp":"R_MaxDriveTorque",
-   "val":1.2
+   "val":1.0
   },
   "cof":{
    "exp":"R_WheelCOF",
-   "val":1.2
+   "val":1.0
   },
   "bumper":{
    "front":{
     "exp":"R_BumperTolerance + R_DeployedHopperX",
-    "val":0.7112
+    "val":0.7366
    },
    "side":{
     "exp":"R_BumperTolerance + R_BumperLength / 2",
-    "val":0.517525
+    "val":0.542925
    },
    "back":{
     "exp":"R_BumperTolerance + R_BumperLength / 2",
-    "val":0.517525
+    "val":0.542925
    }
   },
   "differentialTrackWidth":{

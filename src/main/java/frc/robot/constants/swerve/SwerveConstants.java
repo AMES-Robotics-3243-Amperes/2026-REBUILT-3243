@@ -29,26 +29,26 @@ public class SwerveConstants {
 
   public static final LinearVelocity linearTeleopSpeedWhileShooting = MetersPerSecond.of(1);
 
-  public static final Angle rotationToleranceBeforeShooting = Degrees.of(2);
+  public static final Angle rotationToleranceBeforeShooting = Degrees.of(5);
 
   // control
-  public static final Angle rotationFeedbackTolerance = Degrees.of(0.5);
+  public static final Angle rotationFeedbackTolerance = Degrees.of(1.5);
   public static final ControlConstantsBuilder rotationControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(5.4, 0, 0.15)
+          .pid(5.0, 0, 0.3)
           .iZone(1)
           .constraints(RotationsPerSecond.of(3), RotationsPerSecondPerSecond.of(9));
 
-  public static final PIDConstants driveControl = new PIDConstants(5, 0, 0);
+  public static final PIDConstants driveControl = new PIDConstants(4.2, 0, 0);
 
   // pathfinding
-  public static final Distance trenchTraversalOffset = Meters.of(1.3);
+  public static final Distance trenchTraversalOffset = Meters.of(2);
   public static final PathConstraints automaticsConstraints =
       new PathConstraints(
-          MetersPerSecond.of(1),
-          MetersPerSecondPerSecond.of(1),
-          RotationsPerSecond.of(0.5),
-          RotationsPerSecondPerSecond.of(1));
+          MetersPerSecond.of(2),
+          MetersPerSecondPerSecond.of(4),
+          RotationsPerSecond.of(1),
+          RotationsPerSecondPerSecond.of(2));
 
   // physical properties
   public static final LinearVelocity speedAt12Volts = MetersPerSecond.of(5.14);

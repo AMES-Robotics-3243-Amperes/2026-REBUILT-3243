@@ -650,15 +650,21 @@ public class SwerveSubsystem extends SubsystemBase {
           Math.abs(pidController.getPositionError())
               < SwerveConstants.rotationToleranceBeforeShooting.in(Radians);
 
+      boolean ignoreFeedback =
+          Math.abs(pidController.getPositionError())
+              < SwerveConstants.rotationFeedbackTolerance.in(Radians);
+
       timeSinceLastLoop.restart();
 
       Rotation2d target = targetSupplier.get();
       Angle rotationDelta = target.relativeTo(previousTarget.inner).getMeasure();
       previousTarget.inner = target;
 
+      double feedback =
+          pidController.calculate(getRotation().getRadians(), targetSupplier.get().getRadians());
+
       return RadiansPerSecond.of(
-          pidController.calculate(getRotation().getRadians(), targetSupplier.get().getRadians())
-              + rotationDelta.div(elapsedTime).in(Radians));
+          (ignoreFeedback ? feedback : feedback) + rotationDelta.div(elapsedTime).in(Radians));
     };
   }
 }

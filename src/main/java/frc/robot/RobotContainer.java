@@ -42,6 +42,7 @@ import frc.robot.subsystems.drivetrain.ModuleIO;
 import frc.robot.subsystems.drivetrain.ModuleIOTalonFXReal;
 import frc.robot.subsystems.drivetrain.ModuleIOTalonFXSim;
 import frc.robot.subsystems.drivetrain.SwerveSubsystem;
+import frc.robot.subsystems.drivetrain.SwerveSubsystem.SwerveSysIdRoutine;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.intake.PivotIO;
 import frc.robot.subsystems.intake.PivotIOReal;
@@ -111,8 +112,18 @@ public class RobotContainer {
                 .<VisionIO>map(
                     config ->
                         config.type() == CameraType.LimelightFour
-                            ? new VisionIOLimelightFour(config, drivetrain::getRotation)
-                            : new VisionIOLimelight(config, drivetrain::getRotation))
+                            ? new VisionIOLimelightFour(
+                                config,
+                                drivetrain::getRotation,
+                                () ->
+                                    RadiansPerSecond.of(
+                                        drivetrain.getChassisSpeeds().omegaRadiansPerSecond))
+                            : new VisionIOLimelight(
+                                config,
+                                drivetrain::getRotation,
+                                () ->
+                                    RadiansPerSecond.of(
+                                        drivetrain.getChassisSpeeds().omegaRadiansPerSecond)))
                 .toList());
 
         break;
@@ -329,6 +340,12 @@ public class RobotContainer {
                 .onlyWhile(drivetrain::atRotationSetpoint)
                 .onlyWhile(shooter::flywheelSpunUp)
                 .repeatedly());
+
+    primaryJoystick
+        .a()
+        .onTrue(
+            drivetrain.sysIdCommand(
+                SwerveSysIdRoutine.DRIVE_LINEAR_FEEDFORWARD, primaryJoystick.a()));
   }
 
   //

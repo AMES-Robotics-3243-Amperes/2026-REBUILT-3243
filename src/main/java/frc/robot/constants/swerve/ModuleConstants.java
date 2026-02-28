@@ -39,8 +39,8 @@ public class ModuleConstants {
 
   // simulation
   public static final MomentOfInertia kSteerInertia = KilogramSquareMeters.of(0.01);
-  public static final MomentOfInertia kDriveInertia = KilogramSquareMeters.of(0.01);
+  public static final MomentOfInertia kDriveInertia = KilogramSquareMeters.of(0.005);
 
-  public static final Voltage driveFrictionVoltage = Volts.of(driveControl.kS);
-  public static final Voltage steerFrictionVoltage = Volts.of(steerControl.kS);
+  public static final Voltage driveFrictionVoltage = Volts.of(0.1);
+  public static final Voltage steerFrictionVoltage = Volts.of(0.1);
 }

@@ -33,11 +33,11 @@ public class SysIdCommand {
     return Commands.sequence(
         waitCommand.apply(0.5),
         routine.dynamic(SysIdRoutine.Direction.kForward).until(advanceRoutine),
-        waitCommand.apply(1.2),
+        waitCommand.apply(2.0),
         routine.dynamic(SysIdRoutine.Direction.kReverse).until(advanceRoutine),
-        waitCommand.apply(1.2),
+        waitCommand.apply(2.0),
         routine.quasistatic(SysIdRoutine.Direction.kForward).until(advanceRoutine),
-        waitCommand.apply(1.2),
+        waitCommand.apply(2.0),
         routine.quasistatic(SysIdRoutine.Direction.kReverse).until(advanceRoutine));
   }
 

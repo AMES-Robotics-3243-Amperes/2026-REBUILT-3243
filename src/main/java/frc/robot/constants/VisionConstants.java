@@ -43,7 +43,7 @@ public class VisionConstants {
                   Units.inchesToMeters(0),
                   Units.inchesToMeters(18.427671 + 1.8),
                   new Rotation3d(0, Units.degreesToRadians(180 - 65 - 90), 0)),
-              2,
+              1,
               CameraType.LimelightFour),
           new CameraConfiguration(
               "limelight-two",
@@ -61,22 +61,28 @@ public class VisionConstants {
   // Basic filtering thresholds
   public static final Time maxTimestampError = Milliseconds.of(2);
   public static final AngularVelocity maxAngularVelocity = RotationsPerSecond.of(1);
-  public static final double maxAmbiguity = 0.2;
+  public static final double maxAmbiguity = 20;
   public static final double maxZError = 0.15;
 
   public static final Vector<N3> calculateStdDev(
       PoseObservation observation, CameraConfiguration config) {
+    double minCameraStdDev = 0.3;
     if (observation.type() == PoseObservationType.MEGATAG_1
         && observation.cameraReportedStdDevs().present()) {
       return VecBuilder.fill(
-          observation.cameraReportedStdDevs().x(),
-          observation.cameraReportedStdDevs().y(),
-          observation.cameraReportedStdDevs().yawRadians());
+          Double.max(minCameraStdDev, observation.cameraReportedStdDevs().x())
+              * config.stdDevFactor(),
+          Double.max(minCameraStdDev, observation.cameraReportedStdDevs().y())
+              * config.stdDevFactor(),
+          Double.max(minCameraStdDev, observation.cameraReportedStdDevs().yawRadians())
+              * config.stdDevFactor());
     } else if (observation.type() == PoseObservationType.MEGATAG_2
         && observation.cameraReportedStdDevs().present()) {
       return VecBuilder.fill(
-          observation.cameraReportedStdDevs().x(),
-          observation.cameraReportedStdDevs().y(),
+          Double.max(minCameraStdDev, observation.cameraReportedStdDevs().x())
+              * config.stdDevFactor(),
+          Double.max(minCameraStdDev, observation.cameraReportedStdDevs().y())
+              * config.stdDevFactor(),
           Double.POSITIVE_INFINITY);
     }
 

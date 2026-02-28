@@ -2,6 +2,7 @@ package frc.robot.subsystems.vision;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.constants.VisionConstants;
 import frc.robot.constants.VisionConstants.CameraConfiguration;
@@ -12,8 +13,10 @@ public class VisionIOLimelightFour extends VisionIOLimelight {
   private final DoublePublisher imuAssistPublisher;
 
   public VisionIOLimelightFour(
-      CameraConfiguration configuration, Supplier<Rotation2d> rotationSupplier) {
-    super(configuration, rotationSupplier);
+      CameraConfiguration configuration,
+      Supplier<Rotation2d> rotationSupplier,
+      Supplier<AngularVelocity> rotationRateSupplier) {
+    super(configuration, rotationSupplier, rotationRateSupplier);
 
     imuModePublisher = table.getDoubleTopic("imumode_set").publish();
     imuAssistPublisher = table.getDoubleTopic("imuassistalpha_set").publish();

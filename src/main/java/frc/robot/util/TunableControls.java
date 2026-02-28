@@ -85,9 +85,25 @@ public class TunableControls {
     }
   }
 
+  //
+  // TalonFX
+  //
+
+  private static void applyToTalonFX(TalonFX motor, ControlConstantsBuilder constants, int slot) {
+    Pair<SlotConfigs, ?> talonConfigs = constants.talonFXConfigs();
+    SlotConfigs slotConfigs = talonConfigs.getFirst();
+
+    switch (slot) {
+      case 0 -> motor.getConfigurator().apply(Slot0Configs.from(slotConfigs));
+      case 1 -> motor.getConfigurator().apply(Slot1Configs.from(slotConfigs));
+      case 2 -> motor.getConfigurator().apply(Slot2Configs.from(slotConfigs));
+      default -> throw new IllegalArgumentException("Unsupported slot: " + slot);
+    }
+  }
+
   public static void registerTalonFXSlotTuning(
-      TalonFX motor, int slot, String name, ControlConstantsBuilder defaults) {
-    Objects.requireNonNull(motor);
+      int slot, String name, ControlConstantsBuilder defaults, TalonFX... motors) {
+    Objects.requireNonNull(motors);
     Objects.requireNonNull(name);
     Objects.requireNonNull(defaults);
 
@@ -107,15 +123,51 @@ public class TunableControls {
                   .pid(kP.get(), kI.get(), kD.get())
                   .sva(kS.get(), kV.get(), kA.get());
 
-          Pair<SlotConfigs, ?> talonConfigs = builder.talonFXConfigs();
-          SlotConfigs slotConfigs = talonConfigs.getFirst();
+          for (TalonFX motor : motors) applyToTalonFX(motor, builder, slot);
+        };
 
-          switch (slot) {
-            case 0 -> motor.getConfigurator().apply(Slot0Configs.from(slotConfigs));
-            case 1 -> motor.getConfigurator().apply(Slot1Configs.from(slotConfigs));
-            case 2 -> motor.getConfigurator().apply(Slot2Configs.from(slotConfigs));
-            default -> throw new IllegalArgumentException("Unsupported slot: " + slot);
-          }
+    register(apply, kP, kI, kD, kS, kV, kA);
+  }
+
+  public static void registerTalonFXSlotTuning(
+      TalonFX motor, int slot, String name, ControlConstantsBuilder defaults) {
+    registerTalonFXSlotTuning(slot, name, defaults, motor);
+  }
+
+  private static void applyToSparkMax(SparkMax motor, ControlConstantsBuilder constants) {
+    SparkMaxConfig config = new SparkMaxConfig();
+    config.apply(constants.revClosedLoopConfig());
+
+    motor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+  }
+
+  //
+  // SparkMax
+  //
+
+  public static void registerSparkMaxClosedLoopTuning(
+      String name, ControlConstantsBuilder defaults, SparkMax... motors) {
+    Objects.requireNonNull(motors);
+    Objects.requireNonNull(name);
+    Objects.requireNonNull(defaults);
+
+    ControlConstants defaultConstants = defaults.in(Radians, Seconds);
+
+    TunableNumber kP = new TunableNumber("/Tuning/" + name + "/kP", defaultConstants.kP());
+    TunableNumber kI = new TunableNumber("/Tuning/" + name + "/kI", defaultConstants.kI());
+    TunableNumber kD = new TunableNumber("/Tuning/" + name + "/kD", defaultConstants.kD());
+    TunableNumber kS = new TunableNumber("/Tuning/" + name + "/kS", defaultConstants.kS());
+    TunableNumber kV = new TunableNumber("/Tuning/" + name + "/kV", defaultConstants.kV());
+    TunableNumber kA = new TunableNumber("/Tuning/" + name + "/kA", defaultConstants.kA());
+
+    Runnable apply =
+        () -> {
+          ControlConstantsBuilder builder =
+              ControlConstantsBuilder.fromRadiansAndSeconds()
+                  .pid(kP.get(), kI.get(), kD.get())
+                  .sva(kS.get(), kV.get(), kA.get());
+
+          for (SparkMax motor : motors) applyToSparkMax(motor, builder);
         };
 
     register(apply, kP, kI, kD, kS, kV, kA);
@@ -123,35 +175,12 @@ public class TunableControls {
 
   public static void registerSparkMaxClosedLoopTuning(
       SparkMax motor, String name, ControlConstantsBuilder defaults) {
-    Objects.requireNonNull(motor);
-    Objects.requireNonNull(name);
-    Objects.requireNonNull(defaults);
-
-    ControlConstants defaultConstants = defaults.in(Radians, Seconds);
-
-    TunableNumber kP = new TunableNumber("/Tuning/" + name + "/kP", defaultConstants.kP());
-    TunableNumber kI = new TunableNumber("/Tuning/" + name + "/kI", defaultConstants.kI());
-    TunableNumber kD = new TunableNumber("/Tuning/" + name + "/kD", defaultConstants.kD());
-    TunableNumber kS = new TunableNumber("/Tuning/" + name + "/kS", defaultConstants.kS());
-    TunableNumber kV = new TunableNumber("/Tuning/" + name + "/kV", defaultConstants.kV());
-    TunableNumber kA = new TunableNumber("/Tuning/" + name + "/kA", defaultConstants.kA());
-
-    Runnable apply =
-        () -> {
-          ControlConstantsBuilder builder =
-              ControlConstantsBuilder.fromRadiansAndSeconds()
-                  .pid(kP.get(), kI.get(), kD.get())
-                  .sva(kS.get(), kV.get(), kA.get());
-
-          SparkMaxConfig config = new SparkMaxConfig();
-          config.apply(builder.revClosedLoopConfig());
-
-          motor.configure(
-              config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-        };
-
-    register(apply, kP, kI, kD, kS, kV, kA);
+    registerSparkMaxClosedLoopTuning(name, defaults, motor);
   }
+
+  //
+  // PID Controller
+  //
 
   public static void registerPIDControllerTuning(PIDController controller, String name) {
     TunableNumber kP = new TunableNumber("/Tuning/" + name + "/kP", controller.getP());

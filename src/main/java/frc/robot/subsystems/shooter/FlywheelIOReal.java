@@ -4,26 +4,27 @@
 
 package frc.robot.subsystems.shooter;
 
-import static edu.wpi.first.units.Units.RPM;
-
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.TorqueCurrentFOC;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.constants.ShooterConstants;
-import frc.robot.util.TunableControls;
-import org.littletonrobotics.junction.Logger;
+import java.util.function.Supplier;
 
 /** Add your docs here. */
 public class FlywheelIOReal implements FlywheelIO {
@@ -34,30 +35,35 @@ public class FlywheelIOReal implements FlywheelIO {
   protected final StatusSignal<AngularVelocity> velocity;
   protected final StatusSignal<Voltage> voltage;
 
-  private final VoltageOut voltageRequest = new VoltageOut(0);
+  private final VoltageOut voltageRequest = new VoltageOut(0).withEnableFOC(true);
+  private final TorqueCurrentFOC torqueCurrentRequest = new TorqueCurrentFOC(0);
+  private final VelocityVoltage velocityVoltateRequest = new VelocityVoltage(0).withEnableFOC(true);
   private final VelocityTorqueCurrentFOC velocityTorqueCurrentRequest =
       new VelocityTorqueCurrentFOC(0);
   private final CoastOut coastRequest = new CoastOut();
 
-  public FlywheelIOReal() {
-    TalonFXConfiguration flywheelConfig = new TalonFXConfiguration();
+  private static void tryUntilOk(int maxAttempts, Supplier<StatusCode> command) {
+    for (int i = 0; i < maxAttempts; i++) {
+      StatusCode error = command.get();
+      if (error.isOK()) break;
+    }
+  }
 
-    flywheelConfig
-        .MotorOutput
-        .withInverted(ShooterConstants.shooterFlywheelInverted)
+  public FlywheelIOReal() {
+    TalonFXConfiguration config = new TalonFXConfiguration();
+
+    config.MotorOutput.withInverted(ShooterConstants.shooterFlywheelInverted)
         .withNeutralMode(NeutralModeValue.Coast);
-    flywheelConfig
-        .CurrentLimits
-        .withSupplyCurrentLimit(ShooterConstants.flywheelSupplyCurrentLimit)
+    config.CurrentLimits.withSupplyCurrentLimit(ShooterConstants.flywheelSupplyCurrentLimit)
         .withSupplyCurrentLimitEnable(true);
-    flywheelConfig
+    config
         .withSlot0(Slot0Configs.from(ShooterConstants.flywheelControl.talonFXConfigs().getFirst()))
         .withMotionMagic(ShooterConstants.flywheelControl.talonFXConfigs().getSecond());
 
-    flywheelConfig.Feedback.SensorToMechanismRatio = ShooterConstants.flywheelGearReduction;
+    config.Feedback.SensorToMechanismRatio = ShooterConstants.flywheelGearReduction;
 
-    leader.getConfigurator().apply(flywheelConfig);
-    follower.getConfigurator().apply(flywheelConfig);
+    tryUntilOk(5, () -> leader.getConfigurator().apply(config, 0.25));
+    tryUntilOk(5, () -> leader.getConfigurator().apply(config, 0.25));
 
     follower.setControl(
         new Follower(ShooterConstants.flywheelLeaderId, MotorAlignmentValue.Opposed));
@@ -67,7 +73,9 @@ public class FlywheelIOReal implements FlywheelIO {
     voltage = leader.getMotorVoltage();
 
     // Configure periodic frames
-    BaseStatusSignal.setUpdateFrequencyForAll(50.0, position, velocity, voltage, leader.getTorqueCurrent());
+    if (ShooterConstants.flywheelClosedLoopOutput == ClosedLoopOutputType.TorqueCurrentFOC)
+      leader.getTorqueCurrent().setUpdateFrequency(50.0);
+    BaseStatusSignal.setUpdateFrequencyForAll(50.0, position, velocity, voltage);
     ParentDevice.optimizeBusUtilizationForAll(leader, follower);
   }
 
@@ -82,20 +90,24 @@ public class FlywheelIOReal implements FlywheelIO {
 
   @Override
   public void runOpenLoop(double output) {
-    leader.setControl(voltageRequest.withOutput(output));
+    leader.setControl(
+        switch (ShooterConstants.flywheelClosedLoopOutput) {
+          case Voltage -> voltageRequest.withOutput(output);
+          case TorqueCurrentFOC -> torqueCurrentRequest.withOutput(output);
+        });
   }
-
-  AngularVelocity goal = RPM.of(0);
 
   @Override
   public void setAngularVelocity(AngularVelocity velocity) {
-    goal = velocity;
-    leader.setControl(velocityTorqueCurrentRequest.withVelocity(velocity));
+    leader.setControl(
+        switch (ShooterConstants.flywheelClosedLoopOutput) {
+          case Voltage -> velocityVoltateRequest.withVelocity(velocity);
+          case TorqueCurrentFOC -> velocityTorqueCurrentRequest.withVelocity(velocity);
+        });
   }
 
   @Override
   public void coast() {
-    goal = RPM.of(0);
     leader.setControl(coastRequest);
   }
 }

@@ -11,6 +11,7 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -39,10 +40,13 @@ public class ShooterConstants {
   public static final Distance flywheelRadius = Inches.of(2);
   public static final double flywheelGearReduction = 4.0 / 3.0;
 
-  public static final Current flywheelSupplyCurrentLimit = Amps.of(55);
+  public static final Current flywheelStatorCurrentLimit = Amps.of(120);
+  public static final Current flywheelSupplyCurrentLimit = Amps.of(70);
 
-  public static final double fuelToFlywheelLinearSpeedRatio = 0.495;
+  public static final double fuelToFlywheelLinearSpeedRatio = 0.5;
 
+  public static final ClosedLoopOutputType flywheelClosedLoopOutput =
+      ClosedLoopOutputType.TorqueCurrentFOC;
   public static final ControlConstantsBuilder flywheelControl =
       ControlConstantsBuilder.fromRadiansAndSeconds().pid(2.05, 0, 0).sva(4.32, 0, 0);
 

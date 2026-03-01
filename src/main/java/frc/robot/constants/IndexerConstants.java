@@ -4,11 +4,9 @@
 
 package frc.robot.constants;
 
-import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RPM;
 
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
 import frc.robot.util.ControlConstantsBuilder;
 
 /** Add your docs here. */
@@ -18,7 +16,7 @@ public class IndexerConstants {
 
   public static final AngularVelocity spindexerIndexingSpeed = RPM.of(600);
 
-  public static final Current spindexerCurrentLimit = Amps.of(30);
+  public static final int spindexerCurrentLimit = 80;
 
   public static final ControlConstantsBuilder spindexerControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
@@ -30,7 +28,7 @@ public class IndexerConstants {
 
   public static final AngularVelocity kickerShootingSpeed = RPM.of(1000);
 
-  public static final Current kickerCurrentLimit = Amps.of(40);
+  public static final int kickerCurrentLimit = 90;
 
   public static final ControlConstantsBuilder kickerControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()

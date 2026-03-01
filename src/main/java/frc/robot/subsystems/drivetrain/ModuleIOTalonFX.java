@@ -38,9 +38,10 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
   protected final CANcoder cancoder;
 
   // Voltage control requests
-  protected final VoltageOut voltageRequest = new VoltageOut(0);
-  protected final MotionMagicVoltage azimuthPositionRequest = new MotionMagicVoltage(0);
-  protected final VelocityVoltage driveVoltageRequest = new VelocityVoltage(0);
+  protected final VoltageOut voltageRequest = new VoltageOut(0).withEnableFOC(true);
+  protected final MotionMagicVoltage azimuthPositionRequest =
+      new MotionMagicVoltage(0).withEnableFOC(true);
+  protected final VelocityVoltage driveVoltageRequest = new VelocityVoltage(0).withEnableFOC(true);
 
   // Torque-current control requests
   protected final TorqueCurrentFOC torqueCurrentRequest = new TorqueCurrentFOC(0);
@@ -103,7 +104,7 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
     tryUntilOk(5, () -> driveTalon.setPosition(0.0, 0.25));
 
     // Configure turn motor
-    TalonFXConfiguration turnConfig = new TalonFXConfiguration();
+    TalonFXConfiguration turnConfig = constants.SteerMotorInitialConfigs;
     turnConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     turnConfig.Slot0 = constants.SteerMotorGains;
     turnConfig.Feedback.FeedbackRemoteSensorID = constants.EncoderId;

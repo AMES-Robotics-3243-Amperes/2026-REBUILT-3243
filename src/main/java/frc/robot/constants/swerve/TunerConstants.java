@@ -35,12 +35,17 @@ public class TunerConstants {
                   Slot0Configs.from(ModuleConstants.driveControl.talonFXConfigs().getFirst()))
               .withSteerMotorClosedLoopOutput(ModuleConstants.steerClosedLoopOutput)
               .withDriveMotorClosedLoopOutput(ModuleConstants.driveClosedLoopOutput)
-              .withSlipCurrent(ModuleConstants.driveCurrentLimit)
+              .withSlipCurrent(ModuleConstants.slipCurrent)
               .withSpeedAt12Volts(SwerveConstants.speedAt12Volts)
               .withDriveMotorType(DriveMotorArrangement.TalonFX_Integrated)
               .withSteerMotorType(SteerMotorArrangement.TalonFX_Integrated)
               .withFeedbackSource(ModuleConstants.steerFeedbackType)
-              .withDriveMotorInitialConfigs(new TalonFXConfiguration())
+              .withDriveMotorInitialConfigs(
+                  new TalonFXConfiguration()
+                      .withCurrentLimits(
+                          new CurrentLimitsConfigs()
+                              .withSupplyCurrentLimit(ModuleConstants.driveSupplyCurrentLimit)
+                              .withSupplyCurrentLimitEnable(true)))
               .withSteerMotorInitialConfigs(
                   new TalonFXConfiguration()
                       .withCurrentLimits(

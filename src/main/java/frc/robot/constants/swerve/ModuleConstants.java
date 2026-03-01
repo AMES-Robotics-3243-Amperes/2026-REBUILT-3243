@@ -3,7 +3,7 @@ package frc.robot.constants.swerve;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
@@ -20,15 +20,17 @@ public class ModuleConstants {
       ControlConstantsBuilder.fromRadiansAndSeconds().pid(11.5, 0, 0).sva(5.8, 0, 0);
 
   // turn
+  public static final AngularVelocity maxModuleAzimuth = RotationsPerSecond.of(20);
   public static final ControlConstantsBuilder steerControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
           .pid(12, 0, 0)
-          .constraints(RotationsPerSecond.of(25), RotationsPerSecondPerSecond.of(60));
+          .constraints(maxModuleAzimuth, maxModuleAzimuth.div(Seconds.of(0.2)));
 
-  public static final Current steerStatorCurrentLimit = Amps.of(30);
-  public static final Current driveCurrentLimit = Amps.of(80);
+  public static final Current steerStatorCurrentLimit = Amps.of(70);
+  public static final Current steerSupplyCurrentLimit = Amps.of(40);
 
-  public static final AngularVelocity maxSetpointGeneratorModuleRotation = RotationsPerSecond.of(5);
+  public static final Current slipCurrent = Amps.of(80);
+  public static final Current driveSupplyCurrentLimit = Amps.of(60);
 
   // physical properties. ids and other hardware-specific things go in tuner constants
   public static final double kCoupleRatio = 0;

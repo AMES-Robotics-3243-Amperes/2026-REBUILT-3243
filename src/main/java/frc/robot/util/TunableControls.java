@@ -5,6 +5,7 @@ package frc.robot.util;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
 
+import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.Slot2Configs;
@@ -23,6 +24,7 @@ import frc.robot.util.ControlConstantsBuilder.ControlConstants;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 public class TunableControls {
@@ -89,14 +91,24 @@ public class TunableControls {
   // TalonFX
   //
 
+  private static void tryUntilOk(int maxAttempts, Supplier<StatusCode> command) {
+    for (int i = 0; i < maxAttempts; i++) {
+      StatusCode error = command.get();
+      if (error.isOK()) break;
+    }
+  }
+
   private static void applyToTalonFX(TalonFX motor, ControlConstantsBuilder constants, int slot) {
     Pair<SlotConfigs, ?> talonConfigs = constants.talonFXConfigs();
     SlotConfigs slotConfigs = talonConfigs.getFirst();
 
     switch (slot) {
-      case 0 -> motor.getConfigurator().apply(Slot0Configs.from(slotConfigs));
-      case 1 -> motor.getConfigurator().apply(Slot1Configs.from(slotConfigs));
-      case 2 -> motor.getConfigurator().apply(Slot2Configs.from(slotConfigs));
+      case 0 ->
+          tryUntilOk(5, () -> motor.getConfigurator().apply(Slot0Configs.from(slotConfigs), 0.25));
+      case 1 ->
+          tryUntilOk(5, () -> motor.getConfigurator().apply(Slot1Configs.from(slotConfigs), 0.25));
+      case 2 ->
+          tryUntilOk(5, () -> motor.getConfigurator().apply(Slot2Configs.from(slotConfigs), 0.25));
       default -> throw new IllegalArgumentException("Unsupported slot: " + slot);
     }
   }

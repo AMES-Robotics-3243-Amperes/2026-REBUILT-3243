@@ -9,7 +9,6 @@ package frc.robot.subsystems.drivetrain;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
@@ -84,12 +83,8 @@ public class SwerveSubsystem extends SubsystemBase {
           .withGyro(COTS.ofPigeon2())
           .withSwerveModule(
               new SwerveModuleSimulationConfig(
-                  (ModuleConstants.driveClosedLoopOutput == ClosedLoopOutputType.Voltage
-                      ? DCMotor.getKrakenX60(1)
-                      : DCMotor.getKrakenX60Foc(1)),
-                  (ModuleConstants.steerClosedLoopOutput == ClosedLoopOutputType.Voltage
-                      ? DCMotor.getFalcon500(1)
-                      : DCMotor.getFalcon500Foc(1)),
+                  DCMotor.getKrakenX60Foc(1),
+                  DCMotor.getFalcon500Foc(1),
                   ChoreoVars.R_DriveReduction,
                   ModuleConstants.steerReduction,
                   ModuleConstants.driveFrictionVoltage,
@@ -106,18 +101,13 @@ public class SwerveSubsystem extends SubsystemBase {
               ChoreoVars.R_WheelRadius.in(Meters),
               SwerveConstants.speedAt12Volts.in(MetersPerSecond),
               ChoreoVars.R_WheelCOF,
-              (ModuleConstants.driveClosedLoopOutput == ClosedLoopOutputType.Voltage
-                      ? DCMotor.getKrakenX60(1)
-                      : DCMotor.getKrakenX60Foc(1))
-                  .withReduction(ChoreoVars.R_DriveReduction),
-              ModuleConstants.driveCurrentLimit.in(Amps),
+              DCMotor.getKrakenX60Foc(1).withReduction(ChoreoVars.R_DriveReduction),
+              ModuleConstants.driveSupplyCurrentLimit.in(Amps),
               1),
           getModuleTranslations());
 
   private final SwerveSetpointGenerator setpointGenerator =
-      new SwerveSetpointGenerator(
-          pathPlannerConfig, ModuleConstants.maxSetpointGeneratorModuleRotation);
-  private final Timer idleTimeSinceLastSetpointReset = new Timer();
+      new SwerveSetpointGenerator(pathPlannerConfig, ModuleConstants.maxModuleAzimuth);
   private SwerveSetpoint previousSetpoint = null;
 
   static final Lock odometryLock = new ReentrantLock();
@@ -151,6 +141,8 @@ public class SwerveSubsystem extends SubsystemBase {
 
   private static final double kConfidenceDecaySec = 2.0;
   private static final double kBaseConfidenceBump = 0.35;
+
+  private boolean setpointGeneratorUpToDate = false;
 
   public SwerveSubsystem(
       GyroIO gyroIO,
@@ -193,8 +185,6 @@ public class SwerveSubsystem extends SubsystemBase {
         (targetPose) -> {
           Logger.recordOutput("Drivetrain/PathPlanner/TrajectorySetpoint", targetPose);
         });
-
-    resetSetpointGenerator();
   }
 
   public SwerveSubsystem(
@@ -276,7 +266,7 @@ public class SwerveSubsystem extends SubsystemBase {
             getChassisSpeeds(),
             getModuleStates(),
             DriveFeedforwards.zeros(pathPlannerConfig.numModules));
-    idleTimeSinceLastSetpointReset.restart();
+    setpointGeneratorUpToDate = true;
   }
 
   /**
@@ -285,13 +275,12 @@ public class SwerveSubsystem extends SubsystemBase {
    * @param speeds Speeds in meters/sec
    */
   public void driveSetpointGenerator(ChassisSpeeds speeds) {
-    if (idleTimeSinceLastSetpointReset.hasElapsed(SwerveConstants.idleTimeUntilReset.in(Seconds))) {
+    if (!setpointGeneratorUpToDate) {
       resetSetpointGenerator();
     }
 
     // Calculate module setpoints
     previousSetpoint = setpointGenerator.generateSetpoint(previousSetpoint, speeds, 0.02);
-    idleTimeSinceLastSetpointReset.restart();
 
     SwerveModuleState[] states = previousSetpoint.moduleStates();
     LinearAcceleration[] feedforwards = previousSetpoint.feedforwards().accelerations();
@@ -314,6 +303,8 @@ public class SwerveSubsystem extends SubsystemBase {
    * @param speeds Speeds in meters/sec
    */
   public void driveFeedforwards(ChassisSpeeds speeds, DriveFeedforwards feedforwards) {
+    setpointGeneratorUpToDate = false;
+
     // Calculate module setpoints
     ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
     SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
@@ -337,6 +328,8 @@ public class SwerveSubsystem extends SubsystemBase {
    * @param speeds Speeds in meters/sec
    */
   public void drive(ChassisSpeeds speeds) {
+    setpointGeneratorUpToDate = false;
+
     // Calculate module setpoints
     ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, 0.02);
     SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);

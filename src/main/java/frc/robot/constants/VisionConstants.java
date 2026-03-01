@@ -68,23 +68,16 @@ public class VisionConstants {
       PoseObservation observation, CameraConfiguration config) {
     double minCameraPosStdDev = 0.3;
     double minCameraRotStdDev = 1;
-    if (observation.type() == PoseObservationType.MEGATAG_1
-        && observation.cameraReportedStdDevs().present()) {
+    if (observation.cameraReportedStdDevs().present()) {
       return VecBuilder.fill(
           Double.max(minCameraPosStdDev, observation.cameraReportedStdDevs().x())
               * config.stdDevFactor(),
           Double.max(minCameraPosStdDev, observation.cameraReportedStdDevs().y())
               * config.stdDevFactor(),
-          Double.max(minCameraRotStdDev, observation.cameraReportedStdDevs().yawRadians())
-              * config.stdDevFactor());
-    } else if (observation.type() == PoseObservationType.MEGATAG_2
-        && observation.cameraReportedStdDevs().present()) {
-      return VecBuilder.fill(
-          Double.max(minCameraPosStdDev, observation.cameraReportedStdDevs().x())
-              * config.stdDevFactor(),
-          Double.max(minCameraPosStdDev, observation.cameraReportedStdDevs().y())
-              * config.stdDevFactor(),
-          Double.POSITIVE_INFINITY);
+          (observation.type() == PoseObservationType.MEGATAG_2)
+              ? Double.POSITIVE_INFINITY
+              : Double.max(minCameraRotStdDev, observation.cameraReportedStdDevs().yawRadians())
+                  * config.stdDevFactor());
     }
 
     double linearStdDev = Double.MAX_VALUE;

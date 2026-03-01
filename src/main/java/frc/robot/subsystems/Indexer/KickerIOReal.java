@@ -2,9 +2,8 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems.Indexer;
+package frc.robot.subsystems.indexer;
 
-import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
@@ -36,7 +35,7 @@ public class KickerIOReal implements KickerIO {
     config.encoder.velocityConversionFactor(1.0 / IndexerConstants.kickerReduction);
     config.idleMode(IdleMode.kCoast).inverted(true);
 
-    config.smartCurrentLimit((int) Math.round(IndexerConstants.kickerCurrentLimit.in(Amps)));
+    config.smartCurrentLimit(IndexerConstants.kickerCurrentLimit);
 
     config
         .closedLoop

@@ -63,8 +63,6 @@ import frc.robot.subsystems.vision.VisionIOLimelightFour;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.vision.VisionSubsystem;
 import frc.robot.util.FuelTrajectoryCalculator;
-import frc.robot.util.PointOfInterestManager;
-import frc.robot.util.PointOfInterestManager.FlipType;
 import frc.robot.util.RobotLocationManager;
 import frc.robot.util.TunableControls;
 import org.ironmaple.simulation.IntakeSimulation;
@@ -297,9 +295,6 @@ public class RobotContainer {
         .leftTrigger()
         .whileTrue(intake.intakeAtSpeedCommand(IntakeConstants.rollerAbsoluteSpeed));
 
-    // primaryJoystick.leftBumper().whileTrue(intake.runPivotUp());
-    // primaryJoystick.rightBumper().whileTrue(intake.runPivotDown());
-
     primaryController
         .rightBumper()
         .whileTrue(
@@ -307,17 +302,6 @@ public class RobotContainer {
                 drivetrain::getPose,
                 drivetrain::getChassisSpeeds,
                 robotLocationManager::robotLocation));
-
-    secondaryController
-        .leftBumper()
-        .whileTrue(
-            Commands.runEnd(
-                () -> intake.pivotIO.runOpenLoop(4), () -> intake.pivotIO.runOpenLoop(0)));
-    secondaryController
-        .rightBumper()
-        .whileTrue(
-            Commands.runEnd(
-                () -> intake.pivotIO.runOpenLoop(-4), () -> intake.pivotIO.runOpenLoop(0)));
 
     secondaryController
         .leftTrigger()
@@ -368,21 +352,11 @@ public class RobotContainer {
     primaryController
         .rightTrigger()
         .whileTrue(
-            Commands.waitSeconds(0.3)
-                .andThen(
-                    indexer
-                        .indexCommand()
-                        .onlyIf(drivetrain::atRotationSetpoint)
-                        .onlyIf(shooter::flywheelSpunUp)
-                        .repeatedly()));
-
-    primaryController
-        .x()
-        .whileTrue(
-            AutoBuilder.pathfindToPose(
-                PointOfInterestManager.flipPoseConditionally(
-                    new Pose2d(2, 1, Rotation2d.kZero), FlipType.REFLECT_FOR_OTHER_ALLIANCE),
-                SwerveConstants.automaticsConstraints));
+            indexer
+                .indexCommand()
+                .onlyIf(drivetrain::atRotationSetpoint)
+                .onlyIf(shooter::flywheelSpunUp)
+                .repeatedly());
   }
 
   //

@@ -38,10 +38,9 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
   protected final CANcoder cancoder;
 
   // Voltage control requests
-  protected final VoltageOut voltageRequest = new VoltageOut(0).withEnableFOC(true);
-  protected final MotionMagicVoltage azimuthPositionRequest =
-      new MotionMagicVoltage(0).withEnableFOC(true);
-  protected final VelocityVoltage driveVoltageRequest = new VelocityVoltage(0).withEnableFOC(true);
+  protected final VoltageOut voltageRequest = new VoltageOut(0);
+  protected final MotionMagicVoltage azimuthPositionRequest = new MotionMagicVoltage(0);
+  protected final VelocityVoltage driveVoltageRequest = new VelocityVoltage(0);
 
   // Torque-current control requests
   protected final TorqueCurrentFOC torqueCurrentRequest = new TorqueCurrentFOC(0);
@@ -194,7 +193,7 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
   public void setDriveOpenLoop(double output) {
     driveTalon.setControl(
         switch (constants.DriveMotorClosedLoopOutput) {
-          case Voltage -> voltageRequest.withOutput(output);
+          case Voltage -> voltageRequest.withOutput(output).withEnableFOC(true);
           case TorqueCurrentFOC -> torqueCurrentRequest.withOutput(output);
         });
   }
@@ -203,7 +202,7 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
   public void setTurnOpenLoop(double output) {
     turnTalon.setControl(
         switch (constants.SteerMotorClosedLoopOutput) {
-          case Voltage -> voltageRequest.withOutput(output);
+          case Voltage -> voltageRequest.withOutput(output).withEnableFOC(true);
           case TorqueCurrentFOC -> torqueCurrentRequest.withOutput(output);
         });
   }
@@ -212,7 +211,8 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
   public void setDriveVelocity(AngularVelocity velocity) {
     driveTalon.setControl(
         switch (constants.DriveMotorClosedLoopOutput) {
-          case Voltage -> driveVoltageRequest.withVelocity(velocity).withAcceleration(0);
+          case Voltage ->
+              driveVoltageRequest.withVelocity(velocity).withAcceleration(0).withEnableFOC(true);
           case TorqueCurrentFOC ->
               velocityTorqueCurrentRequest.withVelocity(velocity).withAcceleration(0);
         });
@@ -222,7 +222,11 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
   public void setDriveSetpoint(AngularVelocity velocity, AngularAcceleration acceleration) {
     driveTalon.setControl(
         switch (constants.DriveMotorClosedLoopOutput) {
-          case Voltage -> driveVoltageRequest.withVelocity(velocity).withAcceleration(acceleration);
+          case Voltage ->
+              driveVoltageRequest
+                  .withVelocity(velocity)
+                  .withAcceleration(acceleration)
+                  .withEnableFOC(true);
           case TorqueCurrentFOC ->
               velocityTorqueCurrentRequest.withVelocity(velocity).withAcceleration(acceleration);
         });
@@ -232,7 +236,8 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
   public void setTurnPosition(Rotation2d rotation) {
     turnTalon.setControl(
         switch (constants.SteerMotorClosedLoopOutput) {
-          case Voltage -> azimuthPositionRequest.withPosition(rotation.getRotations());
+          case Voltage ->
+              azimuthPositionRequest.withPosition(rotation.getRotations()).withEnableFOC(true);
           case TorqueCurrentFOC ->
               positionTorqueCurrentRequest.withPosition(rotation.getRotations());
         });

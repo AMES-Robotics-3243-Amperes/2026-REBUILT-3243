@@ -26,7 +26,7 @@ public class IntakeConstants {
   // pivot
   public static final int pivotId = 3;
 
-  public static final double pivotReduction = 1.0;
+  public static final double pivotReduction = (16.0 / 34.0) * 16.0 * (54.0 / 16.0);
 
   public static final Angle pivotMinRotation = Degrees.of(0);
   public static final Angle pivotMaxRotation = Degrees.of(110);

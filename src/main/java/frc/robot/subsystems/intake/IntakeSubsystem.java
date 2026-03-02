@@ -114,14 +114,6 @@ public class IntakeSubsystem extends SubsystemBase {
         () -> setPivotAngle(IntakeConstants.pivotMaxRotation));
   }
 
-  public Command runPivotUp() {
-    return runEnd(() -> pivotIO.runOpenLoop(2), () -> pivotIO.runOpenLoop(0));
-  }
-
-  public Command runPivotDown() {
-    return runEnd(() -> pivotIO.runOpenLoop(-2), () -> pivotIO.runOpenLoop(0));
-  }
-
   public Angle getPivotAngle() {
     return pivotInputs.angle;
   }

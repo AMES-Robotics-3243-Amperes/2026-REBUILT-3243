@@ -11,6 +11,7 @@ import frc.robot.util.ControlConstantsBuilder;
 
 /** Add your docs here. */
 public class IndexerConstants {
+  // spindexer
   public static final int spindexerId = 1;
   public static final double spindexerReduction = 4.0;
 
@@ -23,6 +24,7 @@ public class IndexerConstants {
           .pid(0.00002, 0, 0)
           .sva(0.59649, 0.071983, 0.0041446);
 
+  // kicker
   public static final int kickerId = 4;
   public static final double kickerReduction = 5.0 / 4.0;
 

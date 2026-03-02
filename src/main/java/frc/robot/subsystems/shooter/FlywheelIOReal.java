@@ -35,12 +35,14 @@ public class FlywheelIOReal implements FlywheelIO {
   protected final StatusSignal<AngularVelocity> velocity;
   protected final StatusSignal<Voltage> voltage;
 
-  private final VoltageOut voltageRequest = new VoltageOut(0).withEnableFOC(true);
+  private final CoastOut coastRequest = new CoastOut();
+
+  private final VoltageOut voltageRequest = new VoltageOut(0);
+  private final VelocityVoltage velocityVoltateRequest = new VelocityVoltage(0);
+
   private final TorqueCurrentFOC torqueCurrentRequest = new TorqueCurrentFOC(0);
-  private final VelocityVoltage velocityVoltateRequest = new VelocityVoltage(0).withEnableFOC(true);
   private final VelocityTorqueCurrentFOC velocityTorqueCurrentRequest =
       new VelocityTorqueCurrentFOC(0);
-  private final CoastOut coastRequest = new CoastOut();
 
   private static void tryUntilOk(int maxAttempts, Supplier<StatusCode> command) {
     for (int i = 0; i < maxAttempts; i++) {
@@ -92,7 +94,7 @@ public class FlywheelIOReal implements FlywheelIO {
   public void runOpenLoop(double output) {
     leader.setControl(
         switch (ShooterConstants.flywheelClosedLoopOutput) {
-          case Voltage -> voltageRequest.withOutput(output);
+          case Voltage -> voltageRequest.withOutput(output).withEnableFOC(true);
           case TorqueCurrentFOC -> torqueCurrentRequest.withOutput(output);
         });
   }
@@ -101,7 +103,7 @@ public class FlywheelIOReal implements FlywheelIO {
   public void setAngularVelocity(AngularVelocity velocity) {
     leader.setControl(
         switch (ShooterConstants.flywheelClosedLoopOutput) {
-          case Voltage -> velocityVoltateRequest.withVelocity(velocity);
+          case Voltage -> velocityVoltateRequest.withVelocity(velocity).withEnableFOC(true);
           case TorqueCurrentFOC -> velocityTorqueCurrentRequest.withVelocity(velocity);
         });
   }

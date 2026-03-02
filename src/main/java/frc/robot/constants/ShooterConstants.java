@@ -30,7 +30,7 @@ public class ShooterConstants {
   public static final Translation2d bottomBlueNeutralZoneShot =
       new Translation2d(FieldConstants.fieldLength.div(2), FieldConstants.trenchWidth);
 
-  public static final AngularVelocity flywheelVelocityTolerance = RotationsPerSecond.of(0.6);
+  public static final AngularVelocity flywheelVelocityTolerance = RotationsPerSecond.of(0.4);
 
   // flywheel
   public static final int flywheelLeaderId = 10;
@@ -50,7 +50,7 @@ public class ShooterConstants {
   public static final ControlConstantsBuilder flywheelControl =
       ControlConstantsBuilder.fromRadiansAndSeconds().pid(2.05, 0, 0).sva(4.32, 0, 0);
 
-  public static final AngularVelocity idleFlywheelSpeed = RotationsPerSecond.of(2.5);
+  public static final AngularVelocity idleFlywheelSpeed = RotationsPerSecond.of(4);
   public static final Time timeCoastingBeforeIdle = Seconds.of(1.5);
 
   // hood

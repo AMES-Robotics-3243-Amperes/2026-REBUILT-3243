@@ -48,7 +48,7 @@ public class ShooterConstants {
   public static final ClosedLoopOutputType flywheelClosedLoopOutput =
       ClosedLoopOutputType.TorqueCurrentFOC;
   public static final ControlConstantsBuilder flywheelControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(2.05, 0, 0).sva(4.32, 0, 0);
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0, 0, 0).sva(0, 0, 0);
 
   public static final AngularVelocity idleFlywheelSpeed = RotationsPerSecond.of(4);
   public static final Time timeCoastingBeforeIdle = Seconds.of(1.5);

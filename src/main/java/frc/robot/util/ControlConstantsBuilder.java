@@ -18,6 +18,7 @@ import com.ctre.phoenix6.configs.SlotConfigs;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.pathplanner.lib.config.PIDConstants;
 import com.revrobotics.spark.config.ClosedLoopConfig;
+import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -225,6 +226,7 @@ public class ControlConstantsBuilder {
     if (kG != 0 && cosCompensatedKg) config.feedForward.kCos(kG);
     if (kG != 0 && !cosCompensatedKg) config.feedForward.kG(kG);
 
+    config.maxMotion.positionMode(MAXMotionPositionMode.kMAXMotionTrapezoidal);
     maxVelocity.ifPresent(velocity -> config.maxMotion.cruiseVelocity(velocity.in(RPM)));
     maxAcceleration.ifPresent(
         acceleration -> config.maxMotion.maxAcceleration(acceleration.in(RPM.per(Second))));

@@ -292,10 +292,6 @@ public class RobotContainer {
     //                 ShooterConstants.idleFlywheelSpeed, ShooterConstants.hoodMinRotation)));
 
     primaryController
-        .leftTrigger()
-        .whileTrue(intake.intakeAtSpeedCommand(IntakeConstants.rollerAbsoluteSpeed));
-
-    primaryController
         .rightBumper()
         .whileTrue(
             DriveUnderTrenchCommand.driveUnderNearestTrenchCommand(
@@ -303,9 +299,13 @@ public class RobotContainer {
                 drivetrain::getChassisSpeeds,
                 robotLocationManager::robotLocation));
 
+    primaryController
+        .leftTrigger()
+        .whileTrue(intake.intakeAtSpeedCommand(IntakeConstants.rollerIntakeSpeed));
+
     secondaryController
         .leftTrigger()
-        .whileTrue(intake.intakeAtSpeedCommand(IntakeConstants.rollerAbsoluteSpeed));
+        .whileTrue(intake.intakeAtSpeedCommand(IntakeConstants.rollerIntakeSpeed));
 
     //
     // Shooting
@@ -354,9 +354,11 @@ public class RobotContainer {
         .whileTrue(
             indexer
                 .indexCommand()
-                .onlyIf(drivetrain::atRotationSetpoint)
+                // .onlyIf(drivetrain::atRotationSetpoint)
                 .onlyIf(shooter::flywheelSpunUp)
                 .repeatedly());
+
+    primaryController.a().onTrue(intake.pivotSysIdCommand(primaryController.a()));
   }
 
   //

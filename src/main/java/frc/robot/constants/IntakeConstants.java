@@ -21,25 +21,25 @@ public class IntakeConstants {
           .pid(0.000002, 0, 0)
           .sva(0.30224, 0.039192, 0.0051602);
 
-  public static final AngularVelocity rollerAbsoluteSpeed = RotationsPerSecond.of(20);
+  public static final AngularVelocity rollerIntakeSpeed = RotationsPerSecond.of(20);
   public static final Angle pivotToleranceBeforeRollersEngage = Degrees.of(5);
 
   // pivot
   public static final int pivotId = 3;
 
-  public static final double pivotReduction = (16.0 / 34.0) * 16.0 * (54.0 / 16.0);
+  public static final double pivotReduction = (34.0 / 16.0) * 16.0 * (54.0 / 16.0);
 
   public static final int pivotCurrentLimit = 30;
 
-  public static final Angle pivotMinRotation = Degrees.of(3.92);
-  public static final Angle pivotMaxRotation = Degrees.of(137.35);
+  public static final Angle pivotMinRotation = Degrees.of(0);
+  public static final Angle pivotMaxRotation = Degrees.of(122);
 
-  public static final Angle pivotToleranceBeforeCoast = Degrees.of(5);
+  public static final Angle pivotToleranceBeforeCoast = Degrees.of(4);
 
   public static final ControlConstantsBuilder pivotControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(0, 0, 0)
-          .sva(0, 0, 0)
-          .g(0, true)
-          .constraints(RotationsPerSecond.of(0.2), RotationsPerSecondPerSecond.of(1.0));
+          .pid(0.3, 0, 0)
+          .sva(0.1525, 2.1, 0.1)
+          .g(0.16478, true)
+          .constraints(RotationsPerSecond.of(0.3), RotationsPerSecondPerSecond.of(3));
 }

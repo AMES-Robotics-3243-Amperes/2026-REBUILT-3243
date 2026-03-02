@@ -5,22 +5,19 @@
 package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.SysIdCommand;
 import frc.robot.constants.IntakeConstants;
-import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class IntakeSubsystem extends SubsystemBase {
@@ -29,6 +26,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public final PivotIO pivotIO;
   private final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
+
+  private Angle pivotTarget = null;
 
   /** Creates a new IntakeSubsystem. */
   public IntakeSubsystem(RollerIO rollerIO, PivotIO pivotIO) {
@@ -47,12 +46,16 @@ public class IntakeSubsystem extends SubsystemBase {
     Logger.processInputs("Intake/Pivot", pivotInputs);
 
     // reset pivot encoder
-    if (DriverStation.isEnabled()) return;
-
     if (pivotInputs.angle.gt(IntakeConstants.pivotMaxRotation))
       pivotIO.resetPosition(IntakeConstants.pivotMaxRotation);
-    if (pivotInputs.angle.gt(IntakeConstants.pivotMinRotation))
+    if (pivotInputs.angle.lt(IntakeConstants.pivotMinRotation))
       pivotIO.resetPosition(IntakeConstants.pivotMinRotation);
+
+    // TODO: this early return is here for safety but should probably be removed later
+    if (pivotTarget == null) return;
+    if (pivotInputs.angle.isNear(pivotTarget, IntakeConstants.pivotToleranceBeforeCoast))
+      pivotIO.coast();
+    else pivotIO.setAngle(pivotTarget);
   }
 
   /** Finds the angle clamped to physical limits, sends it to the pivot, and returns it. */
@@ -63,10 +66,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 angle.in(Degrees),
                 IntakeConstants.pivotMinRotation.in(Degrees),
                 IntakeConstants.pivotMaxRotation.in(Degrees)));
-
-    if (pivotInputs.angle.isNear(angle, IntakeConstants.pivotToleranceBeforeCoast)) pivotIO.coast();
-    else pivotIO.setAngle(clampedAngle);
-
+    pivotTarget = clampedAngle;
     Logger.recordOutput("Intake/Pivot/SetpointAngle", clampedAngle);
 
     return clampedAngle;
@@ -97,29 +97,6 @@ public class IntakeSubsystem extends SubsystemBase {
         });
   }
 
-  public Command intakeAtGroundSpeedCommand(Supplier<LinearVelocity> drivetrainVelocity) {
-    return runEnd(
-        () -> {
-          AngularVelocity offsetDriveVelocity =
-              RadiansPerSecond.of(
-                  drivetrainVelocity
-                      .get()
-                      .div(IntakeConstants.rollerRadius)
-                      .in(MetersPerSecond.per(Meters)));
-          AngularVelocity velocity = offsetDriveVelocity.plus(IntakeConstants.rollerAbsoluteSpeed);
-
-          setPivotAngle(IntakeConstants.pivotMinRotation);
-
-          if (pivotInputs.angle.isNear(
-              IntakeConstants.pivotMinRotation, IntakeConstants.pivotToleranceBeforeRollersEngage))
-            setRollerVelocity(velocity);
-        },
-        () -> {
-          coastRoller();
-          setPivotAngle(IntakeConstants.pivotMaxRotation);
-        });
-  }
-
   public Command holdIntakeDownCommand() {
     return runEnd(
         () -> setPivotAngle(IntakeConstants.pivotMinRotation),
@@ -137,7 +114,7 @@ public class IntakeSubsystem extends SubsystemBase {
   public Command rollerSysIdCommand(Trigger advanceRoutine) {
     return SysIdCommand.sysIdCommand(
         advanceRoutine,
-        "Indexer/Intake/Roller",
+        "Intake/SysId/Roller",
         voltage -> rollerIO.runOpenLoop(voltage.in(Volts)),
         () -> rollerInputs.position,
         () -> rollerInputs.velocity,
@@ -148,7 +125,10 @@ public class IntakeSubsystem extends SubsystemBase {
   public Command pivotSysIdCommand(Trigger advanceRoutine) {
     return SysIdCommand.sysIdCommand(
         advanceRoutine,
-        "Indexer/Intake/Pivot",
+        "Intake/SysId/Pivot",
+        Volts.of(0.4).per(Second),
+        Volts.of(1.2),
+        Seconds.of(8),
         voltage -> pivotIO.runOpenLoop(voltage.in(Volts)),
         () -> pivotInputs.angle,
         () -> pivotInputs.angularVelocity,

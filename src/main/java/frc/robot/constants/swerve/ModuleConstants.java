@@ -22,8 +22,8 @@ public class ModuleConstants {
   // turn
   public static final ControlConstantsBuilder steerControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(24, 0, 0)
-          .constraints(RotationsPerSecond.of(25), RotationsPerSecondPerSecond.of(250));
+          .pid(12, 0, 0)
+          .constraints(RotationsPerSecond.of(25), RotationsPerSecondPerSecond.of(60));
 
   public static final Current steerStatorCurrentLimit = Amps.of(30);
   public static final Current driveCurrentLimit = Amps.of(80);

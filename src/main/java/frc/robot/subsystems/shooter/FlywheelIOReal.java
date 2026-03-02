@@ -67,19 +67,13 @@ public class FlywheelIOReal implements FlywheelIO {
     voltage = leader.getMotorVoltage();
 
     // Configure periodic frames
-    BaseStatusSignal.setUpdateFrequencyForAll(50.0, position, velocity, voltage);
-    BaseStatusSignal.setUpdateFrequencyForAll(100.0, leader.getTorqueCurrent());
+    BaseStatusSignal.setUpdateFrequencyForAll(50.0, position, velocity, voltage, leader.getTorqueCurrent());
     ParentDevice.optimizeBusUtilizationForAll(leader, follower);
-
-    TunableControls.registerTalonFXSlotTuning(
-        leader, 0, "Shooter/Flywheel", ShooterConstants.flywheelControl);
   }
 
   @Override
   public void updateInputs(FlywheelIOInputs inputs) {
     BaseStatusSignal.refreshAll(position, velocity, voltage);
-
-    Logger.recordOutput("flywheelError", goal.minus(velocity.getValue()));
 
     inputs.position = position.getValue();
     inputs.velocity = velocity.getValue();

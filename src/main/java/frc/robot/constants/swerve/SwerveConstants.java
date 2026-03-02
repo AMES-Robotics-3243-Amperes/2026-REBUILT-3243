@@ -61,7 +61,7 @@ public class SwerveConstants {
 
   // odometry frequency
   public static final Frequency canFdOdometryFrequency = Hertz.of(250);
-  public static final Frequency baseOdometryFrequency = Hertz.of(80);
+  public static final Frequency baseOdometryFrequency = Hertz.of(50);
 
   public static final Frequency odometryFrequency() {
     return swerveCANBus.isNetworkFD() ? canFdOdometryFrequency : baseOdometryFrequency;
@@ -69,6 +69,5 @@ public class SwerveConstants {
 
   // misc
   public static final CANBus swerveCANBus = CANBus.roboRIO();
-
-  public static final Time idleTimeUntilSetpointGeneratorReset = Milliseconds.of(60);
+  public static final Time idleTimeUntilReset = Milliseconds.of(60);
 }

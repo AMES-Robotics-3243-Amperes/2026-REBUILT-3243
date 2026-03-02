@@ -104,6 +104,15 @@ public class RobotContainer {
 
         TunableControls.registerTalonFXSlotTuning(
             0,
+            "Drivetrain/Drive",
+            ModuleConstants.driveControl,
+            fl.driveTalon,
+            fr.driveTalon,
+            bl.driveTalon,
+            br.driveTalon);
+
+        TunableControls.registerTalonFXSlotTuning(
+            0,
             "Drivetrain/Azimuth",
             ModuleConstants.steerControl,
             fl.turnTalon,

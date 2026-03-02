@@ -285,8 +285,7 @@ public class SwerveSubsystem extends SubsystemBase {
    * @param speeds Speeds in meters/sec
    */
   public void driveSetpointGenerator(ChassisSpeeds speeds) {
-    if (idleTimeSinceLastSetpointReset.hasElapsed(
-        SwerveConstants.idleTimeUntilSetpointGeneratorReset.in(Seconds))) {
+    if (idleTimeSinceLastSetpointReset.hasElapsed(SwerveConstants.idleTimeUntilReset.in(Seconds))) {
       resetSetpointGenerator();
     }
 
@@ -645,8 +644,8 @@ public class SwerveSubsystem extends SubsystemBase {
     return () -> {
       double elapsedTime = timeSinceLastLoop.get();
 
-      // four loops is picked arbitrarily
-      if (timeSinceLastLoop.hasElapsed(0.08)) pidController.reset(getRotation().getRadians());
+      if (timeSinceLastLoop.hasElapsed(SwerveConstants.idleTimeUntilReset))
+        pidController.reset(getRotation().getRadians());
 
       atRotationSetpoint =
           Math.abs(pidController.getPositionError())

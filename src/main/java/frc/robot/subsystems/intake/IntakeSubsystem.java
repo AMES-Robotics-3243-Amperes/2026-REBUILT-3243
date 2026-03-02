@@ -14,6 +14,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -44,6 +45,14 @@ public class IntakeSubsystem extends SubsystemBase {
 
     pivotIO.updateInputs(pivotInputs);
     Logger.processInputs("Intake/Pivot", pivotInputs);
+
+    // reset pivot encoder
+    if (DriverStation.isEnabled()) return;
+
+    if (pivotInputs.angle.gt(IntakeConstants.pivotMaxRotation))
+      pivotIO.resetPosition(IntakeConstants.pivotMaxRotation);
+    if (pivotInputs.angle.gt(IntakeConstants.pivotMinRotation))
+      pivotIO.resetPosition(IntakeConstants.pivotMinRotation);
   }
 
   /** Finds the angle clamped to physical limits, sends it to the pivot, and returns it. */
@@ -55,7 +64,9 @@ public class IntakeSubsystem extends SubsystemBase {
                 IntakeConstants.pivotMinRotation.in(Degrees),
                 IntakeConstants.pivotMaxRotation.in(Degrees)));
 
-    pivotIO.setAngle(clampedAngle);
+    if (pivotInputs.angle.isNear(angle, IntakeConstants.pivotToleranceBeforeCoast)) pivotIO.coast();
+    else pivotIO.setAngle(clampedAngle);
+
     Logger.recordOutput("Intake/Pivot/SetpointAngle", clampedAngle);
 
     return clampedAngle;
@@ -76,8 +87,9 @@ public class IntakeSubsystem extends SubsystemBase {
         () -> {
           setPivotAngle(IntakeConstants.pivotMinRotation);
 
-          // TODO: if (pivotInputs.angle.isNear(IntakeConstants.pivotMinRotation, Radians.of(1)))
-          setRollerVelocity(velocity);
+          if (pivotInputs.angle.isNear(
+              IntakeConstants.pivotMinRotation, IntakeConstants.pivotToleranceBeforeCoast))
+            setRollerVelocity(velocity);
         },
         () -> {
           coastRoller();

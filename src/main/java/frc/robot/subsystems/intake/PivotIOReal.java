@@ -65,7 +65,7 @@ public class PivotIOReal implements PivotIO {
 
   @Override
   public void setAngle(Angle angle) {
-    closedLoopController.setSetpoint(angle.in(Rotations), ControlType.kPosition);
+    closedLoopController.setSetpoint(angle.in(Rotations), ControlType.kMAXMotionPositionControl);
   }
 
   @Override

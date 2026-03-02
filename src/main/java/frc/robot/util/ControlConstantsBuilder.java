@@ -15,6 +15,7 @@ import static edu.wpi.first.units.Units.Value;
 
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.SlotConfigs;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.pathplanner.lib.config.PIDConstants;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 import edu.wpi.first.math.Pair;
@@ -43,6 +44,8 @@ public class ControlConstantsBuilder {
       double kS,
       double kV,
       double kA,
+      double kG,
+      boolean cosCompensatedKg,
       Optional<Double> maxVelocity,
       Optional<Double> maxAcceleration) {}
 
@@ -57,6 +60,9 @@ public class ControlConstantsBuilder {
   public Per<DimensionlessUnit, AngularVelocityUnit> kV = Value.per(RadiansPerSecond).ofNative(0);
   public Per<DimensionlessUnit, AngularAccelerationUnit> kA =
       Value.per(RadiansPerSecondPerSecond).ofNative(0);
+
+  public double kG = 0;
+  public boolean cosCompensatedKg = false;
 
   public Optional<AngularVelocity> maxVelocity = Optional.empty();
   public Optional<AngularAcceleration> maxAcceleration = Optional.empty();
@@ -84,6 +90,13 @@ public class ControlConstantsBuilder {
     this.kS = kS;
     this.kV = Value.per(RadiansPerSecond).ofNative(kV);
     this.kA = Value.per(RadiansPerSecondPerSecond).ofNative(kA);
+
+    return this;
+  }
+
+  public ControlConstantsBuilder g(double kG, boolean cosCompensatedKg) {
+    this.kG = kG;
+    this.cosCompensatedKg = cosCompensatedKg;
 
     return this;
   }
@@ -120,6 +133,8 @@ public class ControlConstantsBuilder {
         kS,
         kV.in(Value.per(angleUnit.per(timeUnit))),
         kA.in(Value.per(angleUnit.per(timeUnit).per(timeUnit))),
+        kG,
+        cosCompensatedKg,
         maxVelocity.map(velocity -> velocity.in(angleUnit.per(timeUnit))),
         maxAcceleration.map(
             acceleration -> acceleration.in(angleUnit.per(timeUnit).per(timeUnit))));
@@ -207,6 +222,9 @@ public class ControlConstantsBuilder {
     if (kA.in(Value.per(RPM.per(Second))) != 0)
       config.feedForward.kA(kA.in(Value.per(RPM.per(Second))));
 
+    if (kG != 0 && cosCompensatedKg) config.feedForward.kCos(kG);
+    if (kG != 0 && !cosCompensatedKg) config.feedForward.kG(kG);
+
     maxVelocity.ifPresent(velocity -> config.maxMotion.cruiseVelocity(velocity.in(RPM)));
     maxAcceleration.ifPresent(
         acceleration -> config.maxMotion.maxAcceleration(acceleration.in(RPM.per(Second))));
@@ -224,7 +242,10 @@ public class ControlConstantsBuilder {
             .withKD(constantsRotationsSeconds.kD())
             .withKS(constantsRotationsSeconds.kS())
             .withKV(constantsRotationsSeconds.kV())
-            .withKA(constantsRotationsSeconds.kA());
+            .withKA(constantsRotationsSeconds.kA())
+            .withKG(constantsRotationsSeconds.kG())
+            .withGravityType(
+                cosCompensatedKg ? GravityTypeValue.Arm_Cosine : GravityTypeValue.Elevator_Static);
 
     MotionMagicConfigs motionMagicConfigs = new MotionMagicConfigs();
     maxVelocity.ifPresent(velocity -> motionMagicConfigs.withMotionMagicCruiseVelocity(velocity));

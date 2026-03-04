@@ -30,15 +30,18 @@ public class SysIdCommand {
                 Commands.waitSeconds(waitSeconds),
                 requirement.runOnce(pause));
 
-    return Commands.sequence(
-        waitCommand.apply(0.5),
-        routine.dynamic(SysIdRoutine.Direction.kForward).until(advanceRoutine),
-        waitCommand.apply(2.0),
-        routine.dynamic(SysIdRoutine.Direction.kReverse).until(advanceRoutine),
-        waitCommand.apply(2.0),
-        routine.quasistatic(SysIdRoutine.Direction.kForward).until(advanceRoutine),
-        waitCommand.apply(2.0),
-        routine.quasistatic(SysIdRoutine.Direction.kReverse).until(advanceRoutine));
+    Command command =
+        Commands.sequence(
+            waitCommand.apply(0.5),
+            routine.dynamic(SysIdRoutine.Direction.kForward).until(advanceRoutine),
+            waitCommand.apply(2.0),
+            routine.dynamic(SysIdRoutine.Direction.kReverse).until(advanceRoutine),
+            waitCommand.apply(2.0),
+            routine.quasistatic(SysIdRoutine.Direction.kForward).until(advanceRoutine),
+            waitCommand.apply(2.0),
+            routine.quasistatic(SysIdRoutine.Direction.kReverse).until(advanceRoutine));
+    command.addRequirements(requirement);
+    return command;
   }
 
   public static Command sysIdCommand(

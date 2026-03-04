@@ -27,19 +27,19 @@ public class IntakeConstants {
   // pivot
   public static final int pivotId = 3;
 
-  public static final double pivotReduction = (34.0 / 16.0) * 16.0 * (54.0 / 16.0);
+  public static final double pivotReduction = (54.0 / 18.0) * (34.0 / 16.0) * (16.0 / 1.0);
 
   public static final int pivotCurrentLimit = 30;
 
-  public static final Angle pivotMinRotation = Degrees.of(0);
-  public static final Angle pivotMaxRotation = Degrees.of(122);
+  public static final Angle pivotMinRotation = Degrees.of(-1.3476);
+  public static final Angle pivotMaxRotation = Degrees.of(130 - 1.3476);
 
-  public static final Angle pivotToleranceBeforeCoast = Degrees.of(4);
+  public static final Angle pivotToleranceBeforeCoast = Degrees.of(7);
 
   public static final ControlConstantsBuilder pivotControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(0.3, 0, 0)
-          .sva(0.1525, 2.1, 0.1)
-          .g(0.16478, true)
-          .constraints(RotationsPerSecond.of(0.3), RotationsPerSecondPerSecond.of(3));
+          .pid(10, 0, 0)
+          .sva(0, 0.6, 0.08)
+          .g(0.1, true)
+          .constraints(RotationsPerSecond.of(3), RotationsPerSecondPerSecond.of(8));
 }

@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.DriveUnderTrenchCommand;
 import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.ModeConstants;
@@ -119,8 +120,15 @@ public class RobotContainer {
             br.turnTalon);
 
         drivetrain = new SwerveSubsystem(new GyroIOPigeon2(), fl, fr, bl, br);
+        // drivetrain =
+        //     new SwerveSubsystem(
+        //         new GyroIO() {},
+        //         new ModuleIO() {},
+        //         new ModuleIO() {},
+        //         new ModuleIO() {},
+        //         new ModuleIO() {});
         intake = new IntakeSubsystem(new RollerIOReal(), new PivotIOReal());
-        shooter = new ShooterSubsystem(new FlywheelIOReal(), new HoodIOReal());
+        shooter = new ShooterSubsystem(new FlywheelIOReal() {}, new HoodIOReal());
         indexer = new IndexerSubsystem(new KickerIOReal(), new SpindexerIOReal());
 
         new VisionSubsystem(
@@ -285,11 +293,7 @@ public class RobotContainer {
             drivetrain.joystickDriveLinear(SwerveConstants.linearTeleopSpeed, primaryController),
             drivetrain.joystickDriveAngular(primaryController::getRightX)));
 
-    // shooter.setDefaultCommand(
-    //     Commands.waitTime(ShooterConstants.timeCoastingBeforeIdle)
-    //         .andThen(
-    //             shooter.shootCommand(
-    //                 ShooterConstants.idleFlywheelSpeed, ShooterConstants.hoodMinRotation)));
+    intake.setDefaultCommand(intake.holdIntakeDownCommand());
 
     primaryController
         .rightBumper()
@@ -307,11 +311,13 @@ public class RobotContainer {
         .leftTrigger()
         .whileTrue(intake.intakeAtSpeedCommand(IntakeConstants.rollerIntakeSpeed));
 
+    primaryController.y().whileTrue(intake.idle());
+
     //
     // Shooting
     //
-    primaryController
-        .rightTrigger()
+    Trigger shootBind = primaryController.rightTrigger();
+    shootBind
         .and(robotLocationManager.inAllianceZone())
         .whileTrue(
             Commands.parallel(
@@ -322,8 +328,7 @@ public class RobotContainer {
                     drivetrain.rotateAtAngle(
                         () -> FuelTrajectoryCalculator.getHubShot().fuelGroundSpeedRotation()))));
 
-    primaryController
-        .rightTrigger()
+    shootBind
         .and(robotLocationManager.innNeutralZone())
         .whileTrue(
             Commands.parallel(
@@ -336,8 +341,7 @@ public class RobotContainer {
                             FuelTrajectoryCalculator.getAllianceShot()
                                 .fuelGroundSpeedRotation()))));
 
-    primaryController
-        .rightTrigger()
+    shootBind
         .and(robotLocationManager.inOpponentZone())
         .whileTrue(
             Commands.parallel(
@@ -349,16 +353,10 @@ public class RobotContainer {
                         () ->
                             FuelTrajectoryCalculator.getNeutralShot().fuelGroundSpeedRotation()))));
 
-    primaryController
-        .rightTrigger()
-        .whileTrue(
-            indexer
-                .indexCommand()
-                // .onlyIf(drivetrain::atRotationSetpoint)
-                .onlyIf(shooter::flywheelSpunUp)
-                .repeatedly());
-
-    primaryController.a().onTrue(intake.pivotSysIdCommand(primaryController.a()));
+    shootBind
+        .and(drivetrain::atRotationSetpoint)
+        .and(shooter::flywheelSpunUp)
+        .onTrue(indexer.indexCommand().until(shootBind.negate()));
   }
 
   //

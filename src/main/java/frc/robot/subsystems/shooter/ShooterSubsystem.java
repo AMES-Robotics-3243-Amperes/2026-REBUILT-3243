@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
@@ -15,6 +16,8 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.SysIdCommand;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.util.FuelTrajectoryCalculator;
 import java.util.function.Supplier;
@@ -142,5 +145,19 @@ public class ShooterSubsystem extends SubsystemBase {
     return shootFuelAtSpeedCommand(
         () -> FuelTrajectoryCalculator.getNeutralShot().shooterSetpoint().linearFlywheelSpeed(),
         () -> FuelTrajectoryCalculator.getNeutralShot().shooterSetpoint().hoodAngle());
+  }
+
+  //
+  // SysId
+  //
+  public Command flywheelSysIdCommand(Trigger advanceRoutine) {
+    return SysIdCommand.sysIdCommand(
+        advanceRoutine,
+        "Shooter/SysId/Flywheel",
+        voltage -> flywheelIO.runOpenLoop(voltage.in(Volts)),
+        () -> flywheelInputs.position,
+        () -> flywheelInputs.velocity,
+        () -> flywheelInputs.appliedVoltage,
+        this);
   }
 }

@@ -110,7 +110,6 @@ public class IntakeSubsystem extends SubsystemBase {
   //
   // SysId
   //
-
   public Command rollerSysIdCommand(Trigger advanceRoutine) {
     return SysIdCommand.sysIdCommand(
         advanceRoutine,

@@ -23,7 +23,7 @@ public class ModuleConstants {
   public static final AngularVelocity maxModuleAzimuth = RotationsPerSecond.of(20);
   public static final ControlConstantsBuilder steerControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(12, 0, 0)
+          .pid(6, 0, 0)
           .constraints(maxModuleAzimuth, maxModuleAzimuth.div(Seconds.of(0.2)));
 
   public static final Current steerStatorCurrentLimit = Amps.of(70);

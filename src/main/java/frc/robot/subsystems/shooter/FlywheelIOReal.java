@@ -22,18 +22,20 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.constants.ShooterConstants;
 import java.util.function.Supplier;
 
 /** Add your docs here. */
 public class FlywheelIOReal implements FlywheelIO {
-  protected final TalonFX leader = new TalonFX(ShooterConstants.flywheelLeaderId);
+  private final TalonFX leader = new TalonFX(ShooterConstants.flywheelLeaderId);
   private final TalonFX follower = new TalonFX(ShooterConstants.flywheelFollowerId);
 
-  protected final StatusSignal<Angle> position;
-  protected final StatusSignal<AngularVelocity> velocity;
-  protected final StatusSignal<Voltage> voltage;
+  private final StatusSignal<Angle> position;
+  private final StatusSignal<AngularVelocity> velocity;
+  private final StatusSignal<Voltage> voltage;
+  private final StatusSignal<Current> torque;
 
   private final CoastOut coastRequest = new CoastOut();
 
@@ -73,16 +75,19 @@ public class FlywheelIOReal implements FlywheelIO {
     position = leader.getPosition();
     velocity = leader.getVelocity();
     voltage = leader.getMotorVoltage();
+    torque = leader.getTorqueCurrent();
 
     // Configure periodic frames
     if (ShooterConstants.flywheelClosedLoopOutput == ClosedLoopOutputType.TorqueCurrentFOC)
-      leader.getTorqueCurrent().setUpdateFrequency(50.0);
+      torque.setUpdateFrequency(50.0);
     BaseStatusSignal.setUpdateFrequencyForAll(50.0, position, velocity, voltage);
     ParentDevice.optimizeBusUtilizationForAll(leader, follower);
   }
 
   @Override
   public void updateInputs(FlywheelIOInputs inputs) {
+    if (ShooterConstants.flywheelClosedLoopOutput == ClosedLoopOutputType.TorqueCurrentFOC)
+      torque.refresh();
     BaseStatusSignal.refreshAll(position, velocity, voltage);
 
     inputs.position = position.getValue();

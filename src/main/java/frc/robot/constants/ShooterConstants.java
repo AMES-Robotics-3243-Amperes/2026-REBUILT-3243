@@ -45,12 +45,12 @@ public class ShooterConstants {
 
   public static final double fuelToFlywheelLinearSpeedRatio = 0.5;
 
-  public static final ClosedLoopOutputType flywheelClosedLoopOutput =
-      ClosedLoopOutputType.TorqueCurrentFOC;
+  public static final ClosedLoopOutputType flywheelClosedLoopOutput = ClosedLoopOutputType.Voltage;
   public static final ControlConstantsBuilder flywheelControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0, 0, 0).sva(0, 0, 0);
+      ControlConstantsBuilder.fromRadiansAndSeconds()
+          .pid(0.0068432, 0, 0)
+          .sva(0.18119, 0.025646, 0.0026016);
 
-  public static final AngularVelocity idleFlywheelSpeed = RotationsPerSecond.of(4);
   public static final Time timeCoastingBeforeIdle = Seconds.of(1.5);
 
   // hood

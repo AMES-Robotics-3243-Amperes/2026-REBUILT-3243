@@ -30,8 +30,6 @@ public class RollerIOReal implements RollerIO {
     config.encoder.velocityConversionFactor(1.0 / IntakeConstants.rollerReduction);
     config.idleMode(IdleMode.kCoast).inverted(true);
 
-    config.smartCurrentLimit(IntakeConstants.pivotCurrentLimit);
-
     config
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)

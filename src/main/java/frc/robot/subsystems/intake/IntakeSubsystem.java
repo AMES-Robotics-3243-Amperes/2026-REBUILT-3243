@@ -52,10 +52,10 @@ public class IntakeSubsystem extends SubsystemBase {
       pivotIO.resetPosition(IntakeConstants.pivotMinRotation);
 
     // TODO: this early return is here for safety but should probably be removed later
-    if (pivotTarget == null) return;
-    if (pivotInputs.angle.isNear(pivotTarget, IntakeConstants.pivotToleranceBeforeCoast))
-      pivotIO.coast();
-    else pivotIO.setAngle(pivotTarget);
+    // if (pivotTarget == null) return;
+    // if (pivotInputs.angle.isNear(pivotTarget, IntakeConstants.pivotToleranceBeforeCoast))
+    //   pivotIO.coast();
+    // else pivotIO.setAngle(pivotTarget);
   }
 
   /** Finds the angle clamped to physical limits, sends it to the pivot, and returns it. */
@@ -87,9 +87,10 @@ public class IntakeSubsystem extends SubsystemBase {
         () -> {
           setPivotAngle(IntakeConstants.pivotMinRotation);
 
-          if (pivotInputs.angle.isNear(
-              IntakeConstants.pivotMinRotation, IntakeConstants.pivotToleranceBeforeCoast))
-            setRollerVelocity(velocity);
+          // TODO: re-enable this
+          // if (pivotInputs.angle.isNear(
+          //     IntakeConstants.pivotMinRotation, IntakeConstants.pivotToleranceBeforeCoast))
+          setRollerVelocity(velocity);
         },
         () -> {
           coastRoller();
@@ -101,6 +102,10 @@ public class IntakeSubsystem extends SubsystemBase {
     return runEnd(
         () -> setPivotAngle(IntakeConstants.pivotMinRotation),
         () -> setPivotAngle(IntakeConstants.pivotMaxRotation));
+  }
+
+  public Command runPivotOpenLoopCommand(double output) {
+    return runEnd(() -> pivotIO.runOpenLoop(output), () -> pivotIO.runOpenLoop(0));
   }
 
   public Angle getPivotAngle() {

@@ -17,7 +17,7 @@ import frc.robot.util.ControlConstantsBuilder;
 public class ModuleConstants {
   // drive
   public static final ControlConstantsBuilder driveControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(11.5, 0, 0).sva(5.8, 0, 0);
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(8, 0, 0).sva(5.8, 0, 0);
 
   // turn
   public static final AngularVelocity maxModuleAzimuth = RotationsPerSecond.of(20);

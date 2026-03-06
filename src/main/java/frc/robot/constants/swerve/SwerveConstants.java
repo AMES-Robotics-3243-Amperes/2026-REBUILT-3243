@@ -22,10 +22,10 @@ import frc.robot.constants.choreo.ChoreoVars;
 import frc.robot.util.ControlConstantsBuilder;
 
 public class SwerveConstants {
-  public static final double teleopJoystickDeadband = 0.03;
+  public static final double teleopJoystickDeadband = 0.22;
 
   public static final LinearVelocity linearTeleopSpeed = MetersPerSecond.of(3);
-  public static final AngularVelocity angularTeleopSpeed = RotationsPerSecond.of(1);
+  public static final AngularVelocity angularTeleopSpeed = RotationsPerSecond.of(0.5);
 
   public static final LinearVelocity linearTeleopSpeedWhileShooting = MetersPerSecond.of(1);
 
@@ -35,7 +35,7 @@ public class SwerveConstants {
   public static final Angle rotationFeedbackTolerance = Degrees.of(1.5);
   public static final ControlConstantsBuilder rotationControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(4.8, 0, 0.5)
+          .pid(4.8, 0, 0.25)
           .iZone(1)
           .constraints(RotationsPerSecond.of(3), RotationsPerSecondPerSecond.of(9));
 

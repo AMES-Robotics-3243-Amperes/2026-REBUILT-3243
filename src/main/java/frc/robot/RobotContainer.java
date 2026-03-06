@@ -20,7 +20,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.DriveUnderTrenchCommand;
 import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.ModeConstants;
 import frc.robot.constants.ShooterConstants;
@@ -293,15 +292,15 @@ public class RobotContainer {
             drivetrain.joystickDriveLinear(SwerveConstants.linearTeleopSpeed, primaryController),
             drivetrain.joystickDriveAngular(primaryController::getRightX)));
 
-    intake.setDefaultCommand(intake.holdIntakeDownCommand());
+    // intake.setDefaultCommand(intake.holdIntakeDownCommand());
 
-    primaryController
-        .rightBumper()
-        .whileTrue(
-            DriveUnderTrenchCommand.driveUnderNearestTrenchCommand(
-                drivetrain::getPose,
-                drivetrain::getChassisSpeeds,
-                robotLocationManager::robotLocation));
+    // primaryController
+    //     .rightBumper()
+    //     .whileTrue(
+    //         DriveUnderTrenchCommand.driveUnderNearestTrenchCommand(
+    //             drivetrain::getPose,
+    //             drivetrain::getChassisSpeeds,
+    //             robotLocationManager::robotLocation));
 
     primaryController
         .leftTrigger()
@@ -311,7 +310,8 @@ public class RobotContainer {
         .leftTrigger()
         .whileTrue(intake.intakeAtSpeedCommand(IntakeConstants.rollerIntakeSpeed));
 
-    primaryController.y().whileTrue(intake.idle());
+    primaryController.leftBumper().whileTrue(intake.runPivotOpenLoopCommand(2));
+    primaryController.rightBumper().whileTrue(intake.runPivotOpenLoopCommand(-2));
 
     //
     // Shooting

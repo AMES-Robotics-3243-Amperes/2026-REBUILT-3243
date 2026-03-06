@@ -39,7 +39,7 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
 
   // Voltage control requests
   protected final VoltageOut voltageRequest = new VoltageOut(0);
-  protected final MotionMagicVoltage azimuthPositionRequest = new MotionMagicVoltage(0);
+  protected final PositionVoltage azimuthPositionRequest = new PositionVoltage(0);
   protected final VelocityVoltage driveVoltageRequest = new VelocityVoltage(0);
 
   // Torque-current control requests

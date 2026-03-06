@@ -45,18 +45,6 @@ public class VisionConstants {
                   new Rotation3d(0, Units.degreesToRadians(180 - 65 - 90), 0)),
               1,
               CameraType.LimelightFour));
-  //   new CameraConfiguration(
-  //       "limelight-two",
-  //       new Transform3d(
-  //           -Units.inchesToMeters(11.694),
-  //           -Units.inchesToMeters(9.937452),
-  //           Units.inchesToMeters(8.948125 + 1.8),
-  //           new Rotation3d(
-  //               0,
-  //               -Units.degreesToRadians(180 - 145.891948),
-  //               -Units.degreesToRadians(7.5 + 180))),
-  //       4,
-  //       CameraType.LimelightTwo));
 
   // Basic filtering thresholds
   public static final Time maxTimestampError = Milliseconds.of(2);
@@ -105,7 +93,7 @@ public class VisionConstants {
     return VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev);
   }
 
-  public static int limelightFourThrottle = 200;
+  public static int limelightFourThrottle = 140;
   public static double limelightFourImuAssist = 0.002;
 
   // AprilTag layout

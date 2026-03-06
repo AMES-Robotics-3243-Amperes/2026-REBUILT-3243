@@ -7,7 +7,7 @@ package frc.robot.constants;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RPM;
 
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
@@ -28,7 +28,7 @@ public class ShooterConstants {
   public static final Translation2d bottomBlueNeutralZoneShot =
       new Translation2d(FieldConstants.fieldLength.div(2), FieldConstants.trenchWidth);
 
-  public static final AngularVelocity flywheelVelocityTolerance = RotationsPerSecond.of(0.25);
+  public static final AngularVelocity flywheelIndexTolerance = RPM.of(15);
 
   // flywheel
   public static final int flywheelLeaderId = 10;
@@ -41,16 +41,17 @@ public class ShooterConstants {
   public static final Current flywheelStatorCurrentLimit = Amps.of(120);
   public static final Current flywheelSupplyCurrentLimit = Amps.of(70);
 
-  public static final double fuelToFlywheelLinearSpeedRatio = 0.5;
+  public static final double fuelToFlywheelLinearSpeedRatio = 0.495;
+
+  public static final AngularVelocity flywheelRecoverControlTolerance = RPM.of(10);
 
   public static final ClosedLoopOutputType flywheelClosedLoopOutput =
       ClosedLoopOutputType.TorqueCurrentFOC;
-  //   public static final ControlConstantsBuilder flywheelControl =
-  //       ControlConstantsBuilder.fromRadiansAndSeconds()
-  //           .pid(0.008, 0, 0)
-  //           .sva(0.18119, 0.025646, 0.0026016);
+
   public static final ControlConstantsBuilder flywheelControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(1.92, 0, 0).sva(4.3, 0, 0);
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.9, 0, 0).sva(9.8291, 0, 0);
+  public static final ControlConstantsBuilder flywheelRecoverControl =
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(1.5, 0, 0).sva(9.8291, 0, 0);
 
   // hood
   public static final int hoodId = 5;
@@ -66,7 +67,7 @@ public class ShooterConstants {
       ControlConstantsBuilder.fromRadiansAndSeconds().pid(10, 0.02, 0.05);
 
   // fuel trajectory calculation
-  public static final Distance extraPointHorizontalOffset = Inches.of(3);
+  public static final Distance extraPointHorizontalOffset = Inches.of(3.2);
   public static final Distance extraPointVerticalOffset = Inches.of(5);
 
   public static final Transform3d robotToShooter =

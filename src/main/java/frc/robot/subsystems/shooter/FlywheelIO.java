@@ -31,6 +31,9 @@ public interface FlywheelIO {
   /** Run the flywheel at the specified velocity. */
   default void setAngularVelocity(AngularVelocity velocity) {}
 
+  /** Enables/disables the recover control of the flywheel. */
+  default void enableRecoverControl(boolean enable) {}
+
   /** Coasts the flywheel. */
   default void coast() {}
 }

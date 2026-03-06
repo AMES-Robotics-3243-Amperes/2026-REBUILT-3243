@@ -22,7 +22,7 @@ import frc.robot.constants.choreo.ChoreoVars;
 import frc.robot.util.ControlConstantsBuilder;
 
 public class SwerveConstants {
-  public static final double teleopJoystickDeadband = 0.22;
+  public static final double teleopJoystickDeadband = 0.03;
 
   public static final LinearVelocity linearTeleopSpeed = MetersPerSecond.of(3);
   public static final AngularVelocity angularTeleopSpeed = RotationsPerSecond.of(0.5);

@@ -17,7 +17,7 @@ public class IndexerConstants {
   public static final int spindexerId = 1;
   public static final double spindexerReduction = 4.0;
 
-  public static final AngularVelocity spindexerIndexingSpeed = RPM.of(800);
+  public static final AngularVelocity spindexerIndexingSpeed = RPM.of(1200);
 
   public static final int spindexerCurrentLimit = 80;
 
@@ -30,7 +30,7 @@ public class IndexerConstants {
   public static final int kickerId = 4;
   public static final double kickerReduction = 2.0;
 
-  public static final AngularVelocity kickerShootingSpeed = RPM.of(1000);
+  public static final AngularVelocity kickerShootingSpeed = RPM.of(2200);
 
   public static final int kickerCurrentLimit = 90;
 

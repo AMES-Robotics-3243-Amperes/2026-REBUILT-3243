@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
@@ -14,12 +15,15 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.ShootCommand;
+import frc.robot.commands.ShootCommand.ShootTarget;
 import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.ModeConstants;
 import frc.robot.constants.ShooterConstants;
@@ -310,8 +314,8 @@ public class RobotContainer {
         .leftTrigger()
         .whileTrue(intake.intakeAtSpeedCommand(IntakeConstants.rollerIntakeSpeed));
 
-    primaryController.leftBumper().whileTrue(intake.runPivotOpenLoopCommand(2));
-    primaryController.rightBumper().whileTrue(intake.runPivotOpenLoopCommand(-2));
+    secondaryController.leftBumper().whileTrue(intake.runPivotOpenLoopCommand(3));
+    secondaryController.rightBumper().whileTrue(intake.runPivotOpenLoopCommand(-3));
 
     //
     // Shooting
@@ -320,43 +324,26 @@ public class RobotContainer {
     shootBind
         .and(robotLocationManager.inAllianceZone())
         .whileTrue(
-            Commands.parallel(
-                shooter.shootInHubCommand(),
-                drivetrain.driveSetpiontGeneratorCommand(
-                    drivetrain.joystickDriveLinear(
-                        SwerveConstants.linearTeleopSpeedWhileShooting, primaryController),
-                    drivetrain.rotateAtAngle(
-                        () -> FuelTrajectoryCalculator.getHubShot().fuelGroundSpeedRotation()))));
+            ShootCommand.shootCommandTeleopDrive(
+                ShootTarget.HUB, shooter, drivetrain, primaryController));
 
     shootBind
         .and(robotLocationManager.innNeutralZone())
         .whileTrue(
-            Commands.parallel(
-                shooter.shootInAllianceZoneCommand(),
-                drivetrain.driveSetpiontGeneratorCommand(
-                    drivetrain.joystickDriveLinear(
-                        SwerveConstants.linearTeleopSpeedWhileShooting, primaryController),
-                    drivetrain.rotateAtAngle(
-                        () ->
-                            FuelTrajectoryCalculator.getAllianceShot()
-                                .fuelGroundSpeedRotation()))));
+            ShootCommand.shootCommandTeleopDrive(
+                ShootTarget.ALLIANCE, shooter, drivetrain, primaryController));
 
     shootBind
         .and(robotLocationManager.inOpponentZone())
         .whileTrue(
-            Commands.parallel(
-                shooter.shootInNeutralZoneCommand(),
-                drivetrain.driveSetpiontGeneratorCommand(
-                    drivetrain.joystickDriveLinear(
-                        SwerveConstants.linearTeleopSpeedWhileShooting, primaryController),
-                    drivetrain.rotateAtAngle(
-                        () ->
-                            FuelTrajectoryCalculator.getNeutralShot().fuelGroundSpeedRotation()))));
+            ShootCommand.shootCommandTeleopDrive(
+                ShootTarget.NEUTRAL, shooter, drivetrain, primaryController));
 
-    shootBind
-        .and(drivetrain::atRotationSetpoint)
-        .and(shooter::flywheelSpunUp)
-        .onTrue(indexer.indexCommand().until(shootBind.negate()));
+    shootBind.whileTrue(
+        Commands.waitUntil(new Trigger(drivetrain::atRotationSetpoint).and(shooter::flywheelSpunUp))
+            .andThen(indexer.indexCommand()));
+
+    primaryController.x().onTrue(shooter.torqueCurrentKsCharacterization(Amps.of(15)));
   }
 
   //
@@ -364,7 +351,14 @@ public class RobotContainer {
   //
 
   public Command getAutonomousCommand() {
-    return autoChooser.get();
+    // return autoChooser.get();
+    return ShootCommand.shootCommand(
+            ShootTarget.HUB, shooter, drivetrain, () -> new Translation2d())
+        .alongWith(
+            Commands.waitUntil(
+                    new Trigger(drivetrain::atRotationSetpoint).and(shooter::flywheelSpunUp))
+                .andThen(indexer.indexCommand()))
+        .withTimeout(5);
   }
 
   public void updateSimulation() {

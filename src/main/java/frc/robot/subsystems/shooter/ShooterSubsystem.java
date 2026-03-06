@@ -4,21 +4,26 @@
 
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.SysIdCommand;
 import frc.robot.constants.ShooterConstants;
+import frc.robot.util.Container;
 import frc.robot.util.FuelTrajectoryCalculator;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -33,6 +38,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
   private AngularVelocity flywheelSetpoint = RadiansPerSecond.of(0);
 
+  private boolean recoverIfSlow = false;
+
   /** Creates a new ShooterSubsystem. */
   public ShooterSubsystem(FlywheelIO shooterIO, HoodIO hoodIO) {
     this.flywheelIO = shooterIO;
@@ -46,6 +53,12 @@ public class ShooterSubsystem extends SubsystemBase {
 
     hoodIO.updateInputs(hoodInputs);
     Logger.processInputs("Shooter/Hood", hoodInputs);
+
+    if (flywheelSpunUp()) recoverIfSlow = true;
+    flywheelIO.enableRecoverControl(
+        recoverIfSlow
+            && !flywheelInputs.velocity.isNear(
+                flywheelSetpoint, ShooterConstants.flywheelRecoverControlTolerance));
   }
 
   /* Clamps the given angle to the allowed range, sets the hood to the clamped angle, and returns the clamped angle. */
@@ -66,6 +79,8 @@ public class ShooterSubsystem extends SubsystemBase {
   public void runFlywheelWithHood(AngularVelocity velocity, Angle targetHoodAngle) {
     setHoodAngle(targetHoodAngle);
 
+    if (!velocity.isNear(flywheelSetpoint, RPM.of(1))) recoverIfSlow = false;
+
     flywheelIO.setAngularVelocity(velocity);
     flywheelSetpoint = velocity;
   }
@@ -73,6 +88,7 @@ public class ShooterSubsystem extends SubsystemBase {
   public void coastFlywheel() {
     flywheelIO.coast();
     flywheelSetpoint = RadiansPerSecond.of(0);
+    recoverIfSlow = false;
   }
 
   public void reset() {
@@ -93,8 +109,8 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public boolean flywheelSpunUp() {
-    return flywheelInputs.velocity.isNear(
-        flywheelSetpoint, ShooterConstants.flywheelVelocityTolerance);
+    return flywheelInputs.velocity.isNear(flywheelSetpoint, ShooterConstants.flywheelIndexTolerance)
+        && !flywheelSetpoint.isEquivalent(RPM.of(0));
   }
 
   @AutoLogOutput(key = "Shooter/Flywheel/FlywheelVelocity")
@@ -148,7 +164,7 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   //
-  // SysId
+  // Characterization
   //
   public Command flywheelSysIdCommand(Trigger advanceRoutine) {
     return SysIdCommand.sysIdCommand(
@@ -159,5 +175,33 @@ public class ShooterSubsystem extends SubsystemBase {
         () -> flywheelInputs.velocity,
         () -> flywheelInputs.appliedVoltage,
         this);
+  }
+
+  public Command torqueCurrentKsCharacterization(Current initialGuess) {
+    Container<Current> upperBound = new Container<Current>(initialGuess.times(2));
+    Container<Current> lowerBound = new Container<Current>(Amps.of(0));
+
+    return Commands.sequence(
+            run(() -> coastFlywheel()).withTimeout(3),
+            run(() ->
+                    flywheelIO.runOpenLoop(upperBound.inner.plus(lowerBound.inner).div(2).in(Amps)))
+                .withTimeout(4),
+            runOnce(
+                () -> {
+                  boolean isRunning = !flywheelInputs.velocity.isNear(RPM.of(0), RPM.of(0.5));
+
+                  if (isRunning) {
+                    upperBound.inner = upperBound.inner.plus(lowerBound.inner).div(2);
+                  } else {
+                    lowerBound.inner = upperBound.inner.plus(lowerBound.inner).div(2);
+                  }
+                }))
+        .repeatedly()
+        .until(() -> upperBound.inner.minus(lowerBound.inner).lt(Amps.of(0.05)))
+        .finallyDo(
+            () -> {
+              System.out.println(upperBound.inner.plus(lowerBound.inner).div(2).toLongString());
+              coastFlywheel();
+            });
   }
 }

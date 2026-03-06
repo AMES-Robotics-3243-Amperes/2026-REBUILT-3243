@@ -51,6 +51,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -551,30 +552,34 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public Command driveCommand(
       Supplier<Translation2d> linearStrategy, Supplier<AngularVelocity> angularStrategy) {
-    return run(
-        () -> {
-          Translation2d linearSpeeds = linearStrategy.get();
-          AngularVelocity angularSpeed = angularStrategy.get();
+    return Commands.sequence(
+        runOnce(() -> setpointGeneratorUpToDate = false),
+        run(
+            () -> {
+              Translation2d linearSpeeds = linearStrategy.get();
+              AngularVelocity angularSpeed = angularStrategy.get();
 
-          ChassisSpeeds speeds =
-              new ChassisSpeeds(
-                  linearSpeeds.getX(), linearSpeeds.getY(), angularSpeed.in(RadiansPerSecond));
-          drive(speeds);
-        });
+              ChassisSpeeds speeds =
+                  new ChassisSpeeds(
+                      linearSpeeds.getX(), linearSpeeds.getY(), angularSpeed.in(RadiansPerSecond));
+              drive(speeds);
+            }));
   }
 
   public Command driveSetpiontGeneratorCommand(
       Supplier<Translation2d> linearStrategy, Supplier<AngularVelocity> angularStrategy) {
-    return run(
-        () -> {
-          Translation2d linearSpeeds = linearStrategy.get();
-          AngularVelocity angularSpeed = angularStrategy.get();
+    return Commands.sequence(
+        runOnce(() -> setpointGeneratorUpToDate = false),
+        run(
+            () -> {
+              Translation2d linearSpeeds = linearStrategy.get();
+              AngularVelocity angularSpeed = angularStrategy.get();
 
-          ChassisSpeeds speeds =
-              new ChassisSpeeds(
-                  linearSpeeds.getX(), linearSpeeds.getY(), angularSpeed.in(RadiansPerSecond));
-          driveSetpointGenerator(speeds);
-        });
+              ChassisSpeeds speeds =
+                  new ChassisSpeeds(
+                      linearSpeeds.getX(), linearSpeeds.getY(), angularSpeed.in(RadiansPerSecond));
+              driveSetpointGenerator(speeds);
+            }));
   }
 
   public Supplier<Translation2d> joystickDriveLinear(

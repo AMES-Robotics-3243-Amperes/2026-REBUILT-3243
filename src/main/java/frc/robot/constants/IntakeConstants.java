@@ -29,7 +29,7 @@ public class IntakeConstants {
 
   public static final double pivotReduction = (54.0 / 18.0) * (34.0 / 16.0) * (16.0 / 1.0);
 
-  public static final int pivotCurrentLimit = 30;
+  public static final int pivotCurrentLimit = 40;
 
   public static final Angle pivotMinRotation = Degrees.of(-1.3476);
   public static final Angle pivotMaxRotation = Degrees.of(130 - 1.3476);

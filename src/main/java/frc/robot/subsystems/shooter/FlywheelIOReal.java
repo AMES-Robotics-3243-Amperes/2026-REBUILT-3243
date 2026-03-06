@@ -8,6 +8,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.CoastOut;
 import com.ctre.phoenix6.controls.Follower;
@@ -26,6 +27,7 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.constants.ShooterConstants;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
 /** Add your docs here. */
 public class FlywheelIOReal implements FlywheelIO {
@@ -46,6 +48,8 @@ public class FlywheelIOReal implements FlywheelIO {
   private final VelocityTorqueCurrentFOC velocityTorqueCurrentRequest =
       new VelocityTorqueCurrentFOC(0);
 
+  private boolean isRecoverEnabled = false;
+
   private static void tryUntilOk(int maxAttempts, Supplier<StatusCode> command) {
     for (int i = 0; i < maxAttempts; i++) {
       StatusCode error = command.get();
@@ -62,6 +66,8 @@ public class FlywheelIOReal implements FlywheelIO {
         .withSupplyCurrentLimitEnable(true);
     config
         .withSlot0(Slot0Configs.from(ShooterConstants.flywheelControl.talonFXConfigs().getFirst()))
+        .withSlot1(
+            Slot1Configs.from(ShooterConstants.flywheelRecoverControl.talonFXConfigs().getFirst()))
         .withMotionMagic(ShooterConstants.flywheelControl.talonFXConfigs().getSecond());
 
     config.Feedback.SensorToMechanismRatio = ShooterConstants.flywheelGearReduction;
@@ -82,6 +88,15 @@ public class FlywheelIOReal implements FlywheelIO {
       torque.setUpdateFrequency(50.0);
     BaseStatusSignal.setUpdateFrequencyForAll(50.0, position, velocity, voltage);
     ParentDevice.optimizeBusUtilizationForAll(leader, follower);
+  }
+
+  private int controlSlot() {
+    return isRecoverEnabled ? 1 : 0;
+  }
+
+  @Override
+  public void enableRecoverControl(boolean enable) {
+    isRecoverEnabled = enable;
   }
 
   @Override
@@ -108,8 +123,13 @@ public class FlywheelIOReal implements FlywheelIO {
   public void setAngularVelocity(AngularVelocity velocity) {
     leader.setControl(
         switch (ShooterConstants.flywheelClosedLoopOutput) {
-          case Voltage -> velocityVoltateRequest.withVelocity(velocity).withEnableFOC(true);
-          case TorqueCurrentFOC -> velocityTorqueCurrentRequest.withVelocity(velocity);
+          case Voltage ->
+              velocityVoltateRequest
+                  .withVelocity(velocity)
+                  .withEnableFOC(true)
+                  .withSlot(controlSlot());
+          case TorqueCurrentFOC ->
+              velocityTorqueCurrentRequest.withVelocity(velocity).withSlot(controlSlot());
         });
   }
 

@@ -29,9 +29,9 @@ import frc.robot.constants.ShooterConstants;
 import java.util.function.Supplier;
 
 /** Add your docs here. */
-public class FlywheelIOReal implements FlywheelIO {
-  private final TalonFX leader = new TalonFX(ShooterConstants.flywheelLeaderId);
-  private final TalonFX follower = new TalonFX(ShooterConstants.flywheelFollowerId);
+public class FlywheelIOJoinedShaftReal implements FlywheelIO {
+  private final TalonFX leader = new TalonFX(ShooterConstants.flywheelLeftId);
+  private final TalonFX follower = new TalonFX(ShooterConstants.flywheelRightId);
 
   private final StatusSignal<Angle> position;
   private final StatusSignal<AngularVelocity> velocity;
@@ -56,7 +56,7 @@ public class FlywheelIOReal implements FlywheelIO {
     }
   }
 
-  public FlywheelIOReal() {
+  public FlywheelIOJoinedShaftReal() {
     TalonFXConfiguration config = new TalonFXConfiguration();
 
     config.MotorOutput.withInverted(ShooterConstants.shooterFlywheelInverted)
@@ -74,10 +74,9 @@ public class FlywheelIOReal implements FlywheelIO {
     config.Feedback.SensorToMechanismRatio = ShooterConstants.flywheelGearReduction;
 
     tryUntilOk(5, () -> leader.getConfigurator().apply(config, 0.25));
-    tryUntilOk(5, () -> leader.getConfigurator().apply(config, 0.25));
+    tryUntilOk(5, () -> follower.getConfigurator().apply(config, 0.25));
 
-    follower.setControl(
-        new Follower(ShooterConstants.flywheelLeaderId, MotorAlignmentValue.Opposed));
+    follower.setControl(new Follower(ShooterConstants.flywheelLeftId, MotorAlignmentValue.Opposed));
 
     position = leader.getPosition();
     velocity = leader.getVelocity();

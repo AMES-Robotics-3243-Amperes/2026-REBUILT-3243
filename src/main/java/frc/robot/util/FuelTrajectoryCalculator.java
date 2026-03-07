@@ -44,7 +44,8 @@ public class FuelTrajectoryCalculator {
 
   private static FuelShot calculateFuelTrajectory(Translation3d goal, Translation3d shooterStart) {
     double horizontalDistanceToSetpoint =
-        shooterStart.toTranslation2d().getDistance(goal.toTranslation2d()) + 0.15; // TODO: constants
+        shooterStart.toTranslation2d().getDistance(goal.toTranslation2d())
+            + 0.15; // TODO: constants
     double verticalDistanceToSetpoint = goal.getZ() - shooterStart.getZ();
 
     // we're going to construct polynomial from three points. the first point is the shooter,

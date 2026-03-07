@@ -14,7 +14,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.SysIdCommand;
+import frc.robot.commands.GeneralPurposeCharacterization;
 import frc.robot.constants.IndexerConstants;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 import java.util.function.Supplier;
@@ -79,13 +79,13 @@ public class IndexerSubsystem extends SubsystemBase {
 
   public Command indexCommand(ShooterSubsystem shooter) {
     return runAtSpeedCommand(
-        () -> getKickerVelocityFromLinearVelocity(shooter.getFuelVelocity()),
+        () -> getKickerVelocityFromLinearVelocity(shooter.getSetpointFuelVelocity()),
         IndexerConstants.spindexerIndexingSpeed);
   }
 
   public Command spinUpForShootCommand(ShooterSubsystem shooter) {
     return spinUpKickerCommand(
-        () -> getKickerVelocityFromLinearVelocity(shooter.getFuelVelocity()));
+        () -> getKickerVelocityFromLinearVelocity(shooter.getSetpointFuelVelocity()));
   }
 
   public Command spinUpKickerCommand(Supplier<AngularVelocity> velocity) {
@@ -130,7 +130,7 @@ public class IndexerSubsystem extends SubsystemBase {
   }
 
   public Command kickerSysIdCommand(Trigger advanceRoutine) {
-    return SysIdCommand.sysIdCommand(
+    return GeneralPurposeCharacterization.sysIdCommand(
         advanceRoutine,
         "Indexer/SysId/Kicker",
         voltage -> kickerIO.runOpenLoop(voltage.in(Volts)),
@@ -141,7 +141,7 @@ public class IndexerSubsystem extends SubsystemBase {
   }
 
   public Command spindexerSysIdCommand(Trigger advanceRoutine) {
-    return SysIdCommand.sysIdCommand(
+    return GeneralPurposeCharacterization.sysIdCommand(
         advanceRoutine,
         "Indexer/SysId/Spindexer",
         voltage -> spindexerIO.runOpenLoop(voltage.in(Volts)),

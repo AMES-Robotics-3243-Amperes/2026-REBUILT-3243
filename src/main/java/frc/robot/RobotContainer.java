@@ -10,6 +10,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -55,7 +56,7 @@ import frc.robot.subsystems.intake.RollerIO;
 import frc.robot.subsystems.intake.RollerIOReal;
 import frc.robot.subsystems.intake.RollerIOSim;
 import frc.robot.subsystems.shooter.FlywheelIO;
-import frc.robot.subsystems.shooter.FlywheelIOReal;
+import frc.robot.subsystems.shooter.FlywheelIOSeparateReal;
 import frc.robot.subsystems.shooter.FlywheelIOSim;
 import frc.robot.subsystems.shooter.HoodIO;
 import frc.robot.subsystems.shooter.HoodIOReal;
@@ -132,7 +133,13 @@ public class RobotContainer {
         //         new ModuleIO() {},
         //         new ModuleIO() {});
         intake = new IntakeSubsystem(new RollerIOReal(), new PivotIOReal());
-        shooter = new ShooterSubsystem(new FlywheelIOReal() {}, new HoodIOReal());
+        shooter =
+            new ShooterSubsystem(
+                new FlywheelIOSeparateReal(
+                    ShooterConstants.flywheelLeftId, InvertedValue.Clockwise_Positive),
+                new FlywheelIOSeparateReal(
+                    ShooterConstants.flywheelRightId, InvertedValue.CounterClockwise_Positive),
+                new HoodIOReal());
         indexer = new IndexerSubsystem(new KickerIOReal(), new SpindexerIOReal());
 
         new VisionSubsystem(
@@ -188,7 +195,7 @@ public class RobotContainer {
                 new RollerIOSim(intakeSimulation, driveSimulation),
                 new PivotIOSim(intakeSimulation));
         indexer = new IndexerSubsystem(new KickerIOSim(), new SpindexerIOSim());
-        shooter = new ShooterSubsystem(new FlywheelIOSim(), new HoodIOSim());
+        shooter = new ShooterSubsystem(new FlywheelIOSim(), new FlywheelIOSim(), new HoodIOSim());
 
         new VisionSubsystem(
             drivetrain::addVisionMeasurement,
@@ -227,7 +234,7 @@ public class RobotContainer {
                                               .getRotation()
                                               .toRotation2d()),
                                   ShooterConstants.robotToShooter.getMeasureZ(),
-                                  shooter.getFuelVelocity(),
+                                  shooter.getSetpointFuelVelocity(),
                                   Degrees.of(90).minus(shooter.getHoodAngle()));
 
                           SimulatedArena.getInstance().addGamePieceProjectile(fuel);
@@ -250,7 +257,7 @@ public class RobotContainer {
                 new ModuleIO() {});
         intake = new IntakeSubsystem(new RollerIO() {}, new PivotIO() {});
         indexer = new IndexerSubsystem(new KickerIO() {}, new SpindexerIO() {});
-        shooter = new ShooterSubsystem(new FlywheelIO() {}, new HoodIO() {});
+        shooter = new ShooterSubsystem(new FlywheelIO() {}, new FlywheelIO() {}, new HoodIO() {});
 
         new VisionSubsystem(
             drivetrain::addVisionMeasurement,

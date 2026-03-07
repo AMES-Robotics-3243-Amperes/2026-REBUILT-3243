@@ -56,7 +56,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.commands.SysIdCommand;
+import frc.robot.commands.GeneralPurposeCharacterization;
 import frc.robot.constants.choreo.ChoreoVars;
 import frc.robot.constants.swerve.ModuleConstants;
 import frc.robot.constants.swerve.SwerveConstants;
@@ -495,7 +495,7 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public Command sysIdCommand(SwerveSysIdRoutine routine, Trigger advanceRoutine) {
-    return SysIdCommand.sysIdCommand(
+    return GeneralPurposeCharacterization.sysIdCommand(
         sysIdRoutine(routine), advanceRoutine, () -> runCharacterization(routine, 0), this);
   }
 

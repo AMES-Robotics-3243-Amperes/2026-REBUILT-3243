@@ -28,11 +28,11 @@ public class ShooterConstants {
   public static final Translation2d bottomBlueNeutralZoneShot =
       new Translation2d(FieldConstants.fieldLength.div(2), FieldConstants.trenchWidth);
 
-  public static final AngularVelocity flywheelIndexTolerance = RPM.of(20);
+  public static final AngularVelocity flywheelIndexTolerance = RPM.of(25);
 
   // flywheel
-  public static final int flywheelLeaderId = 10;
-  public static final int flywheelFollowerId = 11;
+  public static final int flywheelLeftId = 10;
+  public static final int flywheelRightId = 11;
   public static final InvertedValue shooterFlywheelInverted = InvertedValue.Clockwise_Positive;
 
   public static final Distance flywheelRadius = Inches.of(2);
@@ -49,9 +49,9 @@ public class ShooterConstants {
       ClosedLoopOutputType.TorqueCurrentFOC;
 
   public static final ControlConstantsBuilder flywheelControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(1.55, 0, 0).sva(9.8291, 0, 0);
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.6, 0, 0).sva(2.025, 0, 0);
   public static final ControlConstantsBuilder flywheelRecoverControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(2.1, 0, 0).sva(9.8291, 0, 0);
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.1, 0, 0).sva(2.025, 0, 0);
 
   // hood
   public static final int hoodId = 5;

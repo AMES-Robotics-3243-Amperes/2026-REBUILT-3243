@@ -21,17 +21,19 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.SysIdCommand;
+import frc.robot.commands.GeneralPurposeCharacterization;
 import frc.robot.constants.ShooterConstants;
-import frc.robot.util.Container;
 import frc.robot.util.FuelTrajectoryCalculator;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class ShooterSubsystem extends SubsystemBase {
-  private final FlywheelIO flywheelIO;
-  private final FlywheelIOInputsAutoLogged flywheelInputs = new FlywheelIOInputsAutoLogged();
+  private final FlywheelIO flywheelIOLeft;
+  private final FlywheelIOInputsAutoLogged flywheelLeftInputs = new FlywheelIOInputsAutoLogged();
+
+  private final FlywheelIO flywheelIORight;
+  private final FlywheelIOInputsAutoLogged flywheelRightInputs = new FlywheelIOInputsAutoLogged();
 
   private final HoodIO hoodIO;
   private final HoodIOInputsAutoLogged hoodInputs = new HoodIOInputsAutoLogged();
@@ -41,23 +43,32 @@ public class ShooterSubsystem extends SubsystemBase {
   private boolean recoverIfSlow = false;
 
   /** Creates a new ShooterSubsystem. */
-  public ShooterSubsystem(FlywheelIO shooterIO, HoodIO hoodIO) {
-    this.flywheelIO = shooterIO;
+  public ShooterSubsystem(FlywheelIO flywheelIOLeft, FlywheelIO flywheelIORight, HoodIO hoodIO) {
+    this.flywheelIOLeft = flywheelIOLeft;
+    this.flywheelIORight = flywheelIORight;
     this.hoodIO = hoodIO;
   }
 
   @Override
   public void periodic() {
-    flywheelIO.updateInputs(flywheelInputs);
-    Logger.processInputs("Shooter/Flywheel", flywheelInputs);
+    flywheelIOLeft.updateInputs(flywheelLeftInputs);
+    Logger.processInputs("Shooter/Flywheel/Left", flywheelLeftInputs);
+
+    flywheelIORight.updateInputs(flywheelRightInputs);
+    Logger.processInputs("Shooter/Flywheel/Left", flywheelRightInputs);
 
     hoodIO.updateInputs(hoodInputs);
     Logger.processInputs("Shooter/Hood", hoodInputs);
 
     if (flywheelSpunUp()) recoverIfSlow = true;
-    flywheelIO.enableRecoverControl(
+
+    flywheelIOLeft.enableRecoverControl(
         recoverIfSlow
-            && !flywheelInputs.velocity.isNear(
+            && !flywheelLeftInputs.velocity.isNear(
+                flywheelSetpoint, ShooterConstants.flywheelRecoverControlTolerance));
+    flywheelIORight.enableRecoverControl(
+        recoverIfSlow
+            && !flywheelRightInputs.velocity.isNear(
                 flywheelSetpoint, ShooterConstants.flywheelRecoverControlTolerance));
   }
 
@@ -81,12 +92,14 @@ public class ShooterSubsystem extends SubsystemBase {
 
     if (!velocity.isNear(flywheelSetpoint, RPM.of(1))) recoverIfSlow = false;
 
-    flywheelIO.setAngularVelocity(velocity);
+    flywheelIOLeft.setAngularVelocity(velocity);
+    flywheelIORight.setAngularVelocity(velocity);
     flywheelSetpoint = velocity;
   }
 
   public void coastFlywheel() {
-    flywheelIO.coast();
+    flywheelIOLeft.coast();
+    flywheelIORight.coast();
     flywheelSetpoint = RadiansPerSecond.of(0);
     recoverIfSlow = false;
   }
@@ -109,19 +122,22 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public boolean flywheelSpunUp() {
-    return flywheelInputs.velocity.isNear(flywheelSetpoint, ShooterConstants.flywheelIndexTolerance)
+    return flywheelLeftInputs.velocity.isNear(
+            flywheelSetpoint, ShooterConstants.flywheelIndexTolerance)
+        && flywheelRightInputs.velocity.isNear(
+            flywheelSetpoint, ShooterConstants.flywheelIndexTolerance)
         && !flywheelSetpoint.isEquivalent(RPM.of(0));
   }
 
   @AutoLogOutput(key = "Shooter/Flywheel/FlywheelVelocity")
-  public AngularVelocity getFlywheelVelocity() {
-    return flywheelInputs.velocity;
+  public AngularVelocity getSetpointFlywheelVelocity() {
+    return flywheelSetpoint;
   }
 
   @AutoLogOutput(key = "Shooter/Flywheel/FuelVelocity")
-  public LinearVelocity getFuelVelocity() {
+  public LinearVelocity getSetpointFuelVelocity() {
     return MetersPerSecond.of(
-        flywheelInputs.velocity.in(RadiansPerSecond)
+        flywheelSetpoint.in(RadiansPerSecond)
             * ShooterConstants.flywheelRadius.in(Meters)
             * ShooterConstants.fuelToFlywheelLinearSpeedRatio);
   }
@@ -167,41 +183,34 @@ public class ShooterSubsystem extends SubsystemBase {
   // Characterization
   //
   public Command flywheelSysIdCommand(Trigger advanceRoutine) {
-    return SysIdCommand.sysIdCommand(
+    return GeneralPurposeCharacterization.sysIdCommand(
         advanceRoutine,
         "Shooter/SysId/Flywheel",
-        voltage -> flywheelIO.runOpenLoop(voltage.in(Volts)),
-        () -> flywheelInputs.position,
-        () -> flywheelInputs.velocity,
-        () -> flywheelInputs.appliedVoltage,
+        voltage -> {
+          flywheelIOLeft.runOpenLoop(voltage.in(Volts));
+          flywheelIORight.runOpenLoop(voltage.in(Volts));
+        },
+        () -> flywheelLeftInputs.position.plus(flywheelRightInputs.position).div(2),
+        () -> flywheelLeftInputs.velocity.plus(flywheelRightInputs.velocity).div(2),
+        () -> flywheelLeftInputs.appliedVoltage.plus(flywheelRightInputs.appliedVoltage).div(2),
         this);
   }
 
   public Command torqueCurrentKsCharacterization(Current initialGuess) {
-    Container<Current> upperBound = new Container<Current>(initialGuess.times(2));
-    Container<Current> lowerBound = new Container<Current>(Amps.of(0));
-
     return Commands.sequence(
-            run(() -> coastFlywheel()).withTimeout(3),
-            run(() ->
-                    flywheelIO.runOpenLoop(upperBound.inner.plus(lowerBound.inner).div(2).in(Amps)))
-                .withTimeout(4),
-            runOnce(
-                () -> {
-                  boolean isRunning = !flywheelInputs.velocity.isNear(RPM.of(0), RPM.of(0.5));
-
-                  if (isRunning) {
-                    upperBound.inner = upperBound.inner.plus(lowerBound.inner).div(2);
-                  } else {
-                    lowerBound.inner = upperBound.inner.plus(lowerBound.inner).div(2);
-                  }
-                }))
-        .repeatedly()
-        .until(() -> upperBound.inner.minus(lowerBound.inner).lt(Amps.of(0.05)))
-        .finallyDo(
-            () -> {
-              System.out.println(upperBound.inner.plus(lowerBound.inner).div(2).toLongString());
-              coastFlywheel();
-            });
+        GeneralPurposeCharacterization.torqueCurrentKsCharacterization(
+            initialGuess,
+            () -> flywheelLeftInputs.velocity,
+            current -> flywheelIOLeft.runOpenLoop(current.in(Amps)),
+            this::coastFlywheel,
+            "left flywheel",
+            this),
+        GeneralPurposeCharacterization.torqueCurrentKsCharacterization(
+            initialGuess,
+            () -> flywheelRightInputs.velocity,
+            current -> flywheelIORight.runOpenLoop(current.in(Amps)),
+            this::coastFlywheel,
+            "right flywheel",
+            this));
   }
 }

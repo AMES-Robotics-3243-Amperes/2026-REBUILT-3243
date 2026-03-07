@@ -16,7 +16,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.SysIdCommand;
+import frc.robot.commands.GeneralPurposeCharacterization;
 import frc.robot.constants.IntakeConstants;
 import org.littletonrobotics.junction.Logger;
 
@@ -116,7 +116,7 @@ public class IntakeSubsystem extends SubsystemBase {
   // SysId
   //
   public Command rollerSysIdCommand(Trigger advanceRoutine) {
-    return SysIdCommand.sysIdCommand(
+    return GeneralPurposeCharacterization.sysIdCommand(
         advanceRoutine,
         "Intake/SysId/Roller",
         voltage -> rollerIO.runOpenLoop(voltage.in(Volts)),
@@ -127,7 +127,7 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public Command pivotSysIdCommand(Trigger advanceRoutine) {
-    return SysIdCommand.sysIdCommand(
+    return GeneralPurposeCharacterization.sysIdCommand(
         advanceRoutine,
         "Intake/SysId/Pivot",
         Volts.of(0.4).per(Second),

@@ -30,12 +30,12 @@ public class IndexerConstants {
   public static final int kickerId = 4;
   public static final double kickerReduction = 2.0;
 
-  public static final AngularVelocity maxKickerSpeed = RPM.of(3000);
+  public static final AngularVelocity maxKickerSpeed = RPM.of(6000).div(kickerReduction);
   public static final AngularVelocity kickerSpinUpTolerance = RPM.of(80);
 
   public static final int kickerCurrentLimit = 90;
 
-  public static final Distance kickerWheelRadius = Inches.of(1.25);
+  public static final Distance kickerWheelRadius = Inches.of(1.125);
 
   public static final ControlConstantsBuilder kickerControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()

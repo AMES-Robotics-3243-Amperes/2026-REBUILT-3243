@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.swerve.SwerveConstants;
+import frc.robot.subsystems.drivetrain.SwerveSubsystem;
 import frc.robot.util.PointOfInterestManager;
 import frc.robot.util.PointOfInterestManager.FlipType;
 import frc.robot.util.RobotLocationManager.RobotLocation;
@@ -27,7 +28,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
 
-public class DriveUnderTrenchCommand {
+public class TraversalCommands {
   // private Command buildConfidenceGatedAuto(
   //       String autoName, Pose2d stagingPose, double requiredConfidence) {
 
@@ -168,5 +169,44 @@ public class DriveUnderTrenchCommand {
     }
 
     return Pair.of(closestTrench, closestDistance);
+  }
+
+  private static final Rotation2d[] BUMP_ANGLES = {
+    Rotation2d.fromDegrees(45),
+    Rotation2d.fromDegrees(135),
+    Rotation2d.fromDegrees(225),
+    Rotation2d.fromDegrees(315)
+  };
+
+  private static Rotation2d findClosestBumpAngle(Rotation2d currentHeading) {
+
+    Rotation2d bestAngle = BUMP_ANGLES[0];
+    double bestError = Math.abs(currentHeading.minus(bestAngle).getRadians());
+
+    for (int i = 1; i < BUMP_ANGLES.length; i++) {
+
+      Rotation2d candidate = BUMP_ANGLES[i];
+      double error = Math.abs(currentHeading.minus(candidate).getRadians());
+
+      if (error < bestError) {
+        bestError = error;
+        bestAngle = candidate;
+      }
+    }
+
+    return bestAngle;
+  }
+
+  public static Command bumpTraversal(
+      SwerveSubsystem drivetrain, Supplier<Translation2d> linearStrategy) {
+
+    return Commands.deferredProxy(
+        () -> {
+          Rotation2d currentHeading = drivetrain.getRotation();
+
+          Rotation2d bestAngle = findClosestBumpAngle(currentHeading);
+
+          return drivetrain.driveCommand(linearStrategy, drivetrain.rotateAtAngle(() -> bestAngle));
+        });
   }
 }

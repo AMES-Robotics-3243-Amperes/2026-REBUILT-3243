@@ -49,13 +49,13 @@ public class VisionConstants {
   // Basic filtering thresholds
   public static final Time maxTimestampError = Milliseconds.of(2);
   public static final AngularVelocity maxAngularVelocity = RotationsPerSecond.of(1);
-  public static final double maxAmbiguity = 20;
-  public static final double maxZError = 0.15;
+  public static final double maxAmbiguity = 0.4;
+  public static final double maxZError = 0.08;
 
   public static final Vector<N3> calculateStdDev(
       PoseObservation observation, CameraConfiguration config) {
-    double minCameraPosStdDev = 0.3;
-    double minCameraRotStdDev = 1;
+    double minCameraPosStdDev = 0.5;
+    double minCameraRotStdDev = 1.5;
     if (observation.cameraReportedStdDevs().present()) {
       return VecBuilder.fill(
           Double.max(minCameraPosStdDev, observation.cameraReportedStdDevs().x())

@@ -16,6 +16,7 @@ public final class ChoreoVars {
   public static final Distance F_LenY = Units.Meters.of(8.069);
   public static final Distance F_NeutralLenX = Units.Meters.of(6.083);
   public static final Distance F_NeutralX = Units.Meters.of(5.229);
+  public static final LinearAcceleration M_GlobalMaxAccel = Units.MetersPerSecondPerSecond.of(1.5);
   public static final Distance R_BumperLength = Units.Meters.of(0.883);
   public static final Distance R_BumperTolerance = Units.Meters.of(0.102);
   public static final Distance R_DeployedHopperX = Units.Meters.of(0.635);
@@ -25,14 +26,21 @@ public final class ChoreoVars {
   public static final MomentOfInertia R_RobotMOI = Units.KilogramSquareMeters.of(7);
   public static final Mass R_RobotMass = Units.Kilograms.of(52.163);
   public static final Distance R_TrackLength = Units.Meters.of(0.546);
-  public static final double R_WheelCOF = 1;
+  public static final double R_WheelCOF = 1.5;
   public static final Distance R_WheelRadius = Units.Meters.of(0.05);
+  public static final Distance S_RushOutRadius = Units.Meters.of(1);
 
   public static final class Poses {
-    public static final Pose2d LeftKeepOut = new Pose2d(4.625, -5.916, Rotation2d.kZero);
-    public static final Pose2d LeftShoot = new Pose2d(2.5, 5.5, Rotation2d.fromRadians(-0.6));
-    public static final Pose2d RightKeepOut = new Pose2d(4.625, 13.985, Rotation2d.kZero);
-    public static final Pose2d RightShoot = new Pose2d(2.5, 2.4, Rotation2d.fromRadians(0.6));
+    public static final Pose2d KeepOutBottom = new Pose2d(4.625, 13.985, Rotation2d.kZero);
+    public static final Pose2d CollectTop = new Pose2d(7.8, 5, Rotation2d.fromRadians(-1.7));
+    public static final Pose2d KeepOutTop = new Pose2d(4.625, -5.916, Rotation2d.kZero);
+    public static final Pose2d ShootTop = new Pose2d(2.3, 5, Rotation2d.fromRadians(-0.41));
+    public static final Pose2d CollectBottom = new Pose2d(7.8, 3.069, Rotation2d.fromRadians(1.7));
+    public static final Pose2d ShootBottom = new Pose2d(2.3, 3.069, Rotation2d.fromRadians(0.41));
+    public static final Pose2d TrenchStartBottom = new Pose2d(3, 0.569, Rotation2d.kZero);
+    public static final Pose2d RushCircleTop = new Pose2d(5.8, 5.6, Rotation2d.kZero);
+    public static final Pose2d TrenchStartTop = new Pose2d(3, 7.5, Rotation2d.kZero);
+    public static final Pose2d RushCircleBottom = new Pose2d(5.8, 2.469, Rotation2d.kZero);
 
     private Poses() {}
   }

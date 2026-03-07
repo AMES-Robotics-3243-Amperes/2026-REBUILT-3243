@@ -17,20 +17,21 @@ public class IndexerConstants {
   public static final int spindexerId = 1;
   public static final double spindexerReduction = 4.0;
 
-  public static final AngularVelocity spindexerIndexingSpeed = RPM.of(1200);
+  public static final AngularVelocity spindexerIndexingSpeed = RPM.of(800);
 
-  public static final int spindexerCurrentLimit = 80;
+  public static final int spindexerCurrentLimit = 90;
 
   public static final ControlConstantsBuilder spindexerControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(0, 0, 0)
-          .sva(0.18119, 0.025646, 0.0026016);
+          .pid(0.016377, 0, 0)
+          .sva(0.21938, 0.068485, 0.0065446);
 
   // kicker
   public static final int kickerId = 4;
   public static final double kickerReduction = 2.0;
 
-  public static final AngularVelocity kickerShootingSpeed = RPM.of(2200);
+  public static final AngularVelocity maxKickerSpeed = RPM.of(3000);
+  public static final AngularVelocity kickerSpinUpTolerance = RPM.of(80);
 
   public static final int kickerCurrentLimit = 90;
 
@@ -38,6 +39,6 @@ public class IndexerConstants {
 
   public static final ControlConstantsBuilder kickerControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(0, 0, 0)
-          .sva(0.41898, 0.035302, 0.0025373);
+          .pid(0.01, 0, 0)
+          .sva(0.39863, 0.035224, 0.0017345);
 }

@@ -11,6 +11,7 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -22,8 +23,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.ShootCommand;
-import frc.robot.commands.ShootCommand.ShootTarget;
+import frc.robot.commands.ShootCommands;
 import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.ModeConstants;
 import frc.robot.constants.ShooterConstants;
@@ -67,6 +67,7 @@ import frc.robot.subsystems.vision.VisionIOLimelightFour;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.vision.VisionSubsystem;
 import frc.robot.util.FuelTrajectoryCalculator;
+import frc.robot.util.FuelTrajectoryCalculator.ShootTarget;
 import frc.robot.util.RobotLocationManager;
 import frc.robot.util.TunableControls;
 import org.ironmaple.simulation.IntakeSimulation;
@@ -264,6 +265,15 @@ public class RobotContainer {
         throw new RuntimeException("Invalid robot mode");
     }
 
+    // TODO: come back to these once pivot is figured out
+    NamedCommands.registerCommand(
+        "Intake", intake.intakeAtSpeedCommand(IntakeConstants.rollerIntakeSpeed));
+    NamedCommands.registerCommand("DeployIntakeCommand", intake.holdIntakeDownCommand());
+    NamedCommands.registerCommand(
+        "Shoot",
+        ShootCommands.shootCommand(ShootTarget.HUB, shooter, drivetrain, () -> new Translation2d())
+            .alongWith(ShootCommands.indexWhenReadyCommand(indexer, drivetrain, shooter)));
+
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     robotLocationManager = new RobotLocationManager(() -> drivetrain.getPose().getTranslation());
 
@@ -317,6 +327,9 @@ public class RobotContainer {
     secondaryController.leftBumper().whileTrue(intake.runPivotOpenLoopCommand(3));
     secondaryController.rightBumper().whileTrue(intake.runPivotOpenLoopCommand(-3));
 
+    primaryController.leftBumper().whileTrue(intake.runPivotOpenLoopCommand(3));
+    primaryController.rightBumper().whileTrue(intake.runPivotOpenLoopCommand(-3));
+
     //
     // Shooting
     //
@@ -324,24 +337,22 @@ public class RobotContainer {
     shootBind
         .and(robotLocationManager.inAllianceZone())
         .whileTrue(
-            ShootCommand.shootCommandTeleopDrive(
+            ShootCommands.shootTeleopDriveCommand(
                 ShootTarget.HUB, shooter, drivetrain, primaryController));
 
     shootBind
         .and(robotLocationManager.innNeutralZone())
         .whileTrue(
-            ShootCommand.shootCommandTeleopDrive(
+            ShootCommands.shootTeleopDriveCommand(
                 ShootTarget.ALLIANCE, shooter, drivetrain, primaryController));
 
     shootBind
         .and(robotLocationManager.inOpponentZone())
         .whileTrue(
-            ShootCommand.shootCommandTeleopDrive(
+            ShootCommands.shootTeleopDriveCommand(
                 ShootTarget.NEUTRAL, shooter, drivetrain, primaryController));
 
-    shootBind.whileTrue(
-        Commands.waitUntil(new Trigger(drivetrain::atRotationSetpoint).and(shooter::flywheelSpunUp))
-            .andThen(indexer.indexCommand()));
+    shootBind.whileTrue(ShootCommands.indexWhenReadyCommand(indexer, drivetrain, shooter));
 
     primaryController.x().onTrue(shooter.torqueCurrentKsCharacterization(Amps.of(15)));
   }
@@ -351,14 +362,7 @@ public class RobotContainer {
   //
 
   public Command getAutonomousCommand() {
-    // return autoChooser.get();
-    return ShootCommand.shootCommand(
-            ShootTarget.HUB, shooter, drivetrain, () -> new Translation2d())
-        .alongWith(
-            Commands.waitUntil(
-                    new Trigger(drivetrain::atRotationSetpoint).and(shooter::flywheelSpunUp))
-                .andThen(indexer.indexCommand()))
-        .withTimeout(5);
+    return autoChooser.get();
   }
 
   public void updateSimulation() {

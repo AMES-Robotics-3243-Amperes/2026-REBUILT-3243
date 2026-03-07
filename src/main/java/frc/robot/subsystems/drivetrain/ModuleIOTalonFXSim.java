@@ -19,7 +19,6 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
-import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
 import frc.robot.constants.swerve.SimConstants;
 import frc.robot.util.PhoenixSimulationUtil;
 import frc.robot.util.PhoenixSimulationUtil.TalonFXMotorControllerSim;
@@ -47,8 +46,6 @@ public class ModuleIOTalonFXSim extends ModuleIOTalonFX {
         .withDriveMotorInverted(false)
         .withSteerMotorInverted(false)
         .withEncoderInverted(false)
-        .withSteerMotorClosedLoopOutput(ClosedLoopOutputType.Voltage)
-        .withDriveMotorClosedLoopOutput(ClosedLoopOutputType.Voltage)
         .withDriveMotorGains(
             Slot0Configs.from(SimConstants.simDriveControl.talonFXConfigs().getFirst()))
         .withSteerMotorGains(

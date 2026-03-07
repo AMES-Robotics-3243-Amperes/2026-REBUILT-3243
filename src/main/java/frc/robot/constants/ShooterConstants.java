@@ -28,7 +28,7 @@ public class ShooterConstants {
   public static final Translation2d bottomBlueNeutralZoneShot =
       new Translation2d(FieldConstants.fieldLength.div(2), FieldConstants.trenchWidth);
 
-  public static final AngularVelocity flywheelIndexTolerance = RPM.of(15);
+  public static final AngularVelocity flywheelIndexTolerance = RPM.of(20);
 
   // flywheel
   public static final int flywheelLeaderId = 10;
@@ -41,17 +41,17 @@ public class ShooterConstants {
   public static final Current flywheelStatorCurrentLimit = Amps.of(120);
   public static final Current flywheelSupplyCurrentLimit = Amps.of(70);
 
-  public static final double fuelToFlywheelLinearSpeedRatio = 0.495;
+  public static final double fuelToFlywheelLinearSpeedRatio = 0.5;
 
-  public static final AngularVelocity flywheelRecoverControlTolerance = RPM.of(10);
+  public static final AngularVelocity flywheelRecoverControlTolerance = RPM.of(30);
 
   public static final ClosedLoopOutputType flywheelClosedLoopOutput =
       ClosedLoopOutputType.TorqueCurrentFOC;
 
   public static final ControlConstantsBuilder flywheelControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.9, 0, 0).sva(9.8291, 0, 0);
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(1.55, 0, 0).sva(9.8291, 0, 0);
   public static final ControlConstantsBuilder flywheelRecoverControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(1.5, 0, 0).sva(9.8291, 0, 0);
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(2.1, 0, 0).sva(9.8291, 0, 0);
 
   // hood
   public static final int hoodId = 5;

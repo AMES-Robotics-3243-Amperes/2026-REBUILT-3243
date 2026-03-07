@@ -30,6 +30,12 @@ import frc.robot.util.PointOfInterestManager.FlipType;
 import java.util.function.Supplier;
 
 public class FuelTrajectoryCalculator {
+  public enum ShootTarget {
+    HUB,
+    ALLIANCE,
+    NEUTRAL
+  }
+
   /* The data behind a fuel shot; i.e. the shooter setpoint values. */
   public record FuelShot(LinearVelocity linearFlywheelSpeed, Angle hoodAngle, Time shotTime) {}
 
@@ -38,7 +44,7 @@ public class FuelTrajectoryCalculator {
 
   private static FuelShot calculateFuelTrajectory(Translation3d goal, Translation3d shooterStart) {
     double horizontalDistanceToSetpoint =
-        shooterStart.toTranslation2d().getDistance(goal.toTranslation2d());
+        shooterStart.toTranslation2d().getDistance(goal.toTranslation2d()) + 0.15; // TODO: constants
     double verticalDistanceToSetpoint = goal.getZ() - shooterStart.getZ();
 
     // we're going to construct polynomial from three points. the first point is the shooter,
@@ -236,5 +242,13 @@ public class FuelTrajectoryCalculator {
     }
 
     return neutralZoneShot;
+  }
+
+  public static FuelShotSetpoints getShot(ShootTarget target) {
+    return switch (target) {
+      case ALLIANCE -> getAllianceShot();
+      case HUB -> getHubShot();
+      case NEUTRAL -> getNeutralShot();
+    };
   }
 }

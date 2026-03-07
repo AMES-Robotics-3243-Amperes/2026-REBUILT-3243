@@ -4,15 +4,20 @@
 
 package frc.robot.subsystems.indexer;
 
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.SysIdCommand;
 import frc.robot.constants.IndexerConstants;
+import frc.robot.subsystems.shooter.ShooterSubsystem;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 public class IndexerSubsystem extends SubsystemBase {
@@ -65,16 +70,57 @@ public class IndexerSubsystem extends SubsystemBase {
     Logger.recordOutput("Indexer/Spindexer/SetpointVelocity", RadiansPerSecond.of(0));
   }
 
-  public Command indexCommand() {
+  private AngularVelocity getKickerVelocityFromLinearVelocity(LinearVelocity velocity) {
+    double targetRadPerSec =
+        velocity.in(MetersPerSecond) / IndexerConstants.kickerWheelRadius.in(Meters);
+    return RadiansPerSecond.of(
+        Math.min(targetRadPerSec, IndexerConstants.maxKickerSpeed.in(RadiansPerSecond)));
+  }
+
+  public Command indexCommand(ShooterSubsystem shooter) {
     return runAtSpeedCommand(
-        IndexerConstants.kickerShootingSpeed, IndexerConstants.spindexerIndexingSpeed);
+        () -> getKickerVelocityFromLinearVelocity(shooter.getFuelVelocity()),
+        IndexerConstants.spindexerIndexingSpeed);
+  }
+
+  public Command spinUpForShootCommand(ShooterSubsystem shooter) {
+    return spinUpKickerCommand(
+        () -> getKickerVelocityFromLinearVelocity(shooter.getFuelVelocity()));
+  }
+
+  public Command spinUpKickerCommand(Supplier<AngularVelocity> velocity) {
+    return runEnd(
+            () -> {
+              setKickerVelocity(velocity.get());
+              coastSpindexer();
+            },
+            () -> {
+              coastKicker();
+              coastSpindexer();
+            })
+        .until(
+            () ->
+                kickerInputs.velocity.isNear(
+                    velocity.get(), IndexerConstants.kickerSpinUpTolerance));
+  }
+
+  public Command runKickerAtSpeedCommand(Supplier<AngularVelocity> kickerVelocity) {
+    return runEnd(
+        () -> {
+          setKickerVelocity(kickerVelocity.get());
+          coastSpindexer();
+        },
+        () -> {
+          coastKicker();
+          coastSpindexer();
+        });
   }
 
   public Command runAtSpeedCommand(
-      AngularVelocity kickerVelocity, AngularVelocity spindexerVelocity) {
+      Supplier<AngularVelocity> kickerVelocity, AngularVelocity spindexerVelocity) {
     return runEnd(
         () -> {
-          setKickerVelocity(kickerVelocity);
+          setKickerVelocity(kickerVelocity.get());
           setSpindexerVelocity(spindexerVelocity);
         },
         () -> {

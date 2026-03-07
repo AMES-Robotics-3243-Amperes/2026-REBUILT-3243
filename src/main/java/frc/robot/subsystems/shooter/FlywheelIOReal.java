@@ -27,7 +27,6 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.constants.ShooterConstants;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.Logger;
 
 /** Add your docs here. */
 public class FlywheelIOReal implements FlywheelIO {
@@ -62,7 +61,9 @@ public class FlywheelIOReal implements FlywheelIO {
 
     config.MotorOutput.withInverted(ShooterConstants.shooterFlywheelInverted)
         .withNeutralMode(NeutralModeValue.Coast);
-    config.CurrentLimits.withSupplyCurrentLimit(ShooterConstants.flywheelSupplyCurrentLimit)
+    config.CurrentLimits.withStatorCurrentLimit(ShooterConstants.flywheelStatorCurrentLimit)
+        .withStatorCurrentLimitEnable(true)
+        .withSupplyCurrentLimit(ShooterConstants.flywheelSupplyCurrentLimit)
         .withSupplyCurrentLimitEnable(true);
     config
         .withSlot0(Slot0Configs.from(ShooterConstants.flywheelControl.talonFXConfigs().getFirst()))

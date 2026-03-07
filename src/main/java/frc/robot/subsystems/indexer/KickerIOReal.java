@@ -5,28 +5,32 @@
 package frc.robot.subsystems.indexer;
 
 import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
-import com.revrobotics.spark.FeedbackSensor;
-import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.constants.IndexerConstants;
 
-/** Add your docs here. */
 public class KickerIOReal implements KickerIO {
   SparkMax sparkMax = new SparkMax(IndexerConstants.kickerId, MotorType.kBrushless);
 
-  SparkClosedLoopController closedLoopController;
+  SimpleMotorFeedforward feedforward = IndexerConstants.kickerControl.simpleFeedforward(Radians);
+  PIDController feedback = IndexerConstants.kickerControl.pidController(Radians);
   RelativeEncoder encoder;
+
+  AngularVelocity target = RadiansPerSecond.of(0);
 
   public KickerIOReal() {
     SparkMaxConfig config = new SparkMaxConfig();
@@ -37,14 +41,8 @@ public class KickerIOReal implements KickerIO {
 
     config.smartCurrentLimit(IndexerConstants.kickerCurrentLimit);
 
-    config
-        .closedLoop
-        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .apply(IndexerConstants.kickerControl.revClosedLoopConfig());
-
     sparkMax.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    closedLoopController = sparkMax.getClosedLoopController();
     encoder = sparkMax.getEncoder();
   }
 
@@ -62,7 +60,11 @@ public class KickerIOReal implements KickerIO {
 
   @Override
   public void setAngularVelocity(AngularVelocity velocity) {
-    closedLoopController.setSetpoint(velocity.in(RPM), ControlType.kVelocity);
+    sparkMax.setVoltage(
+        feedback.calculate(
+                Units.rotationsPerMinuteToRadiansPerSecond(encoder.getVelocity()),
+                velocity.in(RadiansPerSecond))
+            + feedforward.calculate(velocity.in(RadiansPerSecond)));
   }
 
   @Override

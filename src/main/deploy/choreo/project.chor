@@ -46,6 +46,13 @@
      "val":5.229098
     }
    },
+   "M_GlobalMaxAccel":{
+    "dimension":"LinAcc",
+    "var":{
+     "exp":"1.5 m / s ^ 2",
+     "val":1.5
+    }
+   },
    "R_BumperLength":{
     "dimension":"Length",
     "var":{
@@ -112,8 +119,8 @@
    "R_WheelCOF":{
     "dimension":"Number",
     "var":{
-     "exp":"1",
-     "val":1.0
+     "exp":"1.5",
+     "val":1.5
     }
    },
    "R_WheelRadius":{
@@ -122,10 +129,59 @@
      "exp":"1.975 in",
      "val":0.050165
     }
+   },
+   "S_RushOutRadius":{
+    "dimension":"Length",
+    "var":{
+     "exp":"1 m",
+     "val":1.0
+    }
    }
   },
   "poses":{
-   "LeftKeepOut":{
+   "CollectBottom":{
+    "x":{
+     "exp":"CollectTop.x",
+     "val":7.8
+    },
+    "y":{
+     "exp":"F_LenY - CollectTop.y",
+     "val":3.069326
+    },
+    "heading":{
+     "exp":"-CollectTop.heading",
+     "val":1.7
+    }
+   },
+   "CollectTop":{
+    "x":{
+     "exp":"7.8 m",
+     "val":7.8
+    },
+    "y":{
+     "exp":"5 m",
+     "val":5.0
+    },
+    "heading":{
+     "exp":"-1.7 rad",
+     "val":-1.7
+    }
+   },
+   "KeepOutBottom":{
+    "x":{
+     "exp":"KeepOutTop.x",
+     "val":4.625467
+    },
+    "y":{
+     "exp":"F_LenY - KeepOutTop.y",
+     "val":13.984986
+    },
+    "heading":{
+     "exp":"-KeepOutTop.heading",
+     "val":0.0
+    }
+   },
+   "KeepOutTop":{
     "x":{
      "exp":"182.105 in",
      "val":4.625467
@@ -139,46 +195,88 @@
      "val":0.0
     }
    },
-   "LeftShoot":{
+   "RushCircleBottom":{
     "x":{
-     "exp":"2.5 m",
-     "val":2.5
+     "exp":"RushCircleTop.x",
+     "val":5.8
     },
     "y":{
-     "exp":"5.5 m",
-     "val":5.5
-    },
-    "heading":{
-     "exp":"-0.6 rad",
-     "val":-0.6
-    }
-   },
-   "RightKeepOut":{
-    "x":{
-     "exp":"182.105 in",
-     "val":4.625467
-    },
-    "y":{
-     "exp":"550.59 in",
-     "val":13.984986
+     "exp":"F_LenY - RushCircleTop.y",
+     "val":2.469326000000001
     },
     "heading":{
      "exp":"0 rad",
      "val":0.0
     }
    },
-   "RightShoot":{
+   "RushCircleTop":{
     "x":{
-     "exp":"2.5 m",
-     "val":2.5
+     "exp":"5.8 m",
+     "val":5.8
     },
     "y":{
-     "exp":"2.4 m",
-     "val":2.4
+     "exp":"5.6 m",
+     "val":5.6
     },
     "heading":{
-     "exp":"0.6 rad",
-     "val":0.6
+     "exp":"0 rad",
+     "val":0.0
+    }
+   },
+   "ShootBottom":{
+    "x":{
+     "exp":"ShootTop.x",
+     "val":2.3
+    },
+    "y":{
+     "exp":"F_LenY - ShootTop.y",
+     "val":3.069326
+    },
+    "heading":{
+     "exp":"-ShootTop.heading",
+     "val":0.41
+    }
+   },
+   "ShootTop":{
+    "x":{
+     "exp":"2.3 m",
+     "val":2.3
+    },
+    "y":{
+     "exp":"5 m",
+     "val":5.0
+    },
+    "heading":{
+     "exp":"-0.41 rad",
+     "val":-0.41
+    }
+   },
+   "TrenchStartBottom":{
+    "x":{
+     "exp":"TrenchStartTop.x",
+     "val":3.0
+    },
+    "y":{
+     "exp":"F_LenY - TrenchStartTop.y",
+     "val":0.5693260000000002
+    },
+    "heading":{
+     "exp":"-TrenchStartTop.heading",
+     "val":0.0
+    }
+   },
+   "TrenchStartTop":{
+    "x":{
+     "exp":"3 m",
+     "val":3.0
+    },
+    "y":{
+     "exp":"7.5 m",
+     "val":7.5
+    },
+    "heading":{
+     "exp":"0 rad",
+     "val":0.0
     }
    }
   }
@@ -230,7 +328,7 @@
   },
   "cof":{
    "exp":"R_WheelCOF",
-   "val":1.0
+   "val":1.5
   },
   "bumper":{
    "front":{

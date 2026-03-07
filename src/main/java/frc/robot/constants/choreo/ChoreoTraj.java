@@ -17,27 +17,45 @@ public record ChoreoTraj(
     double totalTimeSecs,
     Pose2d initialPoseBlue,
     Pose2d endPoseBlue) {
-  public static final ChoreoTraj Loop =
+  public static final ChoreoTraj ReturnLeft =
       new ChoreoTraj(
-          "Loop",
+          "ReturnLeft",
           OptionalInt.empty(),
-          7.16122,
-          new Pose2d(2.004, 5.268, Rotation2d.fromRadians(0.785)),
-          new Pose2d(2.142, 2.608, Rotation2d.fromRadians(2.172)));
-  public static final ChoreoTraj Test =
+          5.71099,
+          new Pose2d(7.8, 5, Rotation2d.fromRadians(-1.7)),
+          new Pose2d(2.3, 5, Rotation2d.fromRadians(-0.561)));
+  public static final ChoreoTraj RushLeft =
       new ChoreoTraj(
-          "Test",
+          "RushLeft",
           OptionalInt.empty(),
-          1.79157,
-          new Pose2d(2, 1, Rotation2d.fromRadians(0)),
-          new Pose2d(2.8, 4.63, Rotation2d.fromRadians(-0.01)));
+          4.25732,
+          new Pose2d(3, 7.5, Rotation2d.fromRadians(0)),
+          new Pose2d(7.8, 5, Rotation2d.fromRadians(-1.7)));
+  public static final ChoreoTraj ReturnRight =
+      new ChoreoTraj(
+          "ReturnRight",
+          OptionalInt.empty(),
+          5.69829,
+          new Pose2d(7.8, 3.069, Rotation2d.fromRadians(1.7)),
+          new Pose2d(2.3, 3.069, Rotation2d.fromRadians(0.41)));
+  public static final ChoreoTraj RushRight =
+      new ChoreoTraj(
+          "RushRight",
+          OptionalInt.empty(),
+          4.25727,
+          new Pose2d(3, 0.569, Rotation2d.fromRadians(0)),
+          new Pose2d(7.8, 3.069, Rotation2d.fromRadians(1.7)));
 
   /**
    * A map between trajectory names and their corresponding data. This allows for trajectory data to
    * be looked up with strings during runtime.
    */
   public static final Map<String, ChoreoTraj> ALL_TRAJECTORIES =
-      Map.ofEntries(Map.entry("Loop", Loop), Map.entry("Test", Test));
+      Map.ofEntries(
+          Map.entry("ReturnLeft", ReturnLeft),
+          Map.entry("RushLeft", RushLeft),
+          Map.entry("ReturnRight", ReturnRight),
+          Map.entry("RushRight", RushRight));
 
   /**
    * Looks up the ChoreoTraj segment of the given overall ChoreoTraj. WARNING: will raise an

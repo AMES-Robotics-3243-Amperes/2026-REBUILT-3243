@@ -29,7 +29,7 @@ public class SwerveConstants {
 
   public static final LinearVelocity linearTeleopSpeedWhileShooting = MetersPerSecond.of(1);
 
-  public static final Angle rotationToleranceBeforeShooting = Degrees.of(1);
+  public static final Angle rotationToleranceBeforeShooting = Degrees.of(3);
 
   // control
   public static final Angle rotationFeedbackTolerance = Degrees.of(1.5);

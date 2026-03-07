@@ -22,6 +22,7 @@ import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.AngleUnit;
 import edu.wpi.first.units.AngularAccelerationUnit;
@@ -139,6 +140,11 @@ public class ControlConstantsBuilder {
         maxVelocity.map(velocity -> velocity.in(angleUnit.per(timeUnit))),
         maxAcceleration.map(
             acceleration -> acceleration.in(angleUnit.per(timeUnit).per(timeUnit))));
+  }
+
+  public SimpleMotorFeedforward simpleFeedforward(AngleUnit angleUnit) {
+    ControlConstants constants = in(angleUnit, Seconds);
+    return new SimpleMotorFeedforward(constants.kS(), constants.kV(), constants.kA(), 0.02);
   }
 
   public PIDController pidController(AngleUnit angleUnit, Angle minWrap, Angle maxWrap) {

@@ -27,7 +27,6 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.constants.ShooterConstants;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.Logger;
 
 /** Add your docs here. */
 public class FlywheelIOReal implements FlywheelIO {

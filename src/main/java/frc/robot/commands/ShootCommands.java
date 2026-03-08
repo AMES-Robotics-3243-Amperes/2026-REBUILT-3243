@@ -45,6 +45,7 @@ public class ShootCommands {
     return Commands.sequence(
         Commands.waitUntil(() -> drivetrain.atRotationSetpoint() && shooter.flywheelSpunUp()),
         indexer.spinUpForShootCommand(shooter),
+        Commands.waitSeconds(0.2), // TODO: constants
         indexer.indexCommand(shooter));
   }
 }

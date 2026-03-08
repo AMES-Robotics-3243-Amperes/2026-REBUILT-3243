@@ -46,11 +46,18 @@
      "val":5.229098
     }
    },
+   "F_RightTrenchY":{
+    "dimension":"Length",
+    "var":{
+     "exp":"50.35 / 2 in",
+     "val":0.639445
+    }
+   },
    "M_GlobalMaxAccel":{
     "dimension":"LinAcc",
     "var":{
-     "exp":"1.5 m / s ^ 2",
-     "val":1.5
+     "exp":"3 m / s ^ 2",
+     "val":3.0
     }
    },
    "R_BumperLength":{
@@ -63,8 +70,8 @@
    "R_BumperTolerance":{
     "dimension":"Length",
     "var":{
-     "exp":"4 in",
-     "val":0.1016
+     "exp":"4.5 in",
+     "val":0.1143
     }
    },
    "R_DeployedHopperX":{
@@ -133,8 +140,8 @@
    "S_RushOutRadius":{
     "dimension":"Length",
     "var":{
-     "exp":"1 m",
-     "val":1.0
+     "exp":"1.2 m",
+     "val":1.2
     }
    }
   },
@@ -230,11 +237,11 @@
     },
     "y":{
      "exp":"F_LenY - ShootTop.y",
-     "val":3.069326
+     "val":2.169326
     },
     "heading":{
      "exp":"-ShootTop.heading",
-     "val":0.41
+     "val":0.68
     }
    },
    "ShootTop":{
@@ -243,12 +250,12 @@
      "val":2.3
     },
     "y":{
-     "exp":"5 m",
-     "val":5.0
+     "exp":"5.9 m",
+     "val":5.9
     },
     "heading":{
-     "exp":"-0.41 rad",
-     "val":-0.41
+     "exp":"-0.68 rad",
+     "val":-0.68
     }
    },
    "TrenchStartBottom":{
@@ -333,15 +340,15 @@
   "bumper":{
    "front":{
     "exp":"R_BumperTolerance + R_DeployedHopperX",
-    "val":0.7366
+    "val":0.7493
    },
    "side":{
     "exp":"R_BumperTolerance + R_BumperLength / 2",
-    "val":0.542925
+    "val":0.5556249999999999
    },
    "back":{
     "exp":"R_BumperTolerance + R_BumperLength / 2",
-    "val":0.542925
+    "val":0.5556249999999999
    }
   },
   "differentialTrackWidth":{

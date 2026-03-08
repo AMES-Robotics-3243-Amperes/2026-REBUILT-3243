@@ -18,10 +18,10 @@ public class IntakeConstants {
 
   public static final ControlConstantsBuilder rollerControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(0.000004, 0, 0)
-          .sva(0.30224, 0.039192, 0.0051602);
+          .pid(0.0033585, 0, 0)
+          .sva(0.48225, 0.036694, 0.0036671);
 
-  public static final AngularVelocity rollerIntakeSpeed = RotationsPerSecond.of(28);
+  public static final AngularVelocity rollerIntakeSpeed = RotationsPerSecond.of(30);
   public static final Angle pivotToleranceBeforeRollersEngage = Degrees.of(5);
 
   // pivot

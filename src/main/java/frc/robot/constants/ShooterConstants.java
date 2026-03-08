@@ -28,7 +28,7 @@ public class ShooterConstants {
   public static final Translation2d bottomBlueNeutralZoneShot =
       new Translation2d(FieldConstants.fieldLength.div(2), FieldConstants.trenchWidth);
 
-  public static final AngularVelocity flywheelIndexTolerance = RPM.of(25);
+  public static final AngularVelocity flywheelIndexTolerance = RPM.of(40);
 
   // flywheel
   public static final int flywheelLeftId = 10;
@@ -38,27 +38,32 @@ public class ShooterConstants {
   public static final Distance flywheelRadius = Inches.of(2);
   public static final double flywheelGearReduction = 4.0 / 3.0;
 
-  public static final Current flywheelStatorCurrentLimit = Amps.of(120);
-  public static final Current flywheelSupplyCurrentLimit = Amps.of(70);
+  public static final Current flywheelStatorCurrentLimit = Amps.of(90);
+  public static final Current flywheelSupplyCurrentLimit = Amps.of(40);
 
-  public static final double fuelToFlywheelLinearSpeedRatio = 0.5;
+  public static final double fuelToFlywheelLinearSpeedRatio = 0.456;
 
-  public static final AngularVelocity flywheelRecoverControlTolerance = RPM.of(30);
+  public static final AngularVelocity flywheelRecoverControlTolerance = RPM.of(150);
 
   public static final ClosedLoopOutputType flywheelClosedLoopOutput =
       ClosedLoopOutputType.TorqueCurrentFOC;
 
-  public static final ControlConstantsBuilder flywheelControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.6, 0, 0).sva(2.025, 0, 0);
-  public static final ControlConstantsBuilder flywheelRecoverControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.1, 0, 0).sva(2.025, 0, 0);
+  public static final ControlConstantsBuilder leftFlywheelControl =
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(2.6, 0, 0).sva(3.69, 0, 0);
+  public static final ControlConstantsBuilder leftFlywheelRecoverControl =
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(4.2, 0, 0).sva(3.69, 0, 0);
+
+  public static final ControlConstantsBuilder rightFlywheelControl =
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(2.6, 0, 0).sva(6.46, 0, 0);
+  public static final ControlConstantsBuilder rightFlywheelRecoverControl =
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(4.2, 0, 0).sva(6.46, 0, 0);
 
   // hood
   public static final int hoodId = 5;
 
-  public static final Angle hoodAbsoluteEncoderZeroedRotation = Degrees.of(19);
+  public static final Angle hoodAbsoluteEncoderZeroedRotation = Degrees.of(23.2);
   public static final Angle hoodMinRotation = Degrees.of(16.5);
-  public static final Angle hoodMaxRotation = Degrees.of(44);
+  public static final Angle hoodMaxRotation = Degrees.of(46);
 
   public static final double encoderToHoodReduction = 320.0 / 24.0;
   public static final double motorToEncoderHoodReduction = 15.0 / 1.0;

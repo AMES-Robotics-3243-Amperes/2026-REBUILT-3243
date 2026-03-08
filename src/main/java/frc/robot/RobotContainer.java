@@ -136,9 +136,14 @@ public class RobotContainer {
         shooter =
             new ShooterSubsystem(
                 new FlywheelIOSeparateReal(
-                    ShooterConstants.flywheelLeftId, InvertedValue.Clockwise_Positive),
+                    ShooterConstants.flywheelLeftId,
+                    InvertedValue.Clockwise_Positive,
+                    ShooterConstants.leftFlywheelControl,
+                    ShooterConstants.leftFlywheelRecoverControl),
                 new FlywheelIOSeparateReal(
-                    ShooterConstants.flywheelRightId, InvertedValue.CounterClockwise_Positive),
+                    ShooterConstants.flywheelRightId, InvertedValue.CounterClockwise_Positive,
+                    ShooterConstants.rightFlywheelControl,
+                        ShooterConstants.rightFlywheelRecoverControl),
                 new HoodIOReal());
         indexer = new IndexerSubsystem(new KickerIOReal(), new SpindexerIOReal());
 
@@ -280,6 +285,7 @@ public class RobotContainer {
         "Shoot",
         ShootCommands.shootCommand(ShootTarget.HUB, shooter, drivetrain, () -> new Translation2d())
             .alongWith(ShootCommands.indexWhenReadyCommand(indexer, drivetrain, shooter)));
+    NamedCommands.registerCommand("Agitate", intake.runPivotOpenLoopCommand(3));
 
     autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     robotLocationManager = new RobotLocationManager(() -> drivetrain.getPose().getTranslation());
@@ -362,6 +368,7 @@ public class RobotContainer {
     shootBind.whileTrue(ShootCommands.indexWhenReadyCommand(indexer, drivetrain, shooter));
 
     primaryController.x().onTrue(shooter.torqueCurrentKsCharacterization(Amps.of(15)));
+    primaryController.y().onTrue(intake.rollerSysIdCommand(primaryController.y()));
   }
 
   //

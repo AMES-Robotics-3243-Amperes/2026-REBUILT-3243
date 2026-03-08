@@ -66,10 +66,12 @@ public class FlywheelIOJoinedShaftReal implements FlywheelIO {
         .withSupplyCurrentLimit(ShooterConstants.flywheelSupplyCurrentLimit)
         .withSupplyCurrentLimitEnable(true);
     config
-        .withSlot0(Slot0Configs.from(ShooterConstants.flywheelControl.talonFXConfigs().getFirst()))
+        .withSlot0(
+            Slot0Configs.from(ShooterConstants.leftFlywheelControl.talonFXConfigs().getFirst()))
         .withSlot1(
-            Slot1Configs.from(ShooterConstants.flywheelRecoverControl.talonFXConfigs().getFirst()))
-        .withMotionMagic(ShooterConstants.flywheelControl.talonFXConfigs().getSecond());
+            Slot1Configs.from(
+                ShooterConstants.leftFlywheelRecoverControl.talonFXConfigs().getFirst()))
+        .withMotionMagic(ShooterConstants.leftFlywheelControl.talonFXConfigs().getSecond());
 
     config.Feedback.SensorToMechanismRatio = ShooterConstants.flywheelGearReduction;
 

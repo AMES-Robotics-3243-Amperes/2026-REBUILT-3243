@@ -24,7 +24,7 @@ public class FlywheelIOSim implements FlywheelIO {
     inputs.velocity = velocity;
     inputs.appliedVoltage =
         Volts.of(
-            ShooterConstants.flywheelControl.kV.in(Value.per(RadiansPerSecond))
+            ShooterConstants.leftFlywheelControl.kV.in(Value.per(RadiansPerSecond))
                 * velocity.in(RadiansPerSecond));
   }
 
@@ -32,7 +32,7 @@ public class FlywheelIOSim implements FlywheelIO {
   public void runOpenLoop(double output) {
     velocity =
         RadiansPerSecond.of(
-            output / ShooterConstants.flywheelControl.kV.in(Value.per(RadiansPerSecond)));
+            output / ShooterConstants.leftFlywheelControl.kV.in(Value.per(RadiansPerSecond)));
   }
 
   @Override

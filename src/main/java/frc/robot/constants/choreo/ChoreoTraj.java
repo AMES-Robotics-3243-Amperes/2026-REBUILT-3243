@@ -21,28 +21,28 @@ public record ChoreoTraj(
       new ChoreoTraj(
           "ReturnLeft",
           OptionalInt.empty(),
-          5.71099,
+          3.70123,
           new Pose2d(7.8, 5, Rotation2d.fromRadians(-1.7)),
-          new Pose2d(2.3, 5, Rotation2d.fromRadians(-0.561)));
-  public static final ChoreoTraj RushLeft =
-      new ChoreoTraj(
-          "RushLeft",
-          OptionalInt.empty(),
-          4.25732,
-          new Pose2d(3, 7.5, Rotation2d.fromRadians(0)),
-          new Pose2d(7.8, 5, Rotation2d.fromRadians(-1.7)));
+          new Pose2d(2.3, 5.9, Rotation2d.fromRadians(-0.68)));
   public static final ChoreoTraj ReturnRight =
       new ChoreoTraj(
           "ReturnRight",
           OptionalInt.empty(),
-          5.69829,
+          3.70103,
           new Pose2d(7.8, 3.069, Rotation2d.fromRadians(1.7)),
-          new Pose2d(2.3, 3.069, Rotation2d.fromRadians(0.41)));
+          new Pose2d(2.3, 2.169, Rotation2d.fromRadians(0.68)));
+  public static final ChoreoTraj RushLeft =
+      new ChoreoTraj(
+          "RushLeft",
+          OptionalInt.empty(),
+          3.16618,
+          new Pose2d(3, 7.5, Rotation2d.fromRadians(0)),
+          new Pose2d(7.8, 5, Rotation2d.fromRadians(-1.7)));
   public static final ChoreoTraj RushRight =
       new ChoreoTraj(
           "RushRight",
           OptionalInt.empty(),
-          4.25727,
+          3.16613,
           new Pose2d(3, 0.569, Rotation2d.fromRadians(0)),
           new Pose2d(7.8, 3.069, Rotation2d.fromRadians(1.7)));
 
@@ -53,8 +53,8 @@ public record ChoreoTraj(
   public static final Map<String, ChoreoTraj> ALL_TRAJECTORIES =
       Map.ofEntries(
           Map.entry("ReturnLeft", ReturnLeft),
-          Map.entry("RushLeft", RushLeft),
           Map.entry("ReturnRight", ReturnRight),
+          Map.entry("RushLeft", RushLeft),
           Map.entry("RushRight", RushRight));
 
   /**

@@ -122,6 +122,9 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public boolean flywheelSpunUp() {
+    Logger.recordOutput("left", flywheelLeftInputs.velocity.minus(flywheelSetpoint).in(RPM));
+    Logger.recordOutput("right", flywheelRightInputs.velocity.minus(flywheelSetpoint));
+
     return flywheelLeftInputs.velocity.isNear(
             flywheelSetpoint, ShooterConstants.flywheelIndexTolerance)
         && flywheelRightInputs.velocity.isNear(

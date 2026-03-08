@@ -1,27 +1,36 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
 package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
-import com.revrobotics.spark.FeedbackSensor;
-import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.constants.IntakeConstants;
 
 public class RollerIOReal implements RollerIO {
   SparkMax sparkMax = new SparkMax(IntakeConstants.rollerId, MotorType.kBrushless);
 
-  SparkClosedLoopController closedLoopController;
+  SimpleMotorFeedforward feedforward = IntakeConstants.rollerControl.simpleFeedforward(Radians);
+  PIDController feedback = IntakeConstants.rollerControl.pidController(Radians);
   RelativeEncoder encoder;
+
+  AngularVelocity target = RadiansPerSecond.of(0);
 
   public RollerIOReal() {
     SparkMaxConfig config = new SparkMaxConfig();
@@ -30,14 +39,8 @@ public class RollerIOReal implements RollerIO {
     config.encoder.velocityConversionFactor(1.0 / IntakeConstants.rollerReduction);
     config.idleMode(IdleMode.kCoast).inverted(true);
 
-    config
-        .closedLoop
-        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .apply(IntakeConstants.rollerControl.revClosedLoopConfig());
-
     sparkMax.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    closedLoopController = sparkMax.getClosedLoopController();
     encoder = sparkMax.getEncoder();
   }
 
@@ -55,7 +58,11 @@ public class RollerIOReal implements RollerIO {
 
   @Override
   public void setAngularVelocity(AngularVelocity velocity) {
-    closedLoopController.setSetpoint(velocity.in(RPM), ControlType.kVelocity);
+    sparkMax.setVoltage(
+        feedback.calculate(
+                Units.rotationsPerMinuteToRadiansPerSecond(encoder.getVelocity()),
+                velocity.in(RadiansPerSecond))
+            + feedforward.calculate(velocity.in(RadiansPerSecond)));
   }
 
   @Override

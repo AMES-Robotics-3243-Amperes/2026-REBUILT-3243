@@ -25,6 +25,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.constants.ShooterConstants;
+import frc.robot.util.ControlConstantsBuilder;
 import java.util.function.Supplier;
 
 /** Add your docs here. */
@@ -54,7 +55,11 @@ public class FlywheelIOSeparateReal implements FlywheelIO {
     }
   }
 
-  public FlywheelIOSeparateReal(int id, InvertedValue inverted) {
+  public FlywheelIOSeparateReal(
+      int id,
+      InvertedValue inverted,
+      ControlConstantsBuilder control,
+      ControlConstantsBuilder recoveryControl) {
     TalonFXConfiguration config = new TalonFXConfiguration();
     leader = new TalonFX(id);
 
@@ -64,10 +69,9 @@ public class FlywheelIOSeparateReal implements FlywheelIO {
         .withSupplyCurrentLimit(ShooterConstants.flywheelSupplyCurrentLimit)
         .withSupplyCurrentLimitEnable(true);
     config
-        .withSlot0(Slot0Configs.from(ShooterConstants.flywheelControl.talonFXConfigs().getFirst()))
-        .withSlot1(
-            Slot1Configs.from(ShooterConstants.flywheelRecoverControl.talonFXConfigs().getFirst()))
-        .withMotionMagic(ShooterConstants.flywheelControl.talonFXConfigs().getSecond());
+        .withSlot0(Slot0Configs.from(control.talonFXConfigs().getFirst()))
+        .withSlot1(Slot1Configs.from(recoveryControl.talonFXConfigs().getFirst()))
+        .withMotionMagic(ShooterConstants.leftFlywheelControl.talonFXConfigs().getSecond());
 
     config.Feedback.SensorToMechanismRatio = ShooterConstants.flywheelGearReduction;
 

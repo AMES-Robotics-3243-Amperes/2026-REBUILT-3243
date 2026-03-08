@@ -69,6 +69,7 @@ import frc.robot.subsystems.vision.VisionIOLimelight;
 import frc.robot.subsystems.vision.VisionIOLimelightFour;
 import frc.robot.subsystems.vision.VisionIOPhotonVisionSim;
 import frc.robot.subsystems.vision.VisionSubsystem;
+import frc.robot.util.ControllerRumble;
 import frc.robot.util.FuelTrajectoryCalculator;
 import frc.robot.util.FuelTrajectoryCalculator.ShootTarget;
 import frc.robot.util.RobotLocationManager;
@@ -83,7 +84,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
   //
-  // JOYSTICKS, SUBSYSTEMS, CONSTRUCTION, AND SIMULATION
+  // ===== JOYSTICKS, SUBSYSTEMS, CONSTRUCTION, AND SIMULATION =====
   //
 
   public final CommandXboxController primaryController = new CommandXboxController(0);
@@ -296,6 +297,8 @@ public class RobotContainer {
     FuelTrajectoryCalculator.robotPose = drivetrain::getPose;
     FuelTrajectoryCalculator.robotSpeeds = drivetrain::getChassisSpeeds;
 
+    CommandScheduler.getInstance().schedule(Commands.run(() -> ControllerRumble.rumbleController(primaryController, secondaryController)));
+
     configureBindings();
   }
 
@@ -390,25 +393,6 @@ public class RobotContainer {
         "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
     Logger.recordOutput(
         "FieldSimulation/Fuel", SimulatedArena.getInstance().getGamePiecesArrayByType("Fuel"));
-  }
-
-  public static final Set<Integer> bothRumbleMatchTimes =
-      Set.of(135, 130, 85, 80, 60, 55, 35, 30, 5);
-  public static final Set<Integer> leftRumbleMatchTimes = Set.of(120, 95, 70, 45);
-  public static final Set<Integer> rightRumbleMatchTimes = Set.of(115, 90, 65, 40);
-
-  public void rumbleController() {
-    if (bothRumbleMatchTimes.contains((int) DriverStation.getMatchTime())) {
-      primaryController.setRumble(RumbleType.kBothRumble, 1);
-      secondaryController.setRumble(RumbleType.kBothRumble, 1);
-    } else if (leftRumbleMatchTimes.contains((int) DriverStation.getMatchTime())) {
-      primaryController.setRumble(RumbleType.kLeftRumble, 1);
-      secondaryController.setRumble(RumbleType.kLeftRumble, 1);
-    } else if (rightRumbleMatchTimes.contains((int) DriverStation.getMatchTime())) {
-      primaryController.setRumble(RumbleType.kRightRumble, 1);
-      secondaryController.setRumble(RumbleType.kRightRumble, 1);
-    } else primaryController.setRumble(RumbleType.kBothRumble, 0);
-    secondaryController.setRumble(RumbleType.kBothRumble, 0);
   }
 
   public void updateComponents() {

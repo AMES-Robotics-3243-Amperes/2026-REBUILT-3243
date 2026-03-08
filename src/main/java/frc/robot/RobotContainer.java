@@ -393,11 +393,15 @@ public class RobotContainer {
   public void rumbleController() {
     if (bothRumbleMatchTimes.contains((int) DriverStation.getMatchTime())) {
       primaryController.setRumble(RumbleType.kBothRumble, 1);
+      secondaryController.setRumble(RumbleType.kBothRumble, 1);
     } else if (leftRumbleMatchTimes.contains((int) DriverStation.getMatchTime())) {
       primaryController.setRumble(RumbleType.kLeftRumble, 1);
+      secondaryController.setRumble(RumbleType.kLeftRumble, 1);
     } else if (rightRumbleMatchTimes.contains((int) DriverStation.getMatchTime())) {
       primaryController.setRumble(RumbleType.kRightRumble, 1);
-    }
+      secondaryController.setRumble(RumbleType.kRightRumble, 1);
+    } else primaryController.setRumble(RumbleType.kBothRumble, 0);
+    secondaryController.setRumble(RumbleType.kBothRumble, 0);
   }
 
   public void updateComponents() {

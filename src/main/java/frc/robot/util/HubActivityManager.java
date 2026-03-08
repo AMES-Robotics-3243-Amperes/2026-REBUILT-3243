@@ -8,7 +8,7 @@ public class HubActivityManager {
   public record GameState(double timeToNextPhase, boolean ourHubEnabled) {}
   ;
 
-  // folowing is copied code from firsts databse that shoudld when called provide
+  // following is copied code from first's databse that should when called provide
   // weather our alience is active at any point during the match
   // I added the functionality of listing the time untill next hub switch as well
 

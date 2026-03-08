@@ -19,6 +19,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -71,6 +73,7 @@ import frc.robot.util.FuelTrajectoryCalculator;
 import frc.robot.util.FuelTrajectoryCalculator.ShootTarget;
 import frc.robot.util.RobotLocationManager;
 import frc.robot.util.TunableControls;
+import java.util.Set;
 import org.ironmaple.simulation.IntakeSimulation;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -387,6 +390,25 @@ public class RobotContainer {
         "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
     Logger.recordOutput(
         "FieldSimulation/Fuel", SimulatedArena.getInstance().getGamePiecesArrayByType("Fuel"));
+  }
+
+  public static final Set<Integer> bothRumbleMatchTimes =
+      Set.of(135, 130, 85, 80, 60, 55, 35, 30, 5);
+  public static final Set<Integer> leftRumbleMatchTimes = Set.of(120, 95, 70, 45);
+  public static final Set<Integer> rightRumbleMatchTimes = Set.of(115, 90, 65, 40);
+
+  public void rumbleController() {
+    if (bothRumbleMatchTimes.contains((int) DriverStation.getMatchTime())) {
+      primaryController.setRumble(RumbleType.kBothRumble, 1);
+      secondaryController.setRumble(RumbleType.kBothRumble, 1);
+    } else if (leftRumbleMatchTimes.contains((int) DriverStation.getMatchTime())) {
+      primaryController.setRumble(RumbleType.kLeftRumble, 1);
+      secondaryController.setRumble(RumbleType.kLeftRumble, 1);
+    } else if (rightRumbleMatchTimes.contains((int) DriverStation.getMatchTime())) {
+      primaryController.setRumble(RumbleType.kRightRumble, 1);
+      secondaryController.setRumble(RumbleType.kRightRumble, 1);
+    } else primaryController.setRumble(RumbleType.kBothRumble, 0);
+    secondaryController.setRumble(RumbleType.kBothRumble, 0);
   }
 
   public void updateComponents() {

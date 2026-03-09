@@ -30,18 +30,12 @@ public final class ChoreoVars {
   public static final double R_WheelCOF = 1.5;
   public static final Distance R_WheelRadius = Units.Meters.of(0.05);
   public static final Distance S_RushOutRadius = Units.Meters.of(1.2);
+  public static final LinearVelocity M_MaxCollectVelocity = Units.MetersPerSecond.of(1.5);
 
   public static final class Poses {
-    public static final Pose2d CollectBottom = new Pose2d(7.8, 3.069, Rotation2d.fromRadians(1.7));
-    public static final Pose2d CollectTop = new Pose2d(7.8, 5, Rotation2d.fromRadians(-1.7));
     public static final Pose2d KeepOutBottom = new Pose2d(4.625, 13.985, Rotation2d.kZero);
     public static final Pose2d KeepOutTop = new Pose2d(4.625, -5.916, Rotation2d.kZero);
-    public static final Pose2d RushCircleBottom = new Pose2d(5.8, 2.469, Rotation2d.kZero);
-    public static final Pose2d RushCircleTop = new Pose2d(5.8, 5.6, Rotation2d.kZero);
-    public static final Pose2d ShootBottom = new Pose2d(2.3, 2.169, Rotation2d.fromRadians(0.68));
-    public static final Pose2d ShootTop = new Pose2d(2.3, 5.9, Rotation2d.fromRadians(-0.68));
-    public static final Pose2d TrenchStartBottom = new Pose2d(3, 0.569, Rotation2d.kZero);
-    public static final Pose2d TrenchStartTop = new Pose2d(3, 7.5, Rotation2d.kZero);
+    public static final Pose2d CollectEnd = new Pose2d(7.5, 4.5, Rotation2d.fromRadians(-2));
 
     private Poses() {}
   }

@@ -13,6 +13,8 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -55,12 +57,12 @@ public class ShooterSubsystem extends SubsystemBase {
     Logger.processInputs("Shooter/Flywheel/Left", flywheelLeftInputs);
 
     flywheelIORight.updateInputs(flywheelRightInputs);
-    Logger.processInputs("Shooter/Flywheel/Left", flywheelRightInputs);
+    Logger.processInputs("Shooter/Flywheel/Right", flywheelRightInputs);
 
     hoodIO.updateInputs(hoodInputs);
     Logger.processInputs("Shooter/Hood", hoodInputs);
 
-    if (flywheelSpunUp()) recoverIfSlow = true;
+    if (flywheelSpunUpBoolean()) recoverIfSlow = true;
 
     flywheelIOLeft.enableRecoverControl(
         recoverIfSlow
@@ -116,15 +118,25 @@ public class ShooterSubsystem extends SubsystemBase {
     return hoodInputs.angle;
   }
 
-  @AutoLogOutput(key = "Shooter/Flywheel/SetpointVelocity")
-  public AngularVelocity flywheelSetpointVelocity() {
+  @AutoLogOutput(key = "Shooter/Flywheel/TargetFlywheelVelocity")
+  public AngularVelocity getSetpointFlywheelVelocity() {
     return flywheelSetpoint;
   }
 
-  public boolean flywheelSpunUp() {
-    Logger.recordOutput("left", flywheelLeftInputs.velocity.minus(flywheelSetpoint).in(RPM));
-    Logger.recordOutput("right", flywheelRightInputs.velocity.minus(flywheelSetpoint));
+  @AutoLogOutput(key = "Shooter/Flywheel/AverageMeasuredVelocity")
+  public AngularVelocity getAverageFlywheelVelocity() {
+    return flywheelLeftInputs.velocity.plus(flywheelRightInputs.velocity).div(2);
+  }
 
+  @AutoLogOutput(key = "Shooter/Flywheel/TargetFuelVelocity")
+  public LinearVelocity getSetpointFuelVelocity() {
+    return MetersPerSecond.of(
+        flywheelSetpoint.in(RadiansPerSecond)
+            * ShooterConstants.flywheelRadius.in(Meters)
+            * ShooterConstants.fuelToFlywheelLinearSpeedRatio);
+  }
+
+  private boolean flywheelSpunUpBoolean() {
     return flywheelLeftInputs.velocity.isNear(
             flywheelSetpoint, ShooterConstants.flywheelIndexTolerance)
         && flywheelRightInputs.velocity.isNear(
@@ -132,17 +144,21 @@ public class ShooterSubsystem extends SubsystemBase {
         && !flywheelSetpoint.isEquivalent(RPM.of(0));
   }
 
-  @AutoLogOutput(key = "Shooter/Flywheel/FlywheelVelocity")
-  public AngularVelocity getSetpointFlywheelVelocity() {
-    return flywheelSetpoint;
+  public Trigger flywheelSpunUp() {
+    return new Trigger(this::flywheelSpunUpBoolean).debounce(1e-1, DebounceType.kRising);
   }
 
-  @AutoLogOutput(key = "Shooter/Flywheel/FuelVelocity")
-  public LinearVelocity getSetpointFuelVelocity() {
-    return MetersPerSecond.of(
-        flywheelSetpoint.in(RadiansPerSecond)
-            * ShooterConstants.flywheelRadius.in(Meters)
-            * ShooterConstants.fuelToFlywheelLinearSpeedRatio);
+  public Command spinUpFlywheelCommand() {
+    // TODO: constants
+    SlewRateLimiter rateLimiter = new SlewRateLimiter(1500);
+    return runOnce(() -> rateLimiter.reset(getAverageFlywheelVelocity().in(RPM)))
+        .andThen(
+            runEnd(
+                () -> {
+                  flywheelIOLeft.setAngularVelocity(RPM.of(rateLimiter.calculate(3000)));
+                  flywheelIORight.setAngularVelocity(RPM.of(rateLimiter.calculate(3000)));
+                },
+                this::coastFlywheel));
   }
 
   public Command shootCommand(Supplier<AngularVelocity> flywheelSpeed, Supplier<Angle> hoodAngle) {
@@ -194,7 +210,7 @@ public class ShooterSubsystem extends SubsystemBase {
           flywheelIORight.runOpenLoop(voltage.in(Volts));
         },
         () -> flywheelLeftInputs.position.plus(flywheelRightInputs.position).div(2),
-        () -> flywheelLeftInputs.velocity.plus(flywheelRightInputs.velocity).div(2),
+        () -> getAverageFlywheelVelocity(),
         () -> flywheelLeftInputs.appliedVoltage.plus(flywheelRightInputs.appliedVoltage).div(2),
         this);
   }

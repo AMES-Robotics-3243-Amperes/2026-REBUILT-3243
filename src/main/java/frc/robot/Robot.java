@@ -9,7 +9,6 @@ import com.pathplanner.lib.commands.PathfindingCommand;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.constants.GitConstants;
 import frc.robot.constants.ModeConstants;
@@ -24,8 +23,6 @@ import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 public class Robot extends LoggedRobot {
-  private Command autonomousCommand;
-
   private final RobotContainer robotContainer;
 
   private final Alert dirtyRepositoryAlert =
@@ -90,13 +87,7 @@ public class Robot extends LoggedRobot {
   public void disabledExit() {}
 
   @Override
-  public void autonomousInit() {
-    autonomousCommand = robotContainer.getAutonomousCommand();
-
-    if (autonomousCommand != null) {
-      CommandScheduler.getInstance().schedule(autonomousCommand);
-    }
-  }
+  public void autonomousInit() {}
 
   @Override
   public void autonomousPeriodic() {}
@@ -105,11 +96,7 @@ public class Robot extends LoggedRobot {
   public void autonomousExit() {}
 
   @Override
-  public void teleopInit() {
-    if (autonomousCommand != null) {
-      autonomousCommand.cancel();
-    }
-  }
+  public void teleopInit() {}
 
   @Override
   public void teleopPeriodic() {}

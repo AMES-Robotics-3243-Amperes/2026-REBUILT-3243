@@ -10,22 +10,20 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
+import choreo.auto.AutoChooser;
 import com.ctre.phoenix6.signals.InvertedValue;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
-import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.AutonomousRoutines;
 import frc.robot.commands.ShootCommands;
 import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.ModeConstants;
@@ -74,13 +72,11 @@ import frc.robot.util.FuelTrajectoryCalculator;
 import frc.robot.util.FuelTrajectoryCalculator.ShootTarget;
 import frc.robot.util.RobotLocationManager;
 import frc.robot.util.TunableControls;
-import java.util.Set;
 import org.ironmaple.simulation.IntakeSimulation;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.seasonspecific.rebuilt2026.RebuiltFuelOnFly;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
   //
@@ -96,7 +92,7 @@ public class RobotContainer {
   public final ShooterSubsystem shooter;
 
   private final SwerveDriveSimulation driveSimulation;
-  private final LoggedDashboardChooser<Command> autoChooser;
+  //   private final LoggedDashboardChooser<Command> autoChooser;
   private final RobotLocationManager robotLocationManager;
 
   public RobotContainer() {
@@ -281,23 +277,21 @@ public class RobotContainer {
         throw new RuntimeException("Invalid robot mode");
     }
 
-    // TODO: come back to these once pivot is figured out
-    NamedCommands.registerCommand(
-        "Intake", intake.intakeAtSpeedCommand(IntakeConstants.rollerIntakeSpeed));
-    NamedCommands.registerCommand("DeployIntakeCommand", intake.holdIntakeDownCommand());
-    NamedCommands.registerCommand(
-        "Shoot",
-        ShootCommands.shootCommand(ShootTarget.HUB, shooter, drivetrain, () -> new Translation2d())
-            .alongWith(ShootCommands.indexWhenReadyCommand(indexer, drivetrain, shooter)));
-    NamedCommands.registerCommand("Agitate", intake.runPivotOpenLoopCommand(3));
+    // TODO: make the auto choice get logged to advantagekit
+    AutoChooser autoChooser = new AutoChooser();
+    AutonomousRoutines.populateAutoChooser(autoChooser, drivetrain, shooter, indexer, intake);
+    SmartDashboard.putData("Autonomous Routines", autoChooser);
+    RobotModeTriggers.autonomous().whileTrue(autoChooser.selectedCommandScheduler());
 
-    autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
     robotLocationManager = new RobotLocationManager(() -> drivetrain.getPose().getTranslation());
 
     FuelTrajectoryCalculator.robotPose = drivetrain::getPose;
     FuelTrajectoryCalculator.robotSpeeds = drivetrain::getChassisSpeeds;
 
-    CommandScheduler.getInstance().schedule(Commands.run(() -> ControllerRumble.rumbleController(primaryController, secondaryController)));
+    CommandScheduler.getInstance()
+        .schedule(
+            Commands.run(
+                () -> ControllerRumble.rumbleController(primaryController, secondaryController)));
 
     configureBindings();
   }
@@ -356,19 +350,19 @@ public class RobotContainer {
     shootBind
         .and(robotLocationManager.inAllianceZone())
         .whileTrue(
-            ShootCommands.shootTeleopDriveCommand(
+            ShootCommands.rotateAndShootTeleopDrive(
                 ShootTarget.HUB, shooter, drivetrain, primaryController));
 
     shootBind
         .and(robotLocationManager.innNeutralZone())
         .whileTrue(
-            ShootCommands.shootTeleopDriveCommand(
+            ShootCommands.rotateAndShootTeleopDrive(
                 ShootTarget.ALLIANCE, shooter, drivetrain, primaryController));
 
     shootBind
         .and(robotLocationManager.inOpponentZone())
         .whileTrue(
-            ShootCommands.shootTeleopDriveCommand(
+            ShootCommands.rotateAndShootTeleopDrive(
                 ShootTarget.NEUTRAL, shooter, drivetrain, primaryController));
 
     shootBind.whileTrue(ShootCommands.indexWhenReadyCommand(indexer, drivetrain, shooter));
@@ -380,10 +374,6 @@ public class RobotContainer {
   //
   // ===== MISC =====
   //
-
-  public Command getAutonomousCommand() {
-    return autoChooser.get();
-  }
 
   public void updateSimulation() {
     if (ModeConstants.robotMode != ModeConstants.Mode.SIM) return;

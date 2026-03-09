@@ -9,6 +9,7 @@ package frc.robot.subsystems.drivetrain;
 
 import static edu.wpi.first.units.Units.*;
 
+import choreo.trajectory.SwerveSample;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
@@ -24,6 +25,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -63,7 +65,12 @@ import frc.robot.constants.swerve.SwerveConstants;
 import frc.robot.constants.swerve.SysIdConstants;
 import frc.robot.constants.swerve.TunerConstants;
 import frc.robot.util.Container;
+import frc.robot.util.FuelTrajectoryCalculator;
+import frc.robot.util.FuelTrajectoryCalculator.ShootTarget;
+import frc.robot.util.PointOfInterestManager;
+import frc.robot.util.PointOfInterestManager.FlipType;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -84,8 +91,8 @@ public class SwerveSubsystem extends SubsystemBase {
           .withGyro(COTS.ofPigeon2())
           .withSwerveModule(
               new SwerveModuleSimulationConfig(
-                  DCMotor.getKrakenX60Foc(1),
-                  DCMotor.getFalcon500Foc(1),
+                  DCMotor.getKrakenX60(1),
+                  DCMotor.getFalcon500(1),
                   ChoreoVars.R_DriveReduction,
                   ModuleConstants.steerReduction,
                   ModuleConstants.driveFrictionVoltage,
@@ -547,6 +554,80 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   //
+  // Path following
+  //
+
+  private boolean flipPathAcrossFieldWidth = false;
+  private Optional<Supplier<AngularVelocity>> pathFollowingAngularOverride = Optional.empty();
+
+  /**
+   * These are used to control the behavior of choreo path following in a command-centric way
+   * (hopefully) without running into race conditions or other weird "only one option at once"
+   * issues.
+   */
+  private SubsystemBase choreoFlippedSubsystem = new SubsystemBase("SwerveAutoFlipped") {};
+
+  private SubsystemBase choreoCustomRotationSubsystem = new SubsystemBase("SwerveAutoRotation") {};
+
+  public Command driveFlippedAlongFieldWidth() {
+    return Commands.runEnd(
+        () -> flipPathAcrossFieldWidth = true,
+        () -> flipPathAcrossFieldWidth = false,
+        choreoFlippedSubsystem);
+  }
+
+  public Command rotateIndependentlyOfPath(Supplier<AngularVelocity> angularStrategy) {
+    return Commands.runEnd(
+        () -> pathFollowingAngularOverride = Optional.of(angularStrategy),
+        () -> pathFollowingAngularOverride = Optional.empty(),
+        choreoCustomRotationSubsystem);
+  }
+
+  private PIDController choreoXController =
+      new PIDController(
+          SwerveConstants.driveControl.kP,
+          SwerveConstants.driveControl.kD,
+          SwerveConstants.driveControl.kD);
+  private PIDController choreoYController =
+      new PIDController(
+          SwerveConstants.driveControl.kP,
+          SwerveConstants.driveControl.kD,
+          SwerveConstants.driveControl.kD);
+  private ProfiledPIDController choreoHeadingController =
+      SwerveConstants.rotationControl.profiledPIDController(
+          Radians, Degrees.of(-180), Degrees.of(180));
+
+  public void followChoreoTrajecotry(SwerveSample sample) {
+    Pose2d robotPose = getPose();
+
+    Pose2d poseSetpoint = new Pose2d(sample.x, sample.y, Rotation2d.fromRadians(sample.heading));
+    if (flipPathAcrossFieldWidth)
+      poseSetpoint = PointOfInterestManager.flipPose(poseSetpoint, FlipType.REFLECT_Y);
+
+    ChassisSpeeds feedbackSpeeds =
+        new ChassisSpeeds(
+            choreoXController.calculate(robotPose.getX(), poseSetpoint.getX()),
+            choreoYController.calculate(robotPose.getY(), poseSetpoint.getY()),
+            choreoHeadingController.calculate(
+                robotPose.getRotation().getRadians(), poseSetpoint.getRotation().getRadians()));
+
+    ChassisSpeeds feedforwardSpeeds =
+        new ChassisSpeeds(
+            sample.vx,
+            flipPathAcrossFieldWidth ? -sample.vy : sample.vy,
+            flipPathAcrossFieldWidth ? -sample.omega : sample.omega);
+
+    ChassisSpeeds finalSpeeds = feedbackSpeeds.plus(feedforwardSpeeds);
+    pathFollowingAngularOverride.ifPresent(
+        angularStrategy ->
+            finalSpeeds.omegaRadiansPerSecond = angularStrategy.get().in(RadiansPerSecond));
+
+    // TODO: the sample contains acceleration information, we should probably use this information
+    // to get module feedforwards and directly set module states
+    drive(ChassisSpeeds.fromFieldRelativeSpeeds(finalSpeeds, robotPose.getRotation()));
+  }
+
+  //
   // Driving Strategies & Commands
   //
 
@@ -665,5 +746,9 @@ public class SwerveSubsystem extends SubsystemBase {
       return RadiansPerSecond.of(
           (ignoreFeedback ? feedback : feedback) + rotationDelta.div(elapsedTime).in(Radians));
     };
+  }
+
+  public Supplier<AngularVelocity> rotateForShoot(ShootTarget target) {
+    return rotateAtAngle(() -> FuelTrajectoryCalculator.getShot(target).fuelGroundSpeedRotation());
   }
 }

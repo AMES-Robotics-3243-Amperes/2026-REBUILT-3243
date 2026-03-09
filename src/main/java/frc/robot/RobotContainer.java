@@ -319,29 +319,23 @@ public class RobotContainer {
             drivetrain.joystickDriveLinear(SwerveConstants.linearTeleopSpeed, primaryController),
             drivetrain.joystickDriveAngular(primaryController::getRightX)));
 
-    // intake.setDefaultCommand(intake.holdIntakeDownCommand());
+    primaryController.leftTrigger().whileTrue(intake.intakeCommand());
 
-    // primaryController
-    //     .rightBumper()
-    //     .whileTrue(
-    //         DriveUnderTrenchCommand.driveUnderNearestTrenchCommand(
-    //             drivetrain::getPose,
-    //             drivetrain::getChassisSpeeds,
-    //             robotLocationManager::robotLocation));
-
-    primaryController
-        .leftTrigger()
-        .whileTrue(intake.intakeAtSpeedCommand(IntakeConstants.rollerIntakeSpeed));
+    secondaryController.leftTrigger().whileTrue(intake.agitateCommand());
 
     secondaryController
-        .leftTrigger()
-        .whileTrue(intake.intakeAtSpeedCommand(IntakeConstants.rollerIntakeSpeed));
+        .leftBumper()
+        .whileTrue(intake.runPivotOpenLoopCommand(IntakeConstants.pivotTeleopVolts));
+    secondaryController
+        .rightBumper()
+        .whileTrue(intake.runPivotOpenLoopCommand(IntakeConstants.pivotTeleopVolts.unaryMinus()));
 
-    secondaryController.leftBumper().whileTrue(intake.runPivotOpenLoopCommand(3));
-    secondaryController.rightBumper().whileTrue(intake.runPivotOpenLoopCommand(-3));
-
-    primaryController.leftBumper().whileTrue(intake.runPivotOpenLoopCommand(3));
-    primaryController.rightBumper().whileTrue(intake.runPivotOpenLoopCommand(-3));
+    primaryController
+        .leftBumper()
+        .whileTrue(intake.runPivotOpenLoopCommand(IntakeConstants.pivotTeleopVolts));
+    primaryController
+        .rightBumper()
+        .whileTrue(intake.runPivotOpenLoopCommand(IntakeConstants.pivotTeleopVolts.unaryMinus()));
 
     //
     // Shooting

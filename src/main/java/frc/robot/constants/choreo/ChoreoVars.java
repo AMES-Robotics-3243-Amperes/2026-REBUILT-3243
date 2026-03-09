@@ -16,8 +16,9 @@ public final class ChoreoVars {
   public static final Distance F_LenY = Units.Meters.of(8.069);
   public static final Distance F_NeutralLenX = Units.Meters.of(6.083);
   public static final Distance F_NeutralX = Units.Meters.of(5.229);
-  public static final Distance F_RightTrenchY = Units.Meters.of(0.639);
+  public static final Distance F_TrenchLenY = Units.Meters.of(1.279);
   public static final LinearAcceleration M_GlobalMaxAccel = Units.MetersPerSecondPerSecond.of(3);
+  public static final LinearVelocity M_MaxCollectVelocity = Units.MetersPerSecond.of(1.8);
   public static final Distance R_BumperLength = Units.Meters.of(0.883);
   public static final Distance R_BumperTolerance = Units.Meters.of(0.114);
   public static final Distance R_DeployedHopperX = Units.Meters.of(0.635);
@@ -30,12 +31,13 @@ public final class ChoreoVars {
   public static final double R_WheelCOF = 1.5;
   public static final Distance R_WheelRadius = Units.Meters.of(0.05);
   public static final Distance S_RushOutRadius = Units.Meters.of(1.2);
-  public static final LinearVelocity M_MaxCollectVelocity = Units.MetersPerSecond.of(1.5);
 
   public static final class Poses {
     public static final Pose2d KeepOutBottom = new Pose2d(4.625, 13.985, Rotation2d.kZero);
     public static final Pose2d KeepOutTop = new Pose2d(4.625, -5.916, Rotation2d.kZero);
-    public static final Pose2d CollectEnd = new Pose2d(7.5, 4.5, Rotation2d.fromRadians(-2));
+    public static final Pose2d SecondCenterCollectEnd =
+        new Pose2d(6.14, 4.87, Rotation2d.fromRadians(-2));
+    public static final Pose2d Shoot = new Pose2d(2.38, 6.75, Rotation2d.fromRadians(-0.88));
 
     private Poses() {}
   }

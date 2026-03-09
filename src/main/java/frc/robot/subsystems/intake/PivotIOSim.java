@@ -5,20 +5,22 @@
 package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
+import static edu.wpi.first.units.Units.Milliseconds;
+import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
-import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.constants.IntakeConstants;
 import org.ironmaple.simulation.IntakeSimulation;
 
 /** Add your docs here. */
 public class PivotIOSim implements PivotIO {
-  private final SlewRateLimiter rateLimiter = new SlewRateLimiter(5);
   private Angle position = IntakeConstants.pivotMaxRotation;
-  private Angle target = IntakeConstants.pivotMaxRotation;
+  private AngularVelocity velocity = RPM.of(0);
 
   private final IntakeSimulation intakeSimulation;
 
@@ -28,32 +30,33 @@ public class PivotIOSim implements PivotIO {
 
   @Override
   public void updateInputs(PivotIOInputs inputs) {
-    position = Radians.of(rateLimiter.calculate(target.in(Radians)));
-
     if (position.isNear(IntakeConstants.pivotMinRotation, Degrees.of(2)))
       intakeSimulation.startIntake();
     else intakeSimulation.stopIntake();
 
     inputs.angle = position;
-    inputs.angularVelocity = RadiansPerSecond.of(0);
+    inputs.angularVelocity = velocity;
     inputs.appliedVoltage = Volts.of(0);
   }
 
   @Override
-  public void resetPosition(Angle angle) {
-    position = angle;
-  }
+  public void runOpenLoop(double output) {
+    velocity = DegreesPerSecond.of(45).times(output);
+    position = position.plus(velocity.times(Milliseconds.of(20)));
+    Angle clampedPos =
+        Radians.of(
+            MathUtil.clamp(
+                position.in(Radians),
+                IntakeConstants.pivotMinRotation.in(Radians),
+                IntakeConstants.pivotMaxRotation.in(Radians)));
 
-  @Override
-  public void setAngle(Angle angle) {
-    target = angle;
+    if (!position.isEquivalent(clampedPos)) velocity = RPM.of(0);
+
+    position = clampedPos;
   }
 
   @Override
   public void coast() {
-    target =
-        position.gt(Degrees.of(90))
-            ? IntakeConstants.pivotMaxRotation
-            : IntakeConstants.pivotMinRotation;
+    velocity = RPM.of(0);
   }
 }

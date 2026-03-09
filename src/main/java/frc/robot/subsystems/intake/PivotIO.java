@@ -25,14 +25,8 @@ public interface PivotIO {
   /** Updates the set of loggable inputs. */
   default void updateInputs(PivotIOInputs inputs) {}
 
-  /* Resets the encoder/position of the pivot. */
-  default void resetPosition(Angle angle) {}
-
   /** Run the roller at the specified open loop value. */
   default void runOpenLoop(double output) {}
-
-  /* Sets the angle of the pivot. */
-  default void setAngle(Angle angle) {}
 
   /* Sets the pivot to coast. */
   default void coast() {}

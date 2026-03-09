@@ -1,13 +1,15 @@
 package frc.robot.constants;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Voltage;
 import frc.robot.util.ControlConstantsBuilder;
 
 public class IntakeConstants {
@@ -22,7 +24,7 @@ public class IntakeConstants {
           .sva(0.48225, 0.036694, 0.0036671);
 
   public static final AngularVelocity rollerIntakeSpeed = RotationsPerSecond.of(30);
-  public static final Angle pivotToleranceBeforeRollersEngage = Degrees.of(5);
+  public static final AngularVelocity rollerAgitateSpeed = RotationsPerSecond.of(20);
 
   // pivot
   public static final int pivotId = 3;
@@ -34,12 +36,8 @@ public class IntakeConstants {
   public static final Angle pivotMinRotation = Degrees.of(-1.3476);
   public static final Angle pivotMaxRotation = Degrees.of(130 - 1.3476);
 
-  public static final Angle pivotToleranceBeforeCoast = Degrees.of(7);
+  public static final AngularVelocity pivotVelocityToleranceBeforeStop = DegreesPerSecond.of(2);
 
-  public static final ControlConstantsBuilder pivotControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(10, 0, 0)
-          .sva(0, 0.6, 0.08)
-          .g(0.1, true)
-          .constraints(RotationsPerSecond.of(3), RotationsPerSecondPerSecond.of(8));
+  public static final Voltage pivotTeleopVolts = Volts.of(3);
+  public static final Voltage pivotAutomaticVolts = Volts.of(3);
 }

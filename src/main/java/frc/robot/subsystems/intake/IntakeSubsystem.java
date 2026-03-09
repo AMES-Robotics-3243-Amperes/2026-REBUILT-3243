@@ -4,15 +4,14 @@
 
 package frc.robot.subsystems.intake;
 
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -27,14 +26,13 @@ public class IntakeSubsystem extends SubsystemBase {
   public final PivotIO pivotIO;
   private final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
 
-  private Angle pivotTarget = null;
+  private boolean atBottom = false;
+  private boolean atTop = false;
 
   /** Creates a new IntakeSubsystem. */
   public IntakeSubsystem(RollerIO rollerIO, PivotIO pivotIO) {
     this.rollerIO = rollerIO;
     this.pivotIO = pivotIO;
-
-    pivotIO.resetPosition(IntakeConstants.pivotMaxRotation);
   }
 
   @Override
@@ -44,32 +42,6 @@ public class IntakeSubsystem extends SubsystemBase {
 
     pivotIO.updateInputs(pivotInputs);
     Logger.processInputs("Intake/Pivot", pivotInputs);
-
-    // reset pivot encoder
-    if (pivotInputs.angle.gt(IntakeConstants.pivotMaxRotation))
-      pivotIO.resetPosition(IntakeConstants.pivotMaxRotation);
-    if (pivotInputs.angle.lt(IntakeConstants.pivotMinRotation))
-      pivotIO.resetPosition(IntakeConstants.pivotMinRotation);
-
-    // TODO: this early return is here for safety but should probably be removed later
-    // if (pivotTarget == null) return;
-    // if (pivotInputs.angle.isNear(pivotTarget, IntakeConstants.pivotToleranceBeforeCoast))
-    //   pivotIO.coast();
-    // else pivotIO.setAngle(pivotTarget);
-  }
-
-  /** Finds the angle clamped to physical limits, sends it to the pivot, and returns it. */
-  private Angle setPivotAngle(Angle angle) {
-    Angle clampedAngle =
-        Degrees.of(
-            MathUtil.clamp(
-                angle.in(Degrees),
-                IntakeConstants.pivotMinRotation.in(Degrees),
-                IntakeConstants.pivotMaxRotation.in(Degrees)));
-    pivotTarget = clampedAngle;
-    Logger.recordOutput("Intake/Pivot/SetpointAngle", clampedAngle);
-
-    return clampedAngle;
   }
 
   private void setRollerVelocity(AngularVelocity velocity) {
@@ -82,30 +54,64 @@ public class IntakeSubsystem extends SubsystemBase {
     Logger.recordOutput("Intake/Roller/SetpointSpeed", RadiansPerSecond.of(0));
   }
 
-  public Command intakeAtSpeedCommand(AngularVelocity velocity) {
+  private void runPivotOpenLoop(double output) {
+    atBottom = false;
+    atTop = false;
+    pivotIO.runOpenLoop(output);
+  }
+
+  private void coastPivot() {
+    runPivotOpenLoop(0);
+  }
+
+  private void lowerPivot() {
+    if (atBottom) {
+      pivotIO.runOpenLoop(0);
+      return;
+    }
+
+    pivotIO.runOpenLoop(IntakeConstants.pivotAutomaticVolts.unaryMinus().in(Volts));
+    atBottom |=
+        (pivotInputs.appliedVoltage.abs(Volts) > IntakeConstants.pivotAutomaticVolts.abs(Volts)
+            && pivotInputs.angularVelocity.abs(RadiansPerSecond)
+                < IntakeConstants.pivotVelocityToleranceBeforeStop.abs(RadiansPerSecond));
+  }
+
+  private void raisePivot() {
+    if (atTop) {
+      pivotIO.runOpenLoop(0);
+      return;
+    }
+
+    pivotIO.runOpenLoop(IntakeConstants.pivotAutomaticVolts.in(Volts));
+    atTop |=
+        (pivotInputs.appliedVoltage.abs(Volts) > IntakeConstants.pivotAutomaticVolts.abs(Volts)
+            && pivotInputs.angularVelocity.abs(RadiansPerSecond)
+                < IntakeConstants.pivotVelocityToleranceBeforeStop.abs(RadiansPerSecond));
+  }
+
+  public Command intakeCommand() {
     return runEnd(
         () -> {
-          setPivotAngle(IntakeConstants.pivotMinRotation);
-
-          // TODO: re-enable this
-          // if (pivotInputs.angle.isNear(
-          //     IntakeConstants.pivotMinRotation, IntakeConstants.pivotToleranceBeforeCoast))
-          setRollerVelocity(velocity);
+          lowerPivot();
+          setRollerVelocity(IntakeConstants.rollerIntakeSpeed);
         },
         () -> {
+          coastPivot();
           coastRoller();
-          setPivotAngle(IntakeConstants.pivotMaxRotation);
         });
   }
 
-  public Command holdIntakeDownCommand() {
-    return runEnd(
-        () -> setPivotAngle(IntakeConstants.pivotMinRotation),
-        () -> setPivotAngle(IntakeConstants.pivotMaxRotation));
+  public Command agitateCommand() {
+    return runEnd(() -> setRollerVelocity(IntakeConstants.rollerIntakeSpeed), this::coastRoller);
   }
 
-  public Command runPivotOpenLoopCommand(double output) {
-    return runEnd(() -> pivotIO.runOpenLoop(output), () -> pivotIO.runOpenLoop(0));
+  public Command raisePivotCommand() {
+    return runEnd(this::raisePivot, this::coastPivot);
+  }
+
+  public Command runPivotOpenLoopCommand(Voltage output) {
+    return runEnd(() -> runPivotOpenLoop(output.in(Volts)), () -> runPivotOpenLoop(0));
   }
 
   public Angle getPivotAngle() {

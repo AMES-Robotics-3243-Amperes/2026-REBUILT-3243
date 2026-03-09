@@ -11,14 +11,11 @@ import static edu.wpi.first.units.Units.Volts;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
-import com.revrobotics.spark.FeedbackSensor;
-import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.units.measure.Angle;
 import frc.robot.constants.IntakeConstants;
 
 /** Add your docs here. */
@@ -37,11 +34,6 @@ public class PivotIOReal implements PivotIO {
 
     config.smartCurrentLimit(IntakeConstants.pivotCurrentLimit);
 
-    config
-        .closedLoop
-        .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-        .apply(IntakeConstants.pivotControl.revClosedLoopConfig());
-
     sparkMax.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     closedLoopController = sparkMax.getClosedLoopController();
@@ -56,18 +48,8 @@ public class PivotIOReal implements PivotIO {
   }
 
   @Override
-  public void resetPosition(Angle angle) {
-    encoder.setPosition(angle.in(Rotations));
-  }
-
-  @Override
   public void runOpenLoop(double output) {
     sparkMax.setVoltage(output);
-  }
-
-  @Override
-  public void setAngle(Angle angle) {
-    closedLoopController.setSetpoint(angle.in(Rotations), ControlType.kMAXMotionPositionControl);
   }
 
   @Override

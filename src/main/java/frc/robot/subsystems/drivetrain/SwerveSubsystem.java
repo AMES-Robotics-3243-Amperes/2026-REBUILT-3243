@@ -147,7 +147,7 @@ public class SwerveSubsystem extends SubsystemBase {
 
   private boolean atRotationSetpoint = false;
 
-  private static final double kConfidenceDecaySec = 2.0;
+  private static final double kConfidenceDecaySec = 2.0; // TODO: constants
   private static final double kBaseConfidenceBump = 0.35;
 
   private boolean setpointGeneratorUpToDate = false;

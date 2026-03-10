@@ -5,6 +5,7 @@
 package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -30,8 +31,8 @@ import java.util.function.Supplier;
 
 /** Add your docs here. */
 public class FlywheelIOJoinedShaftReal implements FlywheelIO {
-  private final TalonFX leader = new TalonFX(ShooterConstants.flywheelLeftId);
-  private final TalonFX follower = new TalonFX(ShooterConstants.flywheelRightId);
+  private final TalonFX leader = new TalonFX(ShooterConstants.flywheelLeftId, new CANBus("*"));
+  private final TalonFX follower = new TalonFX(ShooterConstants.flywheelRightId, new CANBus("*"));
 
   private final StatusSignal<Angle> position;
   private final StatusSignal<AngularVelocity> velocity;

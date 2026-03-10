@@ -28,7 +28,7 @@ public class ShooterConstants {
   public static final Translation2d bottomBlueNeutralZoneShot =
       new Translation2d(FieldConstants.fieldLength.div(2), FieldConstants.trenchWidth);
 
-  public static final AngularVelocity flywheelIndexTolerance = RPM.of(40);
+  public static final AngularVelocity flywheelIndexTolerance = RPM.of(60);
 
   // flywheel
   public static final int flywheelLeftId = 10;

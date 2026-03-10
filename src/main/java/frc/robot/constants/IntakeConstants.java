@@ -38,6 +38,5 @@ public class IntakeConstants {
 
   public static final AngularVelocity pivotVelocityToleranceBeforeStop = DegreesPerSecond.of(2);
 
-  public static final Voltage pivotTeleopVolts = Volts.of(3);
-  public static final Voltage pivotAutomaticVolts = Volts.of(3);
+  public static final Voltage pivotOpenLoopVolts = Volts.of(4);
 }

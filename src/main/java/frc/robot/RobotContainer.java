@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
@@ -25,7 +24,6 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.AutonomousRoutines;
 import frc.robot.commands.ShootCommands;
-import frc.robot.constants.IntakeConstants;
 import frc.robot.constants.ModeConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.VisionConstants;
@@ -323,19 +321,8 @@ public class RobotContainer {
 
     secondaryController.leftTrigger().whileTrue(intake.agitateCommand());
 
-    secondaryController
-        .leftBumper()
-        .whileTrue(intake.runPivotOpenLoopCommand(IntakeConstants.pivotTeleopVolts));
-    secondaryController
-        .rightBumper()
-        .whileTrue(intake.runPivotOpenLoopCommand(IntakeConstants.pivotTeleopVolts.unaryMinus()));
-
-    primaryController
-        .leftBumper()
-        .whileTrue(intake.runPivotOpenLoopCommand(IntakeConstants.pivotTeleopVolts));
-    primaryController
-        .rightBumper()
-        .whileTrue(intake.runPivotOpenLoopCommand(IntakeConstants.pivotTeleopVolts.unaryMinus()));
+    primaryController.rightBumper().whileTrue(intake.raisePivotCommand());
+    primaryController.leftBumper().whileTrue(intake.lowerPivotCommand());
 
     //
     // Shooting
@@ -360,9 +347,6 @@ public class RobotContainer {
                 ShootTarget.NEUTRAL, shooter, drivetrain, primaryController));
 
     shootBind.whileTrue(ShootCommands.indexWhenReadyCommand(indexer, drivetrain, shooter));
-
-    primaryController.x().onTrue(shooter.torqueCurrentKsCharacterization(Amps.of(15)));
-    primaryController.y().onTrue(intake.rollerSysIdCommand(primaryController.y()));
   }
 
   //

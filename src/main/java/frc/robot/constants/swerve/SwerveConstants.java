@@ -29,7 +29,7 @@ public class SwerveConstants {
 
   public static final LinearVelocity linearTeleopSpeedWhileShooting = MetersPerSecond.of(1);
 
-  public static final Angle rotationToleranceBeforeShooting = Degrees.of(3);
+  public static final Angle rotationToleranceBeforeShooting = Degrees.of(4);
 
   // control
   public static final Angle rotationFeedbackTolerance = Degrees.of(1.5);
@@ -68,6 +68,6 @@ public class SwerveConstants {
   }
 
   // misc
-  public static final CANBus swerveCANBus = CANBus.roboRIO();
+  public static final CANBus swerveCANBus = new CANBus("*");
   public static final Time idleTimeUntilReset = Milliseconds.of(60);
 }

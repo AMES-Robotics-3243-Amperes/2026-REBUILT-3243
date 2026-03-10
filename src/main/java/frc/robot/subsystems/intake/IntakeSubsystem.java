@@ -13,6 +13,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.GeneralPurposeCharacterization;
@@ -25,9 +26,6 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public final PivotIO pivotIO;
   private final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
-
-  private boolean atBottom = false;
-  private boolean atTop = false;
 
   /** Creates a new IntakeSubsystem. */
   public IntakeSubsystem(RollerIO rollerIO, PivotIO pivotIO) {
@@ -54,64 +52,53 @@ public class IntakeSubsystem extends SubsystemBase {
     Logger.recordOutput("Intake/Roller/SetpointSpeed", RadiansPerSecond.of(0));
   }
 
-  private void runPivotOpenLoop(double output) {
-    atBottom = false;
-    atTop = false;
-    pivotIO.runOpenLoop(output);
-  }
-
   private void coastPivot() {
-    runPivotOpenLoop(0);
-  }
-
-  private void lowerPivot() {
-    if (atBottom) {
-      pivotIO.runOpenLoop(0);
-      return;
-    }
-
-    pivotIO.runOpenLoop(IntakeConstants.pivotAutomaticVolts.unaryMinus().in(Volts));
-    atBottom |=
-        (pivotInputs.appliedVoltage.abs(Volts) > IntakeConstants.pivotAutomaticVolts.abs(Volts)
-            && pivotInputs.angularVelocity.abs(RadiansPerSecond)
-                < IntakeConstants.pivotVelocityToleranceBeforeStop.abs(RadiansPerSecond));
-  }
-
-  private void raisePivot() {
-    if (atTop) {
-      pivotIO.runOpenLoop(0);
-      return;
-    }
-
-    pivotIO.runOpenLoop(IntakeConstants.pivotAutomaticVolts.in(Volts));
-    atTop |=
-        (pivotInputs.appliedVoltage.abs(Volts) > IntakeConstants.pivotAutomaticVolts.abs(Volts)
-            && pivotInputs.angularVelocity.abs(RadiansPerSecond)
-                < IntakeConstants.pivotVelocityToleranceBeforeStop.abs(RadiansPerSecond));
+    pivotIO.runOpenLoop(0);
   }
 
   public Command intakeCommand() {
+    return Commands.runEnd(
+            () -> setRollerVelocity(IntakeConstants.rollerIntakeSpeed), this::coastRoller)
+        .alongWith(lowerPivotCommand());
+  }
+
+  public Command outtakeCommand() {
     return runEnd(
-        () -> {
-          lowerPivot();
-          setRollerVelocity(IntakeConstants.rollerIntakeSpeed);
-        },
-        () -> {
-          coastPivot();
-          coastRoller();
-        });
+        () -> setRollerVelocity(IntakeConstants.rollerIntakeSpeed.unaryMinus()), this::coastRoller);
   }
 
   public Command agitateCommand() {
-    return runEnd(() -> setRollerVelocity(IntakeConstants.rollerIntakeSpeed), this::coastRoller);
+    return runEnd(() -> setRollerVelocity(IntakeConstants.rollerAgitateSpeed), this::coastRoller);
   }
 
   public Command raisePivotCommand() {
-    return runEnd(this::raisePivot, this::coastPivot);
+    return runEnd(
+            () -> pivotIO.runOpenLoop(IntakeConstants.pivotOpenLoopVolts.in(Volts)),
+            this::coastPivot)
+        .withDeadline(
+            Commands.sequence(
+                Commands.waitSeconds(0.05), // TODO: constants. same with the 0.8
+                Commands.waitUntil(
+                    () ->
+                        pivotInputs.appliedVoltage.abs(Volts)
+                            < IntakeConstants.pivotOpenLoopVolts.times(0.8).abs(Volts))));
+  }
+
+  public Command lowerPivotCommand() {
+    return runEnd(
+            () -> pivotIO.runOpenLoop(IntakeConstants.pivotOpenLoopVolts.unaryMinus().in(Volts)),
+            this::coastPivot)
+        .withDeadline(
+            Commands.sequence(
+                Commands.waitSeconds(0.05), // TODO: constants. same with the 0.8
+                Commands.waitUntil(
+                    () ->
+                        pivotInputs.appliedVoltage.abs(Volts)
+                            < IntakeConstants.pivotOpenLoopVolts.times(0.8).abs(Volts))));
   }
 
   public Command runPivotOpenLoopCommand(Voltage output) {
-    return runEnd(() -> runPivotOpenLoop(output.in(Volts)), () -> runPivotOpenLoop(0));
+    return runEnd(() -> pivotIO.runOpenLoop(output.in(Volts)), this::coastPivot);
   }
 
   public Angle getPivotAngle() {

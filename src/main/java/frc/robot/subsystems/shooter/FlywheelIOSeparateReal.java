@@ -5,6 +5,7 @@
 package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -61,7 +62,7 @@ public class FlywheelIOSeparateReal implements FlywheelIO {
       ControlConstantsBuilder control,
       ControlConstantsBuilder recoveryControl) {
     TalonFXConfiguration config = new TalonFXConfiguration();
-    leader = new TalonFX(id);
+    leader = new TalonFX(id, new CANBus("*"));
 
     config.MotorOutput.withInverted(inverted).withNeutralMode(NeutralModeValue.Coast);
     config.CurrentLimits.withStatorCurrentLimit(ShooterConstants.flywheelStatorCurrentLimit)

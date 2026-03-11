@@ -14,7 +14,6 @@ import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -64,7 +63,7 @@ public class ShooterSubsystem extends SubsystemBase {
     hoodIO.updateInputs(hoodInputs);
     Logger.processInputs("Shooter/Hood", hoodInputs);
 
-    if (flywheelSpunUpBoolean()) recoverIfSlow = true;
+    if (flywheelSpunUp()) recoverIfSlow = true;
 
     flywheelIOLeft.enableRecoverControl(
         recoverIfSlow
@@ -138,16 +137,12 @@ public class ShooterSubsystem extends SubsystemBase {
             * ShooterConstants.fuelToFlywheelLinearSpeedRatio);
   }
 
-  private boolean flywheelSpunUpBoolean() {
+  public boolean flywheelSpunUp() {
     return flywheelLeftInputs.velocity.isNear(
             flywheelSetpoint, ShooterConstants.flywheelIndexTolerance)
         && flywheelRightInputs.velocity.isNear(
             flywheelSetpoint, ShooterConstants.flywheelIndexTolerance)
         && !flywheelSetpoint.isEquivalent(RPM.of(0));
-  }
-
-  public Trigger flywheelSpunUp() {
-    return new Trigger(this::flywheelSpunUpBoolean).debounce(1e-1, DebounceType.kRising);
   }
 
   public Command spinUpFlywheelCommand(ShootTarget target) {

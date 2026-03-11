@@ -63,8 +63,8 @@
    "M_MaxCollectVelocity":{
     "dimension":"LinVel",
     "var":{
-     "exp":"1.8 m / s",
-     "val":1.8
+     "exp":"2 m / s",
+     "val":2.0
     }
    },
    "R_BumperLength":{
@@ -197,16 +197,16 @@
    },
    "Shoot":{
     "x":{
-     "exp":"2.38 m",
-     "val":2.38
+     "exp":"2.8868 m",
+     "val":2.8868
     },
     "y":{
-     "exp":"6.75 m",
-     "val":6.75
+     "exp":"6.385 m",
+     "val":6.385
     },
     "heading":{
-     "exp":"-0.88 rad",
-     "val":-0.88
+     "exp":"-0.93376 rad",
+     "val":-0.93376
     }
    }
   }

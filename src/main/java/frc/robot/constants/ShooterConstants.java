@@ -65,7 +65,7 @@ public class ShooterConstants {
   // hood
   public static final int hoodId = 5;
 
-  public static final Angle hoodAbsoluteEncoderZeroedRotation = Degrees.of(23.2);
+  public static final Angle hoodAbsoluteEncoderZeroedRotation = Degrees.of(22.7);
   public static final Angle hoodMinRotation = Degrees.of(16.5);
   public static final Angle hoodMaxRotation = Degrees.of(46);
 

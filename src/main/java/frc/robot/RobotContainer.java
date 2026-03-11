@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Volts;
 
 import choreo.auto.AutoChooser;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -300,16 +301,6 @@ public class RobotContainer {
 
   private void configureBindings() {
     //
-    // State management
-    //
-    secondaryController.a().whileTrue(robotLocationManager.setLocationAsAllianceZone());
-    secondaryController
-        .x()
-        .or(secondaryController.b())
-        .whileTrue(robotLocationManager.setLocationAsNeutralZone());
-    secondaryController.y().whileTrue(robotLocationManager.setLocationAsOpponentZone());
-
-    //
     // Misc binds
     //
     drivetrain.setDefaultCommand(
@@ -321,8 +312,11 @@ public class RobotContainer {
 
     secondaryController.leftTrigger().whileTrue(intake.agitateCommand());
 
-    primaryController.rightBumper().whileTrue(intake.raisePivotCommand());
-    primaryController.leftBumper().whileTrue(intake.lowerPivotCommand());
+    secondaryController.rightBumper().whileTrue(intake.lowerPivotCommand());
+    secondaryController.leftBumper().whileTrue(intake.raisePivotCommand());
+
+    secondaryController.y().whileTrue(intake.runPivotOpenLoopCommand(Volts.of(3)));
+    secondaryController.a().whileTrue(intake.runPivotOpenLoopCommand(Volts.of(-3)));
 
     //
     // Shooting

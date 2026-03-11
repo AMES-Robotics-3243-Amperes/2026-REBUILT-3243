@@ -97,7 +97,7 @@ public class ShootCommands {
       IndexerSubsystem indexer, ShooterSubsystem shooter, SwerveSubsystem drivetrain) {
     return Commands.sequence(
         Commands.waitUntil(
-            new Trigger(drivetrain::atRotationSetpoint).and(shooter.flywheelSpunUp())),
+            new Trigger(drivetrain::atRotationSetpoint).and(shooter::flywheelSpunUp)),
         indexer
             .spinUpKickerWithFlywheelCommand(shooter)
             .withDeadline(Commands.waitTime(IndexerConstants.idleTimeBeforeIndexing)),

@@ -598,6 +598,11 @@ public class SwerveSubsystem extends SubsystemBase {
           Radians, Degrees.of(-180), Degrees.of(180));
 
   public void followChoreoTrajecotry(SwerveSample sample) {
+    if (sample.getTimestamp() == 0) {
+      choreoHeadingController.reset(
+          getRotation().getRadians(), getChassisSpeeds().omegaRadiansPerSecond);
+    }
+
     Pose2d robotPose = getPose();
 
     Pose2d poseSetpoint = new Pose2d(sample.x, sample.y, Rotation2d.fromRadians(sample.heading));
@@ -621,6 +626,11 @@ public class SwerveSubsystem extends SubsystemBase {
     pathFollowingAngularOverride.ifPresent(
         angularStrategy ->
             finalSpeeds.omegaRadiansPerSecond = angularStrategy.get().in(RadiansPerSecond));
+
+    Logger.recordOutput("ff", feedbackSpeeds.omegaRadiansPerSecond);
+    Logger.recordOutput("fb", feedforwardSpeeds.omegaRadiansPerSecond);
+    Logger.recordOutput("setpoint", poseSetpoint.getRotation().getDegrees());
+    Logger.recordOutput("measured", robotPose.getRotation().getDegrees());
 
     // TODO: the sample contains acceleration information, we should probably use this information
     // to get module feedforwards and directly set module states
@@ -739,8 +749,8 @@ public class SwerveSubsystem extends SubsystemBase {
       double feedback =
           pidController.calculate(getRotation().getRadians(), targetSupplier.get().getRadians());
 
-           atRotationSetpoint =
-          Math.abs(target.relativeTo(getRotation()).getRadians())
+      atRotationSetpoint =
+          Math.abs(MathUtil.angleModulus(target.relativeTo(getRotation()).getRadians()))
               < SwerveConstants.rotationToleranceBeforeShooting.in(Radians);
 
       return RadiansPerSecond.of(

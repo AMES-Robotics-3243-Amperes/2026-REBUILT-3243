@@ -81,7 +81,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 Commands.waitUntil(
                     () ->
                         pivotInputs.appliedVoltage.abs(Volts)
-                            < IntakeConstants.pivotOpenLoopVolts.times(0.8).abs(Volts))));
+                            < IntakeConstants.pivotOpenLoopVolts.times(0.6).abs(Volts))));
   }
 
   public Command lowerPivotCommand() {
@@ -94,7 +94,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 Commands.waitUntil(
                     () ->
                         pivotInputs.appliedVoltage.abs(Volts)
-                            < IntakeConstants.pivotOpenLoopVolts.times(0.8).abs(Volts))));
+                            < IntakeConstants.pivotOpenLoopVolts.times(0.6).abs(Volts))));
   }
 
   public Command runPivotOpenLoopCommand(Voltage output) {

@@ -32,14 +32,14 @@ public class AutonomousRoutines {
             drivetrain);
 
     autoChooser.addRoutine(
-        "deposit side one cycle",
+        "depog side one cycle",
         () -> depotSideOneCycle(autoFactory, drivetrain, shooter, indexer, intake));
     autoChooser.addRoutine(
         "outpost side one cycle",
         () -> outpostSideOneCycle(autoFactory, drivetrain, shooter, indexer, intake));
 
     autoChooser.addRoutine(
-        "deposit side two cycle",
+        "depot side two cycle",
         () -> depotSideTwoCycle(autoFactory, drivetrain, shooter, indexer, intake));
     autoChooser.addRoutine(
         "outpost side two cycle",
@@ -110,7 +110,7 @@ public class AutonomousRoutines {
         routine,
         collectFromMiddle,
         returnToShoot,
-        Seconds.of(0.8),
+        Seconds.of(0.6),
         Seconds.of(8),
         drivetrain,
         shooter,
@@ -158,7 +158,7 @@ public class AutonomousRoutines {
             routine,
             firstCollectFromMiddle,
             firstReturnToShoot,
-            Seconds.of(0.8),
+            Seconds.of(0.6),
             Seconds.of(3.5),
             drivetrain,
             shooter,
@@ -170,7 +170,7 @@ public class AutonomousRoutines {
         routine,
         secondCollectFromMiddle,
         secondReturnToShoot,
-        Seconds.of(0),
+        Seconds.of(0.1),
         Seconds.of(8),
         drivetrain,
         shooter,

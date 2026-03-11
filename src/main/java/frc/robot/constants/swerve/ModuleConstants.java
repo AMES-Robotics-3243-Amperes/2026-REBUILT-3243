@@ -41,7 +41,7 @@ public class ModuleConstants {
       ClosedLoopOutputType.TorqueCurrentFOC;
 
   public static final boolean driveVoltageModeFOC = true;
-  public static final boolean azimuthVoltageModeFOC = false;
+  public static final boolean azimuthVoltageModeFOC = true;
 
   public static final SteerFeedbackType steerFeedbackType = SteerFeedbackType.FusedCANcoder;
 

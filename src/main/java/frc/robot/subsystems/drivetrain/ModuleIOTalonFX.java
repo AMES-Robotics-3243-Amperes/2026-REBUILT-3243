@@ -104,7 +104,7 @@ public abstract class ModuleIOTalonFX implements ModuleIO {
 
     // Configure turn motor
     TalonFXConfiguration turnConfig = constants.SteerMotorInitialConfigs;
-    turnConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    turnConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     turnConfig.Slot0 = constants.SteerMotorGains;
     turnConfig.Feedback.FeedbackRemoteSensorID = constants.EncoderId;
     turnConfig.Feedback.FeedbackSensorSource =

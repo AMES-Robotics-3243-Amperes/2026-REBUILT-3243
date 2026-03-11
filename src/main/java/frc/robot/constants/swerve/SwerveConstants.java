@@ -35,7 +35,7 @@ public class SwerveConstants {
   public static final Angle rotationFeedbackTolerance = Degrees.of(1.5);
   public static final ControlConstantsBuilder rotationControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(4.8, 0, 0.25)
+          .pid(4, 0, 0.25)
           .iZone(1)
           .constraints(RotationsPerSecond.of(3), RotationsPerSecondPerSecond.of(9));
 

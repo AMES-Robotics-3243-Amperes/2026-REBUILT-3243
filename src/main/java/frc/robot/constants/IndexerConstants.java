@@ -27,8 +27,8 @@ public class IndexerConstants {
 
   public static final ControlConstantsBuilder spindexerControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(0.016377, 0, 0)
-          .sva(0.21938, 0.068485, 0.0065446);
+          .pid(0.00026864, 0, 0)
+          .sva(0.30803, 0.069864, 0.0036346);
 
   // kicker
   public static final int kickerId = 4;

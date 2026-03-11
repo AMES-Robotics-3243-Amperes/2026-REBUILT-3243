@@ -21,6 +21,7 @@ import org.ironmaple.simulation.IntakeSimulation;
 public class PivotIOSim implements PivotIO {
   private Angle position = IntakeConstants.pivotMaxRotation;
   private AngularVelocity velocity = RPM.of(0);
+  private double output = 0;
 
   private final IntakeSimulation intakeSimulation;
 
@@ -36,7 +37,7 @@ public class PivotIOSim implements PivotIO {
 
     inputs.angle = position;
     inputs.angularVelocity = velocity;
-    inputs.appliedVoltage = Volts.of(0);
+    inputs.appliedVoltage = Volts.of(output);
   }
 
   @Override
@@ -50,7 +51,17 @@ public class PivotIOSim implements PivotIO {
                 IntakeConstants.pivotMinRotation.in(Radians),
                 IntakeConstants.pivotMaxRotation.in(Radians)));
 
-    if (!position.isEquivalent(clampedPos)) velocity = RPM.of(0);
+    if (!position.isEquivalent(clampedPos)) {
+      velocity = RPM.of(0);
+      this.output = 0;
+
+      if (output < 0) intakeSimulation.startIntake();
+    } else if (output > 0) {
+      this.output = output;
+      this.intakeSimulation.stopIntake();
+    } else {
+      this.output = output;
+    }
 
     position = clampedPos;
   }

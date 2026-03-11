@@ -4,15 +4,20 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.util.ControlConstantsBuilder;
 
 public class IntakeConstants {
+  public static final Time timeBeforeAgitating = Seconds.of(1.2);
+  public static final Time timeSpentRunningRollers = Seconds.of(2);
+
   // roller
   public static final int rollerId = 2;
   public static final double rollerReduction = 2.0;

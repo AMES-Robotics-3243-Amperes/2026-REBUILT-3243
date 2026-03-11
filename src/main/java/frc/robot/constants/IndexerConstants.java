@@ -5,14 +5,18 @@
 package frc.robot.constants;
 
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.RPM;
 
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Time;
 import frc.robot.util.ControlConstantsBuilder;
 
 /** Add your docs here. */
 public class IndexerConstants {
+  public static final Time idleTimeBeforeIndexing = Milliseconds.of(150);
+
   // spindexer
   public static final int spindexerId = 1;
   public static final double spindexerReduction = 4.0;

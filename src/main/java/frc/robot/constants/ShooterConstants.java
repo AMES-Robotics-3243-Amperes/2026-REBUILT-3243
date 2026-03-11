@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.Second;
 
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
@@ -16,6 +17,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
@@ -29,6 +31,8 @@ public class ShooterConstants {
       new Translation2d(FieldConstants.fieldLength.div(2), FieldConstants.trenchWidth);
 
   public static final AngularVelocity flywheelIndexTolerance = RPM.of(60);
+
+  public static final AngularAcceleration spinUpMaxAcceleration = RPM.per(Second).of(1500);
 
   // flywheel
   public static final int flywheelLeftId = 10;

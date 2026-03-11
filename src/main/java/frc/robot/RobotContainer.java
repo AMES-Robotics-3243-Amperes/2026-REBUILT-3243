@@ -286,8 +286,8 @@ public class RobotContainer {
     FuelTrajectoryCalculator.robotPose = drivetrain::getPose;
     FuelTrajectoryCalculator.robotSpeeds = drivetrain::getChassisSpeeds;
 
-    CommandScheduler.getInstance()
-        .schedule(
+    RobotModeTriggers.teleop()
+        .whileTrue(
             Commands.run(
                 () -> ControllerRumble.rumbleController(primaryController, secondaryController)));
 
@@ -331,22 +331,28 @@ public class RobotContainer {
     shootBind
         .and(robotLocationManager.inAllianceZone())
         .whileTrue(
-            ShootCommands.rotateAndShootTeleopDrive(
-                ShootTarget.HUB, shooter, drivetrain, primaryController));
+            ShootCommands.newBuilder(ShootTarget.HUB)
+                .rotateDrivetrainWithTeleopLinear(drivetrain, primaryController)
+                .runShooter(shooter)
+                .build());
 
     shootBind
         .and(robotLocationManager.innNeutralZone())
         .whileTrue(
-            ShootCommands.rotateAndShootTeleopDrive(
-                ShootTarget.ALLIANCE, shooter, drivetrain, primaryController));
+            ShootCommands.newBuilder(ShootTarget.ALLIANCE)
+                .rotateDrivetrainWithTeleopLinear(drivetrain, primaryController)
+                .runShooter(shooter)
+                .build());
 
     shootBind
         .and(robotLocationManager.inOpponentZone())
         .whileTrue(
-            ShootCommands.rotateAndShootTeleopDrive(
-                ShootTarget.NEUTRAL, shooter, drivetrain, primaryController));
+            ShootCommands.newBuilder(ShootTarget.NEUTRAL)
+                .rotateDrivetrainWithTeleopLinear(drivetrain, primaryController)
+                .runShooter(shooter)
+                .build());
 
-    shootBind.whileTrue(ShootCommands.indexWhenReadyCommand(indexer, drivetrain, shooter));
+    shootBind.whileTrue(ShootCommands.indexWhenReadyCommand(indexer, shooter, drivetrain));
   }
 
   //

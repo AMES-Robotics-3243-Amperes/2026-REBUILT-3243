@@ -726,10 +726,6 @@ public class SwerveSubsystem extends SubsystemBase {
       if (timeSinceLastLoop.hasElapsed(SwerveConstants.idleTimeUntilReset))
         pidController.reset(getRotation().getRadians());
 
-      atRotationSetpoint =
-          Math.abs(pidController.getPositionError())
-              < SwerveConstants.rotationToleranceBeforeShooting.in(Radians);
-
       boolean ignoreFeedback =
           Math.abs(pidController.getPositionError())
               < SwerveConstants.rotationFeedbackTolerance.in(Radians);
@@ -742,6 +738,10 @@ public class SwerveSubsystem extends SubsystemBase {
 
       double feedback =
           pidController.calculate(getRotation().getRadians(), targetSupplier.get().getRadians());
+
+           atRotationSetpoint =
+          Math.abs(target.relativeTo(getRotation()).getRadians())
+              < SwerveConstants.rotationToleranceBeforeShooting.in(Radians);
 
       return RadiansPerSecond.of(
           (ignoreFeedback ? feedback : feedback) + rotationDelta.div(elapsedTime).in(Radians));

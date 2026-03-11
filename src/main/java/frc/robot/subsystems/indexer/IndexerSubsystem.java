@@ -83,7 +83,7 @@ public class IndexerSubsystem extends SubsystemBase {
         IndexerConstants.spindexerIndexingSpeed);
   }
 
-  public Command spinUpForShootCommand(ShooterSubsystem shooter) {
+  public Command spinUpKickerWithFlywheelCommand(ShooterSubsystem shooter) {
     return spinUpKickerCommand(
         () -> getKickerVelocityFromLinearVelocity(shooter.getSetpointFuelVelocity()));
   }

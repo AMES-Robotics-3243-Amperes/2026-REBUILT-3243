@@ -1,10 +1,13 @@
 package frc.robot.commands;
 
+import static edu.wpi.first.units.Units.Seconds;
+
 import choreo.auto.AutoChooser;
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.constants.choreo.ChoreoTraj;
 import frc.robot.subsystems.drivetrain.SwerveSubsystem;
 import frc.robot.subsystems.indexer.IndexerSubsystem;
@@ -43,6 +46,51 @@ public class AutonomousRoutines {
         () -> outpostSideTwoCycle(autoFactory, drivetrain, shooter, indexer, intake));
   }
 
+  /**
+   * Adds a single collect/shoot cycle to an auto. The returned trigger fires once when the cycle is
+   * over.
+   */
+  private static Trigger registerSingleCycle(
+      AutoRoutine routine,
+      AutoTrajectory collectTrajectory,
+      AutoTrajectory returnTrajectory,
+      Time timeIntoPathBeforeIntaking,
+      Time shootTime,
+      SwerveSubsystem drivetrain,
+      ShooterSubsystem shooter,
+      IndexerSubsystem indexer,
+      IntakeSubsystem intake) {
+    // collect while intaking
+    collectTrajectory
+        .atTime(timeIntoPathBeforeIntaking.in(Seconds))
+        .onTrue(intake.intakeCommand().until(collectTrajectory.active().negate()));
+    collectTrajectory.chain(returnTrajectory);
+
+    // while returning, intake a little longer to collect the rest of the fuel. spin up flywheel
+    // when approaching shoot position
+    collectTrajectory.doneFor(1).whileTrue(intake.intakeCommand());
+    returnTrajectory
+        .active()
+        .onTrue(
+            shooter
+                .spinUpFlywheelCommand(ShootTarget.HUB)
+                .until(returnTrajectory.active().negate()));
+
+    // finally, shoot
+    returnTrajectory
+        .done()
+        .onTrue(
+            ShootCommands.newBuilder(ShootTarget.HUB)
+                .rotateDrivetrain(drivetrain)
+                .runShooter(shooter)
+                .indexWhenReady(indexer, shooter, drivetrain)
+                .automaticallyAgitate(intake)
+                .build()
+                .withTimeout(shootTime));
+
+    return returnTrajectory.doneDelayed(shootTime.in(Seconds));
+  }
+
   //
   // Single cycle autos
   //
@@ -58,42 +106,17 @@ public class AutonomousRoutines {
     AutoTrajectory collectFromMiddle = routine.trajectory(ChoreoTraj.FirstCenterCollect.name(), 0);
     AutoTrajectory returnToShoot = routine.trajectory(ChoreoTraj.FirstCenterCollect.name(), 1);
 
+    registerSingleCycle(
+        routine,
+        collectFromMiddle,
+        returnToShoot,
+        Seconds.of(0.8),
+        Seconds.of(8),
+        drivetrain,
+        shooter,
+        indexer,
+        intake);
     routine.active().onTrue(collectFromMiddle.cmd());
-
-    // collect from middle while intaking
-    collectFromMiddle
-        .atTime(1)
-        .onTrue(intake.intakeCommand().until(collectFromMiddle.active().negate()));
-    collectFromMiddle.chain(returnToShoot);
-
-    // while returning, intake a little longer to collect the rest of the fuel. spin up flywheel
-    // when approaching shoot position
-    returnToShoot.active().onTrue(intake.intakeCommand().withTimeout(1));
-    returnToShoot
-        .atTimeBeforeEnd(
-            2) // TODO: once the spin up ramp rate is in contsants, this time can be calculated to
-        // be optimal. also test to make sure the trigger activates for paths shorter than X
-        // seconds
-        .onTrue(
-            shooter
-                .spinUpFlywheelCommand()
-                .until(
-                    returnToShoot
-                        .active()
-                        .negate())); // TODO: have a constant for average spinup time?
-
-    // finally, shoot. we also agitate with pivot and rollers at appropriate times
-    returnToShoot
-        .done()
-        .onTrue(
-            Commands.parallel(
-                ShootCommands.rotateAndShoot(ShootTarget.HUB, shooter, drivetrain),
-                ShootCommands.indexWhenReadyCommand(indexer, drivetrain, shooter),
-                Commands.sequence(
-                    Commands.waitSeconds(0.8),
-                    intake.raisePivotCommand(),
-                    intake.agitateCommand().withTimeout(2) // TODO: have an agitate speed
-                    )));
 
     return routine;
   }
@@ -130,62 +153,30 @@ public class AutonomousRoutines {
     AutoTrajectory secondReturnToShoot =
         routine.trajectory(ChoreoTraj.SecondCenterCollect.name(), 1);
 
+    Trigger firstCycleDone =
+        registerSingleCycle(
+            routine,
+            firstCollectFromMiddle,
+            firstReturnToShoot,
+            Seconds.of(0.8),
+            Seconds.of(3.5),
+            drivetrain,
+            shooter,
+            indexer,
+            intake);
     routine.active().onTrue(firstCollectFromMiddle.cmd());
 
-    // collect from middle while intaking
-    firstCollectFromMiddle
-        .atTime(1)
-        .onTrue(intake.intakeCommand().until(firstCollectFromMiddle.active().negate()));
-    firstCollectFromMiddle.chain(firstReturnToShoot);
-
-    // while returning, intake a little longer to collect the rest of the fuel. spin up flywheel
-    // when approaching shoot position
-    firstReturnToShoot.active().onTrue(intake.intakeCommand().withTimeout(1));
-    firstReturnToShoot
-        .atTimeBeforeEnd(
-            2) // TODO: once the spin up ramp rate is in contsants, this time can be calculated to
-        // be optimal. also test to make sure the trigger activates for paths shorter than X
-        // seconds
-        .onTrue(shooter.spinUpFlywheelCommand().until(firstReturnToShoot.active().negate()));
-
-    // finally, shoot. we also agitate with pivot and rollers at appropriate times
-    firstReturnToShoot
-        .done()
-        .onTrue(
-            Commands.parallel(
-                    ShootCommands.rotateAndShoot(ShootTarget.HUB, shooter, drivetrain),
-                    ShootCommands.indexWhenReadyCommand(indexer, drivetrain, shooter),
-                    Commands.sequence(
-                        Commands.waitSeconds(0.8),
-                        intake.raisePivotCommand(),
-                        intake.agitateCommand().withTimeout(2) // TODO: have an agitate speed
-                        ))
-                .withTimeout(4));
-    firstReturnToShoot.doneDelayed(4).onTrue(secondCollectFromMiddle.cmd());
-
-    secondCollectFromMiddle.active().whileTrue(intake.intakeCommand());
-    secondCollectFromMiddle.chain(secondReturnToShoot);
-
-    secondReturnToShoot.active().onTrue(intake.intakeCommand().withTimeout(1));
-    secondReturnToShoot
-        .atTimeBeforeEnd(
-            1) // TODO: once the spin up ramp rate is in contsants, this time can be calculated to
-        // be optimal. also test to make sure the trigger activates for paths shorter than X
-        // seconds
-        .onTrue(shooter.spinUpFlywheelCommand().until(secondReturnToShoot.active().negate()));
-
-    // finally, shoot. we also agitate with pivot and rollers at appropriate times
-    secondReturnToShoot
-        .done()
-        .onTrue(
-            Commands.parallel(
-                ShootCommands.rotateAndShoot(ShootTarget.HUB, shooter, drivetrain),
-                ShootCommands.indexWhenReadyCommand(indexer, drivetrain, shooter),
-                Commands.sequence(
-                    Commands.waitSeconds(0.8),
-                    intake.raisePivotCommand(),
-                    intake.agitateCommand().withTimeout(2) // TODO: have an agitate speed
-                    )));
+    registerSingleCycle(
+        routine,
+        secondCollectFromMiddle,
+        secondReturnToShoot,
+        Seconds.of(0),
+        Seconds.of(8),
+        drivetrain,
+        shooter,
+        indexer,
+        intake);
+    firstCycleDone.onTrue(secondCollectFromMiddle.cmd());
 
     return routine;
   }

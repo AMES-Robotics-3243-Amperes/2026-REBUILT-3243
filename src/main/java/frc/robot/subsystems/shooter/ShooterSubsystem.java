@@ -10,6 +10,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Volts;
 
 import edu.wpi.first.math.MathUtil;
@@ -26,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.GeneralPurposeCharacterization;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.util.FuelTrajectoryCalculator;
+import frc.robot.util.FuelTrajectoryCalculator.ShootTarget;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -148,15 +150,26 @@ public class ShooterSubsystem extends SubsystemBase {
     return new Trigger(this::flywheelSpunUpBoolean).debounce(1e-1, DebounceType.kRising);
   }
 
-  public Command spinUpFlywheelCommand() {
-    // TODO: constants
-    SlewRateLimiter rateLimiter = new SlewRateLimiter(1500);
+  public Command spinUpFlywheelCommand(ShootTarget target) {
+    SlewRateLimiter rateLimiter =
+        new SlewRateLimiter(ShooterConstants.spinUpMaxAcceleration.in(RadiansPerSecondPerSecond));
     return runOnce(() -> rateLimiter.reset(getAverageFlywheelVelocity().in(RPM)))
         .andThen(
             runEnd(
                 () -> {
-                  flywheelIOLeft.setAngularVelocity(RPM.of(rateLimiter.calculate(3000)));
-                  flywheelIORight.setAngularVelocity(RPM.of(rateLimiter.calculate(3000)));
+                  double linearSpeedMps =
+                      FuelTrajectoryCalculator.getShot(target)
+                          .shooterSetpoint()
+                          .linearFlywheelSpeed()
+                          .in(MetersPerSecond);
+                  AngularVelocity velocity =
+                      RadiansPerSecond.of(
+                          rateLimiter.calculate(
+                              linearSpeedMps
+                                  / (ShooterConstants.flywheelRadius.in(Meters)
+                                      * ShooterConstants.fuelToFlywheelLinearSpeedRatio)));
+                  flywheelIOLeft.setAngularVelocity(velocity);
+                  flywheelIORight.setAngularVelocity(velocity);
                 },
                 this::coastFlywheel));
   }

@@ -3,10 +3,10 @@ package frc.robot.util;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.Optional;
+import org.littletonrobotics.junction.Logger;
 
 public class HubActivityManager {
-  public record GameState(double timeToNextPhase, boolean ourHubEnabled) {}
-  ;
+  public record GameState(double timeToNextPhase, boolean ourHubEnabled) {};
 
   // following is copied code from first's databse that should when called provide
   // weather our alience is active at any point during the match
@@ -18,7 +18,12 @@ public class HubActivityManager {
    * @return time till our hub changes again and weather our team's hub is active
    */
   public static GameState getGameState() {
+    GameState state = getGameStateInternal();
+    Logger.recordOutput("HubState", state);
+    return state;
+  }
 
+  private static GameState getGameStateInternal() {
     Optional<Alliance> alliance = DriverStation.getAlliance();
     double matchTime = DriverStation.getMatchTime();
 

@@ -28,9 +28,9 @@
  "params":{
   "waypoints":[
     {"x":{"exp":"4 m", "val":4.0}, "y":{"exp":"F_LenY - F_TrenchLenY / 2", "val":7.429880999999999}, "heading":{"exp":"0 deg", "val":0.0}, "intervals":38, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
-    {"x":{"exp":"5.7136759757995605 m", "val":5.7136759757995605}, "y":{"exp":"7.58491849899292 m", "val":7.58491849899292}, "heading":{"exp":"0 deg", "val":0.0}, "intervals":43, "split":false, "fixTranslation":false, "fixHeading":false, "overrideIntervals":false},
-    {"x":{"exp":"7.951929569244385 m", "val":7.951929569244385}, "y":{"exp":"6.809084892272949 m", "val":6.809084892272949}, "heading":{"exp":"-90 deg", "val":-1.5707963267948966}, "intervals":141, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
-    {"x":{"exp":"7.6668782234191895 m", "val":7.666878223419189}, "y":{"exp":"5.069542407989502 m", "val":5.069542407989502}, "heading":{"exp":"-1.788350452820906 rad", "val":-1.788350452820906}, "intervals":37, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
+    {"x":{"exp":"5.7136759757995605 m", "val":5.7136759757995605}, "y":{"exp":"7.58491849899292 m", "val":7.58491849899292}, "heading":{"exp":"0 deg", "val":0.0}, "intervals":42, "split":false, "fixTranslation":false, "fixHeading":false, "overrideIntervals":false},
+    {"x":{"exp":"7.760499954223633 m", "val":7.760499954223633}, "y":{"exp":"6.858209609985352 m", "val":6.858209609985352}, "heading":{"exp":"-90 deg", "val":-1.5707963267948966}, "intervals":265, "split":false, "fixTranslation":true, "fixHeading":false, "overrideIntervals":false},
+    {"x":{"exp":"7.773529529571533 m", "val":7.773529529571533}, "y":{"exp":"4.877774238586426 m", "val":4.877774238586426}, "heading":{"exp":"-1.7156094471780963 rad", "val":-1.7156094471780965}, "intervals":38, "split":true, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
     {"x":{"exp":"6.196998596191406 m", "val":6.196998596191406}, "y":{"exp":"7.26211404800415 m", "val":7.26211404800415}, "heading":{"exp":"0 deg", "val":0.0}, "intervals":29, "split":false, "fixTranslation":false, "fixHeading":false, "overrideIntervals":false},
     {"x":{"exp":"2.983659505844116 m", "val":2.983659505844116}, "y":{"exp":"7.526108741760254 m", "val":7.526108741760254}, "heading":{"exp":"0 deg", "val":0.0}, "intervals":26, "split":false, "fixTranslation":false, "fixHeading":false, "overrideIntervals":false},
     {"x":{"exp":"Shoot.x", "val":2.8868}, "y":{"exp":"Shoot.y", "val":6.385}, "heading":{"exp":"Shoot.heading", "val":-0.93376}, "intervals":40, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false}],
@@ -43,7 +43,7 @@
     {"from":1, "to":4, "data":{"type":"KeepInRectangle", "props":{"x":{"exp":"F_NeutralX", "val":5.229098}, "y":{"exp":"0 m", "val":0.0}, "w":{"exp":"F_NeutralLenX", "val":6.0827919999999995}, "h":{"exp":"F_LenY", "val":8.069326}}}, "enabled":true},
     {"from":2, "to":3, "data":{"type":"MaxVelocity", "props":{"max":{"exp":"M_MaxCollectVelocity", "val":2.0}}}, "enabled":true},
     {"from":2, "to":3, "data":{"type":"KeepInLane", "props":{"tolerance":{"exp":"0.2 m", "val":0.2}}}, "enabled":true},
-    {"from":2, "to":3, "data":{"type":"MaxAngularVelocity", "props":{"max":{"exp":"10 deg / s", "val":0.17453292519943295}}}, "enabled":true},
+    {"from":2, "to":3, "data":{"type":"MaxAngularVelocity", "props":{"max":{"exp":"5 deg / s", "val":0.08726646259971647}}}, "enabled":true},
     {"from":4, "to":5, "data":{"type":"KeepOutCircle", "props":{"x":{"exp":"KeepOutTop.x", "val":4.625467}, "y":{"exp":"KeepOutTop.y", "val":-5.91566}, "r":{"exp":"F_KeepOutRadius", "val":12.7143371979956}}}, "enabled":true},
     {"from":5, "to":6, "data":{"type":"KeepInRectangle", "props":{"x":{"exp":"0 m", "val":0.0}, "y":{"exp":"0 m", "val":0.0}, "w":{"exp":"F_AllianceLenX", "val":4.0218359999999995}, "h":{"exp":"F_LenY", "val":8.069326}}}, "enabled":true},
     {"from":4, "to":5, "data":{"type":"PointAt", "props":{"x":{"exp":"15 m", "val":15.0}, "y":{"exp":"F_LenY - F_TrenchLenY / 2", "val":7.429880999999999}, "tolerance":{"exp":"1 deg", "val":0.017453292519943295}, "flip":false}}, "enabled":true}],

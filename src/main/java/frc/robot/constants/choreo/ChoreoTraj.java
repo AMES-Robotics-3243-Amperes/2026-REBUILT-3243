@@ -42,21 +42,21 @@ public record ChoreoTraj(
       new ChoreoTraj(
           "SecondCenterCollect",
           OptionalInt.empty(),
-          6.88443,
+          6.99022,
           new Pose2d(2.887, 6.385, Rotation2d.fromRadians(-0.934)),
           new Pose2d(2.887, 6.385, Rotation2d.fromRadians(-0.934)));
   public static final ChoreoTraj SecondCenterCollect$0 =
       new ChoreoTraj(
           "SecondCenterCollect",
           OptionalInt.of(0),
-          4.83314,
+          4.92685,
           new Pose2d(2.887, 6.385, Rotation2d.fromRadians(-0.934)),
           new Pose2d(7.696, 6.042, Rotation2d.fromRadians(1.571)));
   public static final ChoreoTraj SecondCenterCollect$1 =
       new ChoreoTraj(
           "SecondCenterCollect",
           OptionalInt.of(1),
-          2.05129,
+          2.06337,
           new Pose2d(7.696, 6.042, Rotation2d.fromRadians(1.571)),
           new Pose2d(2.887, 6.385, Rotation2d.fromRadians(-0.934)));
 

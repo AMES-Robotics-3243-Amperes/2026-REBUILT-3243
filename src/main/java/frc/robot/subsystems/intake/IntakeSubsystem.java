@@ -112,9 +112,9 @@ public class IntakeSubsystem extends SubsystemBase {
             Commands.sequence(
                 Commands.waitUntil(
                     () ->
-                        // pivotInputs.appliedVoltage.abs(Volts)
-                        //         < IntakeConstants.pivotOpenLoopVolts.times(0.9).abs(Volts)
-                          pivotInputs.angle.isNear(
+                        pivotInputs.appliedVoltage.abs(Volts)
+                                < IntakeConstants.pivotOpenLoopVolts.times(0.9).abs(Volts)
+                            && pivotInputs.angle.isNear(
                                 pivotMin, IntakeConstants.pivotTolerance))));
   }
 

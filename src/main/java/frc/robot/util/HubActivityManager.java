@@ -6,7 +6,8 @@ import java.util.Optional;
 import org.littletonrobotics.junction.Logger;
 
 public class HubActivityManager {
-  public record GameState(double timeToNextPhase, boolean ourHubEnabled) {};
+  public record GameState(double timeToNextPhase, boolean ourHubEnabled) {}
+  ;
 
   // following is copied code from first's databse that should when called provide
   // weather our alience is active at any point during the match

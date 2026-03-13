@@ -1,7 +1,6 @@
 package frc.robot.constants;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
@@ -38,10 +37,10 @@ public class IntakeConstants {
 
   public static final int pivotCurrentLimit = 40;
 
-  public static final Angle pivotMinRotation = Degrees.of(-1.3476);
-  public static final Angle pivotMaxRotation = Degrees.of(130 - 1.3476);
+  public static final Angle pivotMinRotation = Degrees.of(0);
+  public static final Angle pivotMaxRotation = Degrees.of(110);
 
-  public static final AngularVelocity pivotVelocityToleranceBeforeStop = DegreesPerSecond.of(2);
+  public static final Angle pivotTolerance = Degrees.of(20);
 
-  public static final Voltage pivotOpenLoopVolts = Volts.of(4);
+  public static final Voltage pivotOpenLoopVolts = Volts.of(4.5);
 }

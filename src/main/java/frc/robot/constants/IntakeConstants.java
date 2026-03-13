@@ -42,5 +42,5 @@ public class IntakeConstants {
 
   public static final Angle pivotTolerance = Degrees.of(20);
 
-  public static final Voltage pivotOpenLoopVolts = Volts.of(4.5);
+  public static final Voltage pivotOpenLoopVolts = Volts.of(3);
 }

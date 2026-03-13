@@ -77,9 +77,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public Command intakeCommand() {
     return Commands.runEnd(
-            () -> setRollerVelocity(IntakeConstants.rollerIntakeSpeed), this::coastRoller)
-        .alongWith(lowerPivotCommand());
-  }
+            () -> setRollerVelocity(IntakeConstants.rollerIntakeSpeed), this::coastRoller);
+            }
 
   public Command outtakeCommand() {
     return runEnd(

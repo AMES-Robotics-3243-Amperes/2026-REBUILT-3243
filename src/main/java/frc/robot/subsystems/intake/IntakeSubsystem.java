@@ -99,7 +99,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 Commands.waitUntil( // TODO: constants
                     () ->
                         pivotInputs.appliedVoltage.abs(Volts)
-                                < IntakeConstants.pivotOpenLoopVolts.times(0.75).abs(Volts)
+                                < IntakeConstants.pivotOpenLoopVolts.times(0.9).abs(Volts)
                             && pivotInputs.angle.isNear(
                                 pivotMax, IntakeConstants.pivotTolerance))));
   }
@@ -113,7 +113,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 Commands.waitUntil(
                     () ->
                         pivotInputs.appliedVoltage.abs(Volts)
-                                < IntakeConstants.pivotOpenLoopVolts.times(0.75).abs(Volts)
+                                < IntakeConstants.pivotOpenLoopVolts.times(0.9).abs(Volts)
                             && pivotInputs.angle.isNear(
                                 pivotMin, IntakeConstants.pivotTolerance))));
   }

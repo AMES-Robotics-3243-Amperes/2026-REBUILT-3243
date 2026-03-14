@@ -65,12 +65,14 @@ public class ShooterConstants {
   // hood
   public static final int hoodId = 5;
 
-  public static final Angle hoodAbsoluteEncoderZeroedRotation = Degrees.of(22.7);
-  public static final Angle hoodMinRotation = Degrees.of(17);
+  public static final Angle hoodAbsoluteEncoderZeroedRotation = Degrees.of(17.9);
+  public static final Angle hoodMinRotation = Degrees.of(16.5);
   public static final Angle hoodMaxRotation = Degrees.of(46);
 
   public static final double encoderToHoodReduction = 320.0 / 24.0;
   public static final double motorToEncoderHoodReduction = 15.0 / 1.0;
+
+  public static final int hoodCurrentLimit = 20;
 
   public static final ControlConstantsBuilder hoodControl =
       ControlConstantsBuilder.fromRadiansAndSeconds().pid(10, 0.02, 0.05);

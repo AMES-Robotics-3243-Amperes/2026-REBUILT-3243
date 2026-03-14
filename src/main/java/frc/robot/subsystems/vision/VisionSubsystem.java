@@ -105,13 +105,14 @@ public class VisionSubsystem extends SubsystemBase {
       for (PoseObservation observation : inputs[i].poseObservations) {
         // Check whether to reject pose
         ChassisSpeeds speeds = chassisSpeeds.get();
-        boolean rejectPoseOnDisable = observation.tagCount() == 0; // Must have at least one tag
+        boolean rejectPoseOnDisable = observation.tagCount() == 0 // Must have at least one tag
+        || Math.abs(observation.pose().getZ())
+                    > VisionConstants.maxZError; // Must have realistic Z coordinate
+                    
         boolean rejectPose =
             (observation.tagCount() == 1
                     && observation.ambiguity()
                         > VisionConstants.maxAmbiguity) // Cannot be high ambiguity
-                || Math.abs(observation.pose().getZ())
-                    > VisionConstants.maxZError // Must have realistic Z coordinate
 
                 // can't be rotating too fast
                 || Math.abs(speeds.omegaRadiansPerSecond)

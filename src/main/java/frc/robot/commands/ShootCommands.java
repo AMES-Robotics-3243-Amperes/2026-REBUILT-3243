@@ -104,6 +104,22 @@ public class ShootCommands {
         indexer.indexCommand(shooter));
   }
 
+  public static Command indexWhenReadyCommand(
+      IndexerSubsystem indexer,
+      ShooterSubsystem shooter,
+      SwerveSubsystem drivetrain,
+      Trigger customReadyTrigger) {
+    return Commands.sequence(
+        Commands.waitUntil(
+            new Trigger(drivetrain::atRotationSetpoint)
+                .and(shooter::flywheelSpunUp)
+                .or(customReadyTrigger)),
+        indexer
+            .spinUpKickerWithFlywheelCommand(shooter)
+            .withDeadline(Commands.waitTime(IndexerConstants.idleTimeBeforeIndexing)),
+        indexer.indexCommand(shooter));
+  }
+
   public ShootCommands indexWhenReady(
       IndexerSubsystem indexer, ShooterSubsystem shooter, SwerveSubsystem drivetrain) {
     commands.add(indexWhenReadyCommand(indexer, shooter, drivetrain));

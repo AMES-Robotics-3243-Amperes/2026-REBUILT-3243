@@ -311,11 +311,12 @@ public class RobotContainer {
     primaryController.leftTrigger().whileTrue(intake.intakeCommand());
 
     secondaryController.leftTrigger().whileTrue(intake.agitateCommand());
+    secondaryController.rightTrigger().whileTrue(intake.outtakeCommand());
 
     secondaryController.rightBumper().whileTrue(intake.lowerPivotCommand());
     secondaryController.leftBumper().whileTrue(intake.raisePivotCommand());
 
-    secondaryController.y().whileTrue(intake.runPivotOpenLoopCommand(Volts.of(3)));
+    secondaryController.x().whileTrue(intake.runPivotOpenLoopCommand(Volts.of(3)));
     secondaryController.a().whileTrue(intake.runPivotOpenLoopCommand(Volts.of(-3)));
 
     //
@@ -346,7 +347,8 @@ public class RobotContainer {
                 .runShooter(shooter)
                 .build());
 
-    shootBind.whileTrue(ShootCommands.indexWhenReadyCommand(indexer, shooter, drivetrain));
+    shootBind.whileTrue(
+        ShootCommands.indexWhenReadyCommand(indexer, shooter, drivetrain, secondaryController.b()));
   }
 
   //

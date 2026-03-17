@@ -42,6 +42,9 @@ public class HoodIOReal implements HoodIO {
     hoodConfig.absoluteEncoder.zeroCentered(true);
     hoodConfig.idleMode(IdleMode.kCoast).inverted(true);
 
+    hoodConfig.smartCurrentLimit(
+        ShooterConstants.hoodCurrentLimit, ShooterConstants.hoodCurrentLimit);
+
     hoodConfig
         .closedLoop
         .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
@@ -79,7 +82,7 @@ public class HoodIOReal implements HoodIO {
     if (!hasResetRelativeEncoder && Math.abs(sparkMax.getAbsoluteEncoder().getPosition()) > 1e-3) {
       resyncRelativeEncoder();
       hasResetRelativeEncoder = true;
-    } else if (encoder.getPosition() < hoodRotationsForOneAbsEncoderRotation / 4) {
+    } else if (encoder.getPosition() < hoodRotationsForOneAbsEncoderRotation / 2) {
       resyncRelativeEncoder();
     }
 

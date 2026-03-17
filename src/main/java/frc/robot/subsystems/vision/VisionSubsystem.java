@@ -105,13 +105,15 @@ public class VisionSubsystem extends SubsystemBase {
       for (PoseObservation observation : inputs[i].poseObservations) {
         // Check whether to reject pose
         ChassisSpeeds speeds = chassisSpeeds.get();
-        boolean rejectPose =
+        boolean rejectPoseOnDisable =
             observation.tagCount() == 0 // Must have at least one tag
-                || (observation.tagCount() == 1
+                || Math.abs(observation.pose().getZ())
+                    > VisionConstants.maxZError; // Must have realistic Z coordinate
+
+        boolean rejectPose =
+            (observation.tagCount() == 1
                     && observation.ambiguity()
                         > VisionConstants.maxAmbiguity) // Cannot be high ambiguity
-                || Math.abs(observation.pose().getZ())
-                    > VisionConstants.maxZError // Must have realistic Z coordinate
 
                 // can't be rotating too fast
                 || Math.abs(speeds.omegaRadiansPerSecond)
@@ -125,17 +127,18 @@ public class VisionSubsystem extends SubsystemBase {
                 || observation.pose().getX() > VisionConstants.aprilTagLayout.getFieldLength()
                 || observation.pose().getY() < 0.0
                 || observation.pose().getY() > VisionConstants.aprilTagLayout.getFieldWidth();
+        rejectPose &= DriverStation.isEnabled();
 
         // Add pose to log
         robotPoses.add(observation.pose());
-        if (rejectPose) {
+        if (rejectPose || rejectPoseOnDisable) {
           robotPosesRejected.add(observation.pose());
         } else {
           robotPosesAccepted.add(observation.pose());
         }
 
         // Skip if rejected
-        if (rejectPose) {
+        if (rejectPose || rejectPoseOnDisable) {
           continue;
         }
 

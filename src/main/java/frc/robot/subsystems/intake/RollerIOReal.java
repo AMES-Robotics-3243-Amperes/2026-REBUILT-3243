@@ -39,6 +39,8 @@ public class RollerIOReal implements RollerIO {
     config.encoder.velocityConversionFactor(1.0 / IntakeConstants.rollerReduction);
     config.idleMode(IdleMode.kCoast).inverted(true);
 
+    config.closedLoop.apply(IntakeConstants.rollerControl.revClosedLoopConfig());
+
     sparkMax.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     encoder = sparkMax.getEncoder();

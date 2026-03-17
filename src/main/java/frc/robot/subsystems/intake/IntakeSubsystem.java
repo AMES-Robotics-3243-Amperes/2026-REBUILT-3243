@@ -27,6 +27,9 @@ public class IntakeSubsystem extends SubsystemBase {
   public final PivotIO pivotIO;
   private final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
 
+  private Angle pivotMin;
+  public Angle pivotMax;
+
   /** Creates a new IntakeSubsystem. */
   public IntakeSubsystem(RollerIO rollerIO, PivotIO pivotIO) {
     this.rollerIO = rollerIO;
@@ -40,6 +43,22 @@ public class IntakeSubsystem extends SubsystemBase {
 
     pivotIO.updateInputs(pivotInputs);
     Logger.processInputs("Intake/Pivot", pivotInputs);
+
+    if (pivotMin == null || pivotMax == null) {
+      pivotMax = pivotInputs.angle;
+      pivotMin =
+          pivotMax.plus(IntakeConstants.pivotMinRotation.minus(IntakeConstants.pivotMaxRotation));
+    }
+
+    if (pivotInputs.angle.lt(pivotMin)) {
+      pivotMin = pivotInputs.angle;
+      pivotMax =
+          pivotMin.plus(IntakeConstants.pivotMaxRotation.minus(IntakeConstants.pivotMinRotation));
+    } else if (pivotInputs.angle.gt(pivotMax)) {
+      pivotMax = pivotInputs.angle;
+      pivotMin =
+          pivotMax.plus(IntakeConstants.pivotMinRotation.minus(IntakeConstants.pivotMaxRotation));
+    }
   }
 
   private void setRollerVelocity(AngularVelocity velocity) {
@@ -59,7 +78,7 @@ public class IntakeSubsystem extends SubsystemBase {
   public Command intakeCommand() {
     return Commands.runEnd(
             () -> setRollerVelocity(IntakeConstants.rollerIntakeSpeed), this::coastRoller)
-        .alongWith(lowerPivotCommand());
+        .alongWith(lowerPivotCommand().withTimeout(2.8));
   }
 
   public Command outtakeCommand() {
@@ -77,11 +96,12 @@ public class IntakeSubsystem extends SubsystemBase {
             this::coastPivot)
         .withDeadline(
             Commands.sequence(
-                Commands.waitSeconds(0.05), // TODO: constants. same with the 0.8
-                Commands.waitUntil(
+                Commands.waitUntil( // TODO: constants
                     () ->
                         pivotInputs.appliedVoltage.abs(Volts)
-                            < IntakeConstants.pivotOpenLoopVolts.times(0.6).abs(Volts))));
+                                < IntakeConstants.pivotOpenLoopVolts.times(0.9).abs(Volts)
+                            && pivotInputs.angle.isNear(
+                                pivotMax, IntakeConstants.pivotTolerance))));
   }
 
   public Command lowerPivotCommand() {
@@ -90,11 +110,12 @@ public class IntakeSubsystem extends SubsystemBase {
             this::coastPivot)
         .withDeadline(
             Commands.sequence(
-                Commands.waitSeconds(0.05), // TODO: constants. same with the 0.8
                 Commands.waitUntil(
                     () ->
                         pivotInputs.appliedVoltage.abs(Volts)
-                            < IntakeConstants.pivotOpenLoopVolts.times(0.6).abs(Volts))));
+                                < IntakeConstants.pivotOpenLoopVolts.times(0.9).abs(Volts)
+                            && pivotInputs.angle.isNear(
+                                pivotMin, IntakeConstants.pivotTolerance))));
   }
 
   public Command runPivotOpenLoopCommand(Voltage output) {

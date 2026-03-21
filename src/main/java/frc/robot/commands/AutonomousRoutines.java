@@ -32,7 +32,7 @@ public class AutonomousRoutines {
             drivetrain);
 
     autoChooser.addRoutine(
-        "depog side one cycle",
+        "depot side one cycle",
         () -> depotSideOneCycle(autoFactory, drivetrain, shooter, indexer, intake));
     autoChooser.addRoutine(
         "outpost side one cycle",
@@ -103,8 +103,8 @@ public class AutonomousRoutines {
       IntakeSubsystem intake) {
     AutoRoutine routine = autoFactory.newRoutine("one cycle");
 
-    AutoTrajectory collectFromMiddle = routine.trajectory(ChoreoTraj.FirstCenterCollect.name(), 0);
-    AutoTrajectory returnToShoot = routine.trajectory(ChoreoTraj.FirstCenterCollect.name(), 1);
+    AutoTrajectory collectFromMiddle = ChoreoTraj.FirstCenterCollect$0.asAutoTraj(routine);
+    AutoTrajectory returnToShoot = ChoreoTraj.FirstCenterCollect$1.asAutoTraj(routine);
 
     registerSingleCycle(
         routine,
@@ -145,13 +145,11 @@ public class AutonomousRoutines {
       IntakeSubsystem intake) {
     AutoRoutine routine = autoFactory.newRoutine("two cycle");
 
-    AutoTrajectory firstCollectFromMiddle =
-        routine.trajectory(ChoreoTraj.FirstCenterCollect.name(), 0);
-    AutoTrajectory firstReturnToShoot = routine.trajectory(ChoreoTraj.FirstCenterCollect.name(), 1);
-    AutoTrajectory secondCollectFromMiddle =
-        routine.trajectory(ChoreoTraj.SecondCenterCollect.name(), 0);
-    AutoTrajectory secondReturnToShoot =
-        routine.trajectory(ChoreoTraj.SecondCenterCollect.name(), 1);
+    AutoTrajectory firstCollectFromMiddle = ChoreoTraj.FirstCenterCollect$0.asAutoTraj(routine);
+    AutoTrajectory firstReturnToShoot = ChoreoTraj.FirstCenterCollect$1.asAutoTraj(routine);
+
+    AutoTrajectory secondCollectFromMiddle = ChoreoTraj.SecondCenterCollect$0.asAutoTraj(routine);
+    AutoTrajectory secondReturnToShoot = ChoreoTraj.SecondCenterCollect$1.asAutoTraj(routine);
 
     Trigger firstCycleDone =
         registerSingleCycle(
@@ -164,7 +162,10 @@ public class AutonomousRoutines {
             shooter,
             indexer,
             intake);
-    routine.active().onTrue(firstCollectFromMiddle.cmd());
+    routine
+        .active()
+        .onTrue(
+            firstCollectFromMiddle.cmd().beforeStarting(firstCollectFromMiddle.resetOdometry()));
 
     registerSingleCycle(
         routine,

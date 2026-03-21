@@ -77,8 +77,8 @@
    "R_BumperTolerance":{
     "dimension":"Length",
     "var":{
-     "exp":"4.5 in",
-     "val":0.1143
+     "exp":"3.6 in",
+     "val":0.09144
     }
    },
    "R_DeployedHopperX":{
@@ -197,16 +197,16 @@
    },
    "Shoot":{
     "x":{
-     "exp":"2.314302 m",
-     "val":2.314302
+     "exp":"2.8793678283691406 m",
+     "val":2.8793678283691406
     },
     "y":{
-     "exp":"5.7116417 m",
-     "val":5.7116417
+     "exp":"7.27274751663208 m",
+     "val":7.27274751663208
     },
     "heading":{
-     "exp":"-0.6250698 rad",
-     "val":-0.6250698
+     "exp":"-1.0763053875755526 rad",
+     "val":-1.0763053875755526
     }
    }
   }
@@ -263,15 +263,15 @@
   "bumper":{
    "front":{
     "exp":"R_BumperTolerance + R_DeployedHopperX",
-    "val":0.7493
+    "val":0.72644
    },
    "side":{
     "exp":"R_BumperTolerance + R_BumperLength / 2",
-    "val":0.5556249999999999
+    "val":0.5327649999999999
    },
    "back":{
     "exp":"R_BumperTolerance + R_BumperLength / 2",
-    "val":0.5556249999999999
+    "val":0.5327649999999999
    }
   },
   "differentialTrackWidth":{
@@ -284,6 +284,6 @@
   "root":"..\\..\\java\\frc\\robot\\constants\\choreo",
   "genVars":true,
   "genTrajData":true,
-  "useChoreoLib":false
+  "useChoreoLib":true
  }
 }

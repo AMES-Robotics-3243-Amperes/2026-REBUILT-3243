@@ -47,8 +47,6 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.util.sendable.Sendable;
-import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -198,45 +196,6 @@ public class SwerveSubsystem extends SubsystemBase {
     PathPlannerLogging.setLogTargetPoseCallback(
         (targetPose) -> {
           Logger.recordOutput("Drivetrain/PathPlanner/TrajectorySetpoint", targetPose);
-        });
-
-    SmartDashboard.putData(
-        "Module States",
-        new Sendable() {
-          @Override
-          public void initSendable(SendableBuilder builder) {
-            builder.setSmartDashboardType("SwerveDrive");
-
-            builder.addDoubleProperty(
-                "Front Left Angle", () -> modules[0].getAzimuthAngle().in(Radians), null);
-            builder.addDoubleProperty(
-                "Front Left Velocity",
-                () -> modules[0].getLinearVelocity().in(MetersPerSecond),
-                null);
-
-            builder.addDoubleProperty(
-                "Front Right Angle", () -> modules[1].getAzimuthAngle().in(Radians), null);
-            builder.addDoubleProperty(
-                "Front Right Velocity",
-                () -> modules[1].getLinearVelocity().in(MetersPerSecond),
-                null);
-
-            builder.addDoubleProperty(
-                "Back Left Angle", () -> modules[2].getAzimuthAngle().in(Radians), null);
-            builder.addDoubleProperty(
-                "Back Left Velocity",
-                () -> modules[2].getLinearVelocity().in(MetersPerSecond),
-                null);
-
-            builder.addDoubleProperty(
-                "Back Right Angle", () -> modules[3].getAzimuthAngle().in(Radians), null);
-            builder.addDoubleProperty(
-                "Back Right Velocity",
-                () -> modules[3].getLinearVelocity().in(MetersPerSecond),
-                null);
-
-            builder.addDoubleProperty("Robot Angle", () -> getRotation().getRadians(), null);
-          }
         });
   }
 
@@ -646,11 +605,6 @@ public class SwerveSubsystem extends SubsystemBase {
           Radians, Degrees.of(-180), Degrees.of(180));
 
   public void followChoreoTrajecotry(SwerveSample sample) {
-    if (sample.getTimestamp() == 0) {
-      choreoHeadingController.reset(
-          getRotation().getRadians(), getChassisSpeeds().omegaRadiansPerSecond);
-    }
-
     Pose2d robotPose = getPose();
 
     Pose2d poseSetpoint = new Pose2d(sample.x, sample.y, Rotation2d.fromRadians(sample.heading));

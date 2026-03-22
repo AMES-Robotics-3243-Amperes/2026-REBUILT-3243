@@ -18,7 +18,6 @@ public final class ChoreoVars {
     public static final Distance F_NeutralLenX = Units.Meters.of(6.083);
     public static final Distance F_NeutralX = Units.Meters.of(5.229);
     public static final Distance F_TrenchLenY = Units.Meters.of(1.279);
-    public static final LinearAcceleration M_GlobalMaxAccel = Units.MetersPerSecondPerSecond.of(3);
     public static final LinearVelocity M_MaxCollectVelocity = Units.MetersPerSecond.of(2);
     public static final Distance R_BumperLength = Units.Meters.of(0.883);
     public static final Distance R_BumperTolerance = Units.Meters.of(0.091);

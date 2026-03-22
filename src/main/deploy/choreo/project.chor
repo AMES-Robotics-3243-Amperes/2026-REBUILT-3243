@@ -53,13 +53,6 @@
      "val":1.27889
     }
    },
-   "M_GlobalMaxAccel":{
-    "dimension":"LinAcc",
-    "var":{
-     "exp":"3 m / s ^ 2",
-     "val":3.0
-    }
-   },
    "M_MaxCollectVelocity":{
     "dimension":"LinVel",
     "var":{

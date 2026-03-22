@@ -51,7 +51,9 @@ public class TunerConstants {
                       .withCurrentLimits(
                           new CurrentLimitsConfigs()
                               .withSupplyCurrentLimit(ModuleConstants.steerStatorCurrentLimit)
-                              .withSupplyCurrentLimitEnable(true)))
+                              .withSupplyCurrentLimitEnable(true)
+                              .withStatorCurrentLimit(ModuleConstants.steerStatorCurrentLimit)
+                              .withStatorCurrentLimitEnable(true)))
               .withEncoderInitialConfigs(new CANcoderConfiguration())
               .withSteerInertia(ModuleConstants.kSteerInertia)
               .withDriveInertia(ModuleConstants.kDriveInertia)

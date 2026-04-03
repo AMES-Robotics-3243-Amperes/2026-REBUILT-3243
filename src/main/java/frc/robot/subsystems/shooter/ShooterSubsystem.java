@@ -6,6 +6,7 @@ package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RPM;
@@ -19,60 +20,51 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.GeneralPurposeCharacterization;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.util.FuelTrajectoryCalculator;
 import frc.robot.util.FuelTrajectoryCalculator.ShootTarget;
+import java.util.Arrays;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class ShooterSubsystem extends SubsystemBase {
-  private final FlywheelIO flywheelIOLeft;
-  private final FlywheelIOInputsAutoLogged flywheelLeftInputs = new FlywheelIOInputsAutoLogged();
-
-  private final FlywheelIO flywheelIORight;
-  private final FlywheelIOInputsAutoLogged flywheelRightInputs = new FlywheelIOInputsAutoLogged();
+  private final FlywheelIOAndName[] flywheelIO;
+  private final FlywheelIOInputsAutoLogged[] flywheelInputs;
 
   private final HoodIO hoodIO;
   private final HoodIOInputsAutoLogged hoodInputs = new HoodIOInputsAutoLogged();
 
   private AngularVelocity flywheelSetpoint = RadiansPerSecond.of(0);
 
-  private boolean recoverIfSlow = false;
+  public record FlywheelIOAndName(String name, FlywheelIO io) {}
 
   /** Creates a new ShooterSubsystem. */
-  public ShooterSubsystem(FlywheelIO flywheelIOLeft, FlywheelIO flywheelIORight, HoodIO hoodIO) {
-    this.flywheelIOLeft = flywheelIOLeft;
-    this.flywheelIORight = flywheelIORight;
+  public ShooterSubsystem(HoodIO hoodIO, FlywheelIOAndName... flywheelIO) {
+    assert flywheelIO.length > 0;
+    this.flywheelIO = flywheelIO;
+    this.flywheelInputs = new FlywheelIOInputsAutoLogged[flywheelIO.length];
     this.hoodIO = hoodIO;
+  }
+
+  public ShooterSubsystem(HoodIO hoodIO, FlywheelIO flywheelIO) {
+    this(hoodIO, new FlywheelIOAndName[] {new FlywheelIOAndName("", flywheelIO)});
   }
 
   @Override
   public void periodic() {
-    flywheelIOLeft.updateInputs(flywheelLeftInputs);
-    Logger.processInputs("Shooter/Flywheel/Left", flywheelLeftInputs);
-
-    flywheelIORight.updateInputs(flywheelRightInputs);
-    Logger.processInputs("Shooter/Flywheel/Right", flywheelRightInputs);
+    for (int i = 0; i < flywheelIO.length; i++) {
+      flywheelIO[i].io().updateInputs(flywheelInputs[i]);
+      Logger.processInputs("Shooter/Flywheel/" + flywheelIO[i].name(), hoodInputs);
+    }
 
     hoodIO.updateInputs(hoodInputs);
     Logger.processInputs("Shooter/Hood", hoodInputs);
-
-    if (flywheelSpunUp()) recoverIfSlow = true;
-
-    flywheelIOLeft.enableRecoverControl(
-        recoverIfSlow
-            && !flywheelLeftInputs.velocity.isNear(
-                flywheelSetpoint, ShooterConstants.flywheelRecoverControlTolerance));
-    flywheelIORight.enableRecoverControl(
-        recoverIfSlow
-            && !flywheelRightInputs.velocity.isNear(
-                flywheelSetpoint, ShooterConstants.flywheelRecoverControlTolerance));
   }
 
   /* Clamps the given angle to the allowed range, sets the hood to the clamped angle, and returns the clamped angle. */
@@ -90,21 +82,23 @@ public class ShooterSubsystem extends SubsystemBase {
     return clampedAngle;
   }
 
-  public void runFlywheelWithHood(AngularVelocity velocity, Angle targetHoodAngle) {
-    setHoodAngle(targetHoodAngle);
-
-    if (!velocity.isNear(flywheelSetpoint, RPM.of(1))) recoverIfSlow = false;
-
-    flywheelIOLeft.setAngularVelocity(velocity);
-    flywheelIORight.setAngularVelocity(velocity);
+  private void setFlyweelVelocity(AngularVelocity velocity) {
+    Arrays.stream(flywheelIO).forEach(io -> io.io().setAngularVelocity(velocity));
     flywheelSetpoint = velocity;
   }
 
-  public void coastFlywheel() {
-    flywheelIOLeft.coast();
-    flywheelIORight.coast();
+  private void runFlywheelOpenLoop(double openLoop) {
+    Arrays.stream(flywheelIO).forEach(io -> io.io().runOpenLoop(openLoop));
+  }
+
+  private void coastFlywheel() {
+    Arrays.stream(flywheelIO).forEach(io -> io.io().coast());
     flywheelSetpoint = RadiansPerSecond.of(0);
-    recoverIfSlow = false;
+  }
+
+  public void runFlywheelWithHood(AngularVelocity velocity, Angle targetHoodAngle) {
+    setHoodAngle(targetHoodAngle);
+    setFlyweelVelocity(velocity);
   }
 
   public void reset() {
@@ -126,7 +120,30 @@ public class ShooterSubsystem extends SubsystemBase {
 
   @AutoLogOutput(key = "Shooter/Flywheel/AverageMeasuredVelocity")
   public AngularVelocity getAverageFlywheelVelocity() {
-    return flywheelLeftInputs.velocity.plus(flywheelRightInputs.velocity).div(2);
+    double averageDegPerSec =
+        Arrays.stream(flywheelInputs)
+            .mapToDouble(inputs -> inputs.velocity.in(DegreesPerSecond))
+            .average()
+            .orElse(0.0);
+    return DegreesPerSecond.of(averageDegPerSec);
+  }
+
+  public Angle getAverageFlywheelPosition() {
+    double averageDegrees =
+        Arrays.stream(flywheelInputs)
+            .mapToDouble(inputs -> inputs.position.in(Degrees))
+            .average()
+            .orElse(0.0);
+    return Degrees.of(averageDegrees);
+  }
+
+  public Voltage getAverageFlywheelVoltage() {
+    double averageVolts =
+        Arrays.stream(flywheelInputs)
+            .mapToDouble(inputs -> inputs.appliedVoltage.in(Volts))
+            .average()
+            .orElse(0.0);
+    return Volts.of(averageVolts);
   }
 
   @AutoLogOutput(key = "Shooter/Flywheel/TargetFuelVelocity")
@@ -138,10 +155,11 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public boolean flywheelSpunUp() {
-    return flywheelLeftInputs.velocity.isNear(
-            flywheelSetpoint, ShooterConstants.flywheelIndexTolerance)
-        && flywheelRightInputs.velocity.isNear(
-            flywheelSetpoint, ShooterConstants.flywheelIndexTolerance)
+    return Arrays.stream(flywheelInputs)
+            .allMatch(
+                inputs ->
+                    inputs.velocity.isNear(
+                        flywheelSetpoint, ShooterConstants.flywheelIndexTolerance))
         && !flywheelSetpoint.isEquivalent(RPM.of(0));
   }
 
@@ -163,8 +181,7 @@ public class ShooterSubsystem extends SubsystemBase {
                               linearSpeedMps
                                   / (ShooterConstants.flywheelRadius.in(Meters)
                                       * ShooterConstants.fuelToFlywheelLinearSpeedRatio)));
-                  flywheelIOLeft.setAngularVelocity(velocity);
-                  flywheelIORight.setAngularVelocity(velocity);
+                  setFlyweelVelocity(velocity);
                 },
                 this::coastFlywheel));
   }
@@ -214,30 +231,21 @@ public class ShooterSubsystem extends SubsystemBase {
         advanceRoutine,
         "Shooter/SysId/Flywheel",
         voltage -> {
-          flywheelIOLeft.runOpenLoop(voltage.in(Volts));
-          flywheelIORight.runOpenLoop(voltage.in(Volts));
+          runFlywheelOpenLoop(voltage.in(Volts));
         },
-        () -> flywheelLeftInputs.position.plus(flywheelRightInputs.position).div(2),
+        () -> getAverageFlywheelPosition(),
         () -> getAverageFlywheelVelocity(),
-        () -> flywheelLeftInputs.appliedVoltage.plus(flywheelRightInputs.appliedVoltage).div(2),
+        () -> getAverageFlywheelVoltage(),
         this);
   }
 
   public Command torqueCurrentKsCharacterization(Current initialGuess) {
-    return Commands.sequence(
-        GeneralPurposeCharacterization.torqueCurrentKsCharacterization(
-            initialGuess,
-            () -> flywheelLeftInputs.velocity,
-            current -> flywheelIOLeft.runOpenLoop(current.in(Amps)),
-            this::coastFlywheel,
-            "left flywheel",
-            this),
-        GeneralPurposeCharacterization.torqueCurrentKsCharacterization(
-            initialGuess,
-            () -> flywheelRightInputs.velocity,
-            current -> flywheelIORight.runOpenLoop(current.in(Amps)),
-            this::coastFlywheel,
-            "right flywheel",
-            this));
+    return GeneralPurposeCharacterization.torqueCurrentKsCharacterization(
+        initialGuess,
+        () -> getAverageFlywheelVelocity(),
+        current -> runFlywheelOpenLoop(current.in(Amps)),
+        this::coastFlywheel,
+        "Flywheel",
+        this);
   }
 }

@@ -28,7 +28,9 @@ public interface SpindexerIO {
   /** Run the motors at the specified open loop value. */
   default void runOpenLoop(double output) {}
 
-  /** Run the motors at the specified velocity. */
+  /**
+   * Run the motors at the specified velocity. Should be called periodically to behave correctly.
+   */
   default void setAngularVelocity(AngularVelocity velocity) {}
 
   /** Set the motor to coast. */

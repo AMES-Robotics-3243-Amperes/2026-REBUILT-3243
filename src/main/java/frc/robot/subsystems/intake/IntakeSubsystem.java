@@ -4,7 +4,9 @@
 
 package frc.robot.subsystems.intake;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
@@ -18,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.GeneralPurposeCharacterization;
 import frc.robot.constants.IntakeConstants;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class IntakeSubsystem extends SubsystemBase {
@@ -27,8 +30,15 @@ public class IntakeSubsystem extends SubsystemBase {
   public final PivotIO pivotIO;
   private final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
 
-  private Angle pivotMin;
-  public Angle pivotMax;
+  /**
+   * Represents the position of the relative encoder where the pivot is bottomed out and the system
+   * at the "edge" of the backlash, i.e. spinning the motor at all will immediately pivot the
+   * intake.
+   */
+  @AutoLogOutput(key = "Intake/Pivot/RelativeEncoderBottom")
+  private Angle pivotRelativeEncoderBottom = Rotations.of(0);
+
+  private boolean hasInitilizedRelativeBottom = false;
 
   /** Creates a new IntakeSubsystem. */
   public IntakeSubsystem(RollerIO rollerIO, PivotIO pivotIO) {
@@ -44,20 +54,27 @@ public class IntakeSubsystem extends SubsystemBase {
     pivotIO.updateInputs(pivotInputs);
     Logger.processInputs("Intake/Pivot", pivotInputs);
 
-    if (pivotMin == null || pivotMax == null) {
-      pivotMax = pivotInputs.angle;
-      pivotMin =
-          pivotMax.plus(IntakeConstants.pivotMinRotation.minus(IntakeConstants.pivotMaxRotation));
+    if (!hasInitilizedRelativeBottom) {
+      pivotRelativeEncoderBottom =
+          pivotInputs.internalEncoderPosition.minus(pivotInputs.absoluteEncoderPosition);
+      hasInitilizedRelativeBottom = true;
     }
 
-    if (pivotInputs.angle.lt(pivotMin)) {
-      pivotMin = pivotInputs.angle;
-      pivotMax =
-          pivotMin.plus(IntakeConstants.pivotMaxRotation.minus(IntakeConstants.pivotMinRotation));
-    } else if (pivotInputs.angle.gt(pivotMax)) {
-      pivotMax = pivotInputs.angle;
-      pivotMin =
-          pivotMax.plus(IntakeConstants.pivotMinRotation.minus(IntakeConstants.pivotMaxRotation));
+    // rezero backlash if necessary - see the comments above these constants for more info
+    if (pivotInputs.absoluteEncoderVelocity.gt(IntakeConstants.pivotAbsoluteVelocityForRezero)
+        && pivotInputs.absoluteEncoderPosition.lt(
+            Degrees.of(90).minus(IntakeConstants.pivotAbsolutePositionToleranceForRezero))) {
+      pivotRelativeEncoderBottom =
+          pivotInputs.internalEncoderPosition.minus(pivotInputs.absoluteEncoderPosition);
+    } else if (pivotInputs.absoluteEncoderVelocity.lt(
+            IntakeConstants.pivotAbsoluteVelocityForRezero.unaryMinus())
+        && pivotInputs.absoluteEncoderPosition.gt(
+            Degrees.of(90).plus(IntakeConstants.pivotAbsolutePositionToleranceForRezero))) {
+      pivotRelativeEncoderBottom =
+          pivotInputs
+              .internalEncoderPosition
+              .minus(pivotInputs.absoluteEncoderPosition)
+              .plus(IntakeConstants.pivotBacklash);
     }
   }
 
@@ -91,31 +108,25 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public Command raisePivotCommand() {
-    return runEnd(
-            () -> pivotIO.runOpenLoop(IntakeConstants.pivotOpenLoopVolts.in(Volts)),
-            this::coastPivot)
+    return runEnd(() -> pivotIO.runOpenLoop(0.2), this::coastPivot)
         .withDeadline(
-            Commands.sequence(
-                Commands.waitUntil( // TODO: constants
-                    () ->
-                        pivotInputs.appliedVoltage.abs(Volts)
-                                < IntakeConstants.pivotOpenLoopVolts.times(0.9).abs(Volts)
-                            && pivotInputs.angle.isNear(
-                                pivotMax, IntakeConstants.pivotTolerance))));
+            Commands.waitUntil(
+                () ->
+                    pivotInputs.absoluteEncoderPosition.isNear(
+                        IntakeConstants.pivotMaxRotation,
+                        IntakeConstants.pivotPositioningTolerance)))
+        .withDeadline(Commands.waitTime(IntakeConstants.pivotControlSafety));
   }
 
   public Command lowerPivotCommand() {
-    return runEnd(
-            () -> pivotIO.runOpenLoop(IntakeConstants.pivotOpenLoopVolts.unaryMinus().in(Volts)),
-            this::coastPivot)
+    return runEnd(() -> pivotIO.runOpenLoop(-0.2), this::coastPivot)
         .withDeadline(
-            Commands.sequence(
-                Commands.waitUntil(
-                    () ->
-                        pivotInputs.appliedVoltage.abs(Volts)
-                                < IntakeConstants.pivotOpenLoopVolts.times(0.9).abs(Volts)
-                            && pivotInputs.angle.isNear(
-                                pivotMin, IntakeConstants.pivotTolerance))));
+            Commands.waitUntil(
+                () ->
+                    pivotInputs.absoluteEncoderPosition.isNear(
+                        IntakeConstants.pivotMinRotation,
+                        IntakeConstants.pivotPositioningTolerance)))
+        .withDeadline(Commands.waitTime(IntakeConstants.pivotControlSafety));
   }
 
   public Command runPivotOpenLoopCommand(Voltage output) {
@@ -123,7 +134,7 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public Angle getPivotAngle() {
-    return pivotInputs.angle;
+    return pivotInputs.absoluteEncoderPosition;
   }
 
   //
@@ -148,8 +159,8 @@ public class IntakeSubsystem extends SubsystemBase {
         Volts.of(1.2),
         Seconds.of(8),
         voltage -> pivotIO.runOpenLoop(voltage.in(Volts)),
-        () -> pivotInputs.angle,
-        () -> pivotInputs.angularVelocity,
+        () -> pivotInputs.absoluteEncoderPosition,
+        () -> pivotInputs.absoluteEncoderVelocity,
         () -> pivotInputs.appliedVoltage,
         this);
   }

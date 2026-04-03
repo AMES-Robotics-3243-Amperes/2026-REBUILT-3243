@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
@@ -23,13 +24,19 @@ public class PivotIOReal implements PivotIO {
   SparkMax sparkMax = new SparkMax(IntakeConstants.pivotId, MotorType.kBrushless);
 
   SparkClosedLoopController closedLoopController;
-  RelativeEncoder encoder;
+  RelativeEncoder relativeEncoder;
+  AbsoluteEncoder absoluteEncoder;
 
   public PivotIOReal() {
     SparkMaxConfig config = new SparkMaxConfig();
 
     config.encoder.positionConversionFactor(1.0 / IntakeConstants.pivotReduction);
     config.encoder.velocityConversionFactor(1.0 / IntakeConstants.pivotReduction);
+
+    config.absoluteEncoder.positionConversionFactor(1.0);
+    config.absoluteEncoder.velocityConversionFactor(1.0);
+    config.absoluteEncoder.inverted(false);
+
     config.idleMode(IdleMode.kCoast).inverted(true);
 
     config.smartCurrentLimit(IntakeConstants.pivotCurrentLimit);
@@ -37,13 +44,20 @@ public class PivotIOReal implements PivotIO {
     sparkMax.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     closedLoopController = sparkMax.getClosedLoopController();
-    encoder = sparkMax.getEncoder();
+    relativeEncoder = sparkMax.getEncoder();
+    absoluteEncoder = sparkMax.getAbsoluteEncoder();
   }
 
   @Override
   public void updateInputs(PivotIOInputs inputs) {
-    inputs.angle = Rotations.of(encoder.getPosition());
-    inputs.angularVelocity = RPM.of(encoder.getVelocity());
+    inputs.absoluteEncoderPosition =
+        Rotations.of(absoluteEncoder.getPosition())
+            .plus(IntakeConstants.pivotAbsoluteEncoderZeroAngle);
+    inputs.absoluteEncoderVelocity = RPM.of(absoluteEncoder.getVelocity());
+
+    inputs.internalEncoderPosition = Rotations.of(relativeEncoder.getPosition());
+    inputs.internalEncoderVelocity = RPM.of(relativeEncoder.getVelocity());
+
     inputs.appliedVoltage = Volts.of(sparkMax.getAppliedOutput() * sparkMax.getBusVoltage());
   }
 

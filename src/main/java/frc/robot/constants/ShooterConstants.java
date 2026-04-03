@@ -37,6 +37,7 @@ public class ShooterConstants {
   // flywheel
   public static final int flywheelLeftId = 10;
   public static final int flywheelRightId = 11;
+  public static final int flywheelMiddleId = 12;
   public static final InvertedValue shooterFlywheelInverted = InvertedValue.Clockwise_Positive;
 
   public static final Distance flywheelRadius = Inches.of(2);
@@ -52,15 +53,8 @@ public class ShooterConstants {
   public static final ClosedLoopOutputType flywheelClosedLoopOutput =
       ClosedLoopOutputType.TorqueCurrentFOC;
 
-  public static final ControlConstantsBuilder leftFlywheelControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(2.6, 0, 0).sva(3.69, 0, 0);
-  public static final ControlConstantsBuilder leftFlywheelRecoverControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(4.2, 0, 0).sva(3.69, 0, 0);
-
-  public static final ControlConstantsBuilder rightFlywheelControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(2.6, 0, 0).sva(6.46, 0, 0);
-  public static final ControlConstantsBuilder rightFlywheelRecoverControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(4.2, 0, 0).sva(6.46, 0, 0);
+  public static final ControlConstantsBuilder flywheelControl =
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.8, 0, 0).sva(3.69, 0, 0);
 
   // hood
   public static final int hoodId = 5;

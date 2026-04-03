@@ -17,8 +17,12 @@ import org.littletonrobotics.junction.AutoLog;
 public interface PivotIO {
   @AutoLog
   class PivotIOInputs {
-    public Angle angle = Rotations.of(0);
-    public AngularVelocity angularVelocity = RPM.of(0);
+    public Angle absoluteEncoderPosition = Rotations.of(0);
+    public AngularVelocity absoluteEncoderVelocity = RPM.of(0);
+
+    public Angle internalEncoderPosition = Rotations.of(0);
+    public AngularVelocity internalEncoderVelocity = RPM.of(0);
+
     public Voltage appliedVoltage = Volts.of(0);
   }
 

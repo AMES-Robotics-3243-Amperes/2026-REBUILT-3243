@@ -35,8 +35,10 @@ public class PivotIOSim implements PivotIO {
       intakeSimulation.startIntake();
     else intakeSimulation.stopIntake();
 
-    inputs.angle = position;
-    inputs.angularVelocity = velocity;
+    inputs.internalEncoderPosition = position;
+    inputs.absoluteEncoderPosition = position;
+    inputs.internalEncoderVelocity = velocity;
+    inputs.absoluteEncoderVelocity = velocity;
     inputs.appliedVoltage = Volts.of(output);
   }
 

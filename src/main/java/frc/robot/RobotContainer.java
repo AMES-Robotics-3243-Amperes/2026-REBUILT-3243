@@ -8,10 +8,8 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Volts;
 
 import choreo.auto.AutoChooser;
-import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -55,7 +53,7 @@ import frc.robot.subsystems.intake.RollerIO;
 import frc.robot.subsystems.intake.RollerIOReal;
 import frc.robot.subsystems.intake.RollerIOSim;
 import frc.robot.subsystems.shooter.FlywheelIO;
-import frc.robot.subsystems.shooter.FlywheelIOSeparateReal;
+import frc.robot.subsystems.shooter.FlywheelIOJoinedShaftReal;
 import frc.robot.subsystems.shooter.FlywheelIOSim;
 import frc.robot.subsystems.shooter.HoodIO;
 import frc.robot.subsystems.shooter.HoodIOReal;
@@ -134,16 +132,7 @@ public class RobotContainer {
         intake = new IntakeSubsystem(new RollerIOReal(), new PivotIOReal());
         shooter =
             new ShooterSubsystem(
-                new FlywheelIOSeparateReal(
-                    ShooterConstants.flywheelLeftId,
-                    InvertedValue.Clockwise_Positive,
-                    ShooterConstants.leftFlywheelControl,
-                    ShooterConstants.leftFlywheelRecoverControl),
-                new FlywheelIOSeparateReal(
-                    ShooterConstants.flywheelRightId, InvertedValue.CounterClockwise_Positive,
-                    ShooterConstants.rightFlywheelControl,
-                        ShooterConstants.rightFlywheelRecoverControl),
-                new HoodIOReal());
+                new HoodIOReal(), new FlywheelIOJoinedShaftReal(ShooterConstants.flywheelControl));
         indexer = new IndexerSubsystem(new KickerIOReal(), new SpindexerIOReal());
 
         new VisionSubsystem(
@@ -199,7 +188,7 @@ public class RobotContainer {
                 new RollerIOSim(intakeSimulation, driveSimulation),
                 new PivotIOSim(intakeSimulation));
         indexer = new IndexerSubsystem(new KickerIOSim(), new SpindexerIOSim());
-        shooter = new ShooterSubsystem(new FlywheelIOSim(), new FlywheelIOSim(), new HoodIOSim());
+        shooter = new ShooterSubsystem(new HoodIOSim(), new FlywheelIOSim());
 
         new VisionSubsystem(
             drivetrain::addVisionMeasurement,
@@ -261,7 +250,7 @@ public class RobotContainer {
                 new ModuleIO() {});
         intake = new IntakeSubsystem(new RollerIO() {}, new PivotIO() {});
         indexer = new IndexerSubsystem(new KickerIO() {}, new SpindexerIO() {});
-        shooter = new ShooterSubsystem(new FlywheelIO() {}, new FlywheelIO() {}, new HoodIO() {});
+        shooter = new ShooterSubsystem(new HoodIO() {}, new FlywheelIO() {});
 
         new VisionSubsystem(
             drivetrain::addVisionMeasurement,
@@ -310,14 +299,17 @@ public class RobotContainer {
 
     primaryController.leftTrigger().whileTrue(intake.intakeCommand());
 
-    secondaryController.leftTrigger().whileTrue(intake.agitateCommand());
-    secondaryController.rightTrigger().whileTrue(intake.outtakeCommand());
+    primaryController.leftBumper().whileTrue(intake.raisePivotCommand());
+    primaryController.rightBumper().whileTrue(intake.lowerPivotCommand());
 
-    secondaryController.rightBumper().whileTrue(intake.lowerPivotCommand());
-    secondaryController.leftBumper().whileTrue(intake.raisePivotCommand());
+    // secondaryController.leftTrigger().whileTrue(intake.agitateCommand());
+    // secondaryController.rightTrigger().whileTrue(intake.outtakeCommand());
 
-    secondaryController.x().whileTrue(intake.runPivotOpenLoopCommand(Volts.of(3)));
-    secondaryController.a().whileTrue(intake.runPivotOpenLoopCommand(Volts.of(-3)));
+    // secondaryController.rightBumper().whileTrue(intake.lowerPivotCommand());
+    // secondaryController.leftBumper().whileTrue(intake.raisePivotCommand());
+
+    // secondaryController.x().whileTrue(intake.runPivotOpenLoopCommand(Volts.of(3)));
+    // secondaryController.a().whileTrue(intake.runPivotOpenLoopCommand(Volts.of(-3)));
 
     //
     // Shooting

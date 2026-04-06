@@ -3,7 +3,7 @@ package frc.robot.constants;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.units.measure.Angle;
@@ -24,24 +24,24 @@ public class IntakeConstants {
 
   public static final ControlConstantsBuilder rollerControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(0.0033585, 0, 0)
-          .sva(0.48225, 0.036694, 0.0036671);
+          .pid(0.0038525, 0, 0)
+          .sva(0.24801, 0.033908, 0.0030267);
 
-  public static final AngularVelocity rollerIntakeSpeed = RotationsPerSecond.of(32);
-  public static final AngularVelocity rollerAgitateSpeed = RotationsPerSecond.of(20);
+  public static final AngularVelocity rollerIntakeSpeed = RPM.of(2200);
+  public static final AngularVelocity rollerAgitateSpeed = RPM.of(1500);
 
   // pivot
   public static final int pivotId = 3;
 
   public static final ControlConstantsBuilder pivotControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.01, 0, 0);
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(1.1, 0, 0);
 
-  public static final double pivotReduction = (54.0 / 18.0) * (34.0 / 16.0) * (16.0 / 1.0);
+  public static final double pivotReduction = 20.0;
 
   public static final int pivotCurrentLimit = 40;
 
   public static final Angle pivotMinRotation = Degrees.of(0);
-  public static final Angle pivotMaxRotation = Degrees.of(110);
+  public static final Angle pivotMaxRotation = Degrees.of(130);
 
   public static final Angle pivotAbsoluteEncoderZeroAngle = Degrees.of(0);
   public static final Angle pivotBacklash = Degrees.of(20);

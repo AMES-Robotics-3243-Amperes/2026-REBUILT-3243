@@ -48,19 +48,23 @@ public class ShooterSubsystem extends SubsystemBase {
   public ShooterSubsystem(HoodIO hoodIO, FlywheelIOAndName... flywheelIO) {
     assert flywheelIO.length > 0;
     this.flywheelIO = flywheelIO;
-    this.flywheelInputs = new FlywheelIOInputsAutoLogged[flywheelIO.length];
     this.hoodIO = hoodIO;
+
+    this.flywheelInputs = new FlywheelIOInputsAutoLogged[flywheelIO.length];
+    for (int i = 0; i < flywheelInputs.length; i++) {
+      flywheelInputs[i] = new FlywheelIOInputsAutoLogged();
+    }
   }
 
   public ShooterSubsystem(HoodIO hoodIO, FlywheelIO flywheelIO) {
-    this(hoodIO, new FlywheelIOAndName[] {new FlywheelIOAndName("", flywheelIO)});
+    this(hoodIO, new FlywheelIOAndName[] {new FlywheelIOAndName("Main", flywheelIO)});
   }
 
   @Override
   public void periodic() {
     for (int i = 0; i < flywheelIO.length; i++) {
       flywheelIO[i].io().updateInputs(flywheelInputs[i]);
-      Logger.processInputs("Shooter/Flywheel/" + flywheelIO[i].name(), hoodInputs);
+      Logger.processInputs("Shooter/Flywheel/" + flywheelIO[i].name(), flywheelInputs[i]);
     }
 
     hoodIO.updateInputs(hoodInputs);

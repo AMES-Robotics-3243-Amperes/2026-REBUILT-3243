@@ -5,12 +5,14 @@
 package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
@@ -29,6 +31,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public final PivotIO pivotIO;
   private final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
+
+  private final PIDController pivotFeedback = IntakeConstants.pivotControl.pidController(Radians);
 
   /**
    * Represents the position of the relative encoder where the pivot is bottomed out and the system
@@ -94,8 +98,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public Command intakeCommand() {
     return Commands.runEnd(
-            () -> setRollerVelocity(IntakeConstants.rollerIntakeSpeed), this::coastRoller)
-        .alongWith(lowerPivotCommand().withTimeout(2.8));
+        () -> setRollerVelocity(IntakeConstants.rollerIntakeSpeed), this::coastRoller);
+    // .alongWith(lowerPivotCommand().withTimeout(2.8));
   }
 
   public Command outtakeCommand() {
@@ -108,7 +112,15 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public Command raisePivotCommand() {
-    return runEnd(() -> pivotIO.runOpenLoop(0.2), this::coastPivot)
+    return runOnce(() -> pivotFeedback.reset())
+        .andThen(
+            runEnd(
+                () ->
+                    pivotIO.runOpenLoop(
+                        pivotFeedback.calculate(
+                            pivotInputs.absoluteEncoderPosition.in(Radians),
+                            IntakeConstants.pivotMaxRotation.in(Radians))),
+                this::coastPivot))
         .withDeadline(
             Commands.waitUntil(
                 () ->
@@ -119,7 +131,15 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public Command lowerPivotCommand() {
-    return runEnd(() -> pivotIO.runOpenLoop(-0.2), this::coastPivot)
+    return runOnce(() -> pivotFeedback.reset())
+        .andThen(
+            runEnd(
+                () ->
+                    pivotIO.runOpenLoop(
+                        pivotFeedback.calculate(
+                            pivotInputs.absoluteEncoderPosition.in(Radians),
+                            IntakeConstants.pivotMinRotation.in(Radians))),
+                this::coastPivot))
         .withDeadline(
             Commands.waitUntil(
                 () ->

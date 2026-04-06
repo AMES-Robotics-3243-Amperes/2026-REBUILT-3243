@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.intake;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
@@ -17,6 +18,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.units.measure.Angle;
 import frc.robot.constants.IntakeConstants;
 
 /** Add your docs here. */
@@ -35,7 +37,7 @@ public class PivotIOReal implements PivotIO {
 
     config.absoluteEncoder.positionConversionFactor(1.0);
     config.absoluteEncoder.velocityConversionFactor(1.0);
-    config.absoluteEncoder.inverted(false);
+    config.absoluteEncoder.inverted(true);
 
     config.idleMode(IdleMode.kCoast).inverted(true);
 
@@ -50,9 +52,16 @@ public class PivotIOReal implements PivotIO {
 
   @Override
   public void updateInputs(PivotIOInputs inputs) {
-    inputs.absoluteEncoderPosition =
+    Angle absoluteEncoderPosition =
         Rotations.of(absoluteEncoder.getPosition())
             .plus(IntakeConstants.pivotAbsoluteEncoderZeroAngle);
+
+    if (absoluteEncoderPosition.lt(IntakeConstants.pivotAngleWrap.minus(Degrees.of(360))))
+      absoluteEncoderPosition = absoluteEncoderPosition.plus(Degrees.of(360));
+    else if (absoluteEncoderPosition.gt(IntakeConstants.pivotAngleWrap))
+      absoluteEncoderPosition = absoluteEncoderPosition.minus(Degrees.of(360));
+
+    inputs.absoluteEncoderPosition = absoluteEncoderPosition;
     inputs.absoluteEncoderVelocity = RPM.of(absoluteEncoder.getVelocity());
 
     inputs.internalEncoderPosition = Rotations.of(relativeEncoder.getPosition());

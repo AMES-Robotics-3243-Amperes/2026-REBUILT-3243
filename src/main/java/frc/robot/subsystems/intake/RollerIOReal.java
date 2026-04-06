@@ -37,7 +37,7 @@ public class RollerIOReal implements RollerIO {
 
     config.encoder.positionConversionFactor(1.0 / IntakeConstants.rollerReduction);
     config.encoder.velocityConversionFactor(1.0 / IntakeConstants.rollerReduction);
-    config.idleMode(IdleMode.kCoast).inverted(true);
+    config.idleMode(IdleMode.kCoast).inverted(false);
 
     config.closedLoop.apply(IntakeConstants.rollerControl.revClosedLoopConfig());
 

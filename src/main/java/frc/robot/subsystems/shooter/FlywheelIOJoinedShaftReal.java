@@ -20,7 +20,6 @@ import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.swerve.SwerveModuleConstants.ClosedLoopOutputType;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -79,9 +78,9 @@ public class FlywheelIOJoinedShaftReal implements FlywheelIO {
     tryUntilOk(5, () -> followers[1].getConfigurator().apply(config, 0.25));
 
     followers[0].setControl(
-        new Follower(ShooterConstants.flywheelLeftId, MotorAlignmentValue.Opposed));
+        new Follower(ShooterConstants.flywheelLeftId, MotorAlignmentValue.Aligned));
     followers[1].setControl(
-        new Follower(ShooterConstants.flywheelLeftId, MotorAlignmentValue.Opposed));
+        new Follower(ShooterConstants.flywheelLeftId, MotorAlignmentValue.Aligned));
 
     position = leader.getPosition();
     velocity = leader.getVelocity();
@@ -89,17 +88,13 @@ public class FlywheelIOJoinedShaftReal implements FlywheelIO {
     torque = leader.getTorqueCurrent();
 
     // Configure periodic frames
-    if (ShooterConstants.flywheelClosedLoopOutput == ClosedLoopOutputType.TorqueCurrentFOC)
-      torque.setUpdateFrequency(50.0);
-    BaseStatusSignal.setUpdateFrequencyForAll(50.0, position, velocity, voltage);
+    BaseStatusSignal.setUpdateFrequencyForAll(100.0, position, velocity, voltage, torque);
     ParentDevice.optimizeBusUtilizationForAll(leader, followers[0], followers[1]);
   }
 
   @Override
   public void updateInputs(FlywheelIOInputs inputs) {
-    if (ShooterConstants.flywheelClosedLoopOutput == ClosedLoopOutputType.TorqueCurrentFOC)
-      torque.refresh();
-    BaseStatusSignal.refreshAll(position, velocity, voltage);
+    BaseStatusSignal.refreshAll(position, velocity, voltage, torque);
 
     inputs.position = position.getValue();
     inputs.velocity = velocity.getValue();

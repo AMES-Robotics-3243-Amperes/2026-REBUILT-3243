@@ -37,12 +37,21 @@ public class VisionConstants {
   public static final List<CameraConfiguration> cameras =
       List.of(
           new CameraConfiguration(
-              "limelight-four",
+              "limelight-front",
               new Transform3d(
-                  -Units.inchesToMeters(1.327779),
+                  Units.inchesToMeters(-1.851),
                   Units.inchesToMeters(0),
-                  Units.inchesToMeters(18.427671 + 1.8),
-                  new Rotation3d(0, Units.degreesToRadians(180 - 65 - 90), 0)),
+                  Units.inchesToMeters(19.33 + 1.8125),
+                  new Rotation3d(0, Units.degreesToRadians(-30), 0)),
+              1,
+              CameraType.LimelightFour),
+          new CameraConfiguration(
+              "limelight-back",
+              new Transform3d(
+                  Units.inchesToMeters(-11.5269),
+                  Units.inchesToMeters(9.625),
+                  Units.inchesToMeters(7.3 + 1.8125),
+                  new Rotation3d(180, Units.degreesToRadians(-25), 180)),
               1,
               CameraType.LimelightFour));
 

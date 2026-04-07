@@ -47,7 +47,7 @@ public class ShooterConstants {
   public static final Current flywheelStatorCurrentLimit = Amps.of(90);
   public static final Current flywheelSupplyCurrentLimit = Amps.of(40);
 
-  public static final double fuelToFlywheelLinearSpeedRatio = 0.456;
+  public static final double fuelToFlywheelLinearSpeedRatio = 0.49;
 
   public static final AngularVelocity flywheelRecoverControlTolerance = RPM.of(150);
 
@@ -55,7 +55,7 @@ public class ShooterConstants {
       ClosedLoopOutputType.TorqueCurrentFOC;
 
   public static final ControlConstantsBuilder flywheelControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(1.2, 0, 0).sva(1, 0, 0);
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(1.3, 0, 0).sva(1, 0, 0);
 
   // hood
   public static final int hoodId = 5;

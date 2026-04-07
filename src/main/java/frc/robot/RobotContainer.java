@@ -302,7 +302,7 @@ public class RobotContainer {
     primaryController.leftBumper().whileTrue(intake.raisePivotCommand());
     primaryController.rightBumper().whileTrue(intake.lowerPivotCommand());
 
-    primaryController.a().onTrue(intake.rollerSysIdCommand(primaryController.a()));
+    primaryController.a().onTrue(intake.pivotSysIdCommand(primaryController.a()));
 
     // secondaryController.leftTrigger().whileTrue(intake.agitateCommand());
     // secondaryController.rightTrigger().whileTrue(intake.outtakeCommand());

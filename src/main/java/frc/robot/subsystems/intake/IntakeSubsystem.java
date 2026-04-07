@@ -12,6 +12,7 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -32,7 +33,13 @@ public class IntakeSubsystem extends SubsystemBase {
   public final PivotIO pivotIO;
   private final PivotIOInputsAutoLogged pivotInputs = new PivotIOInputsAutoLogged();
 
-  private final PIDController pivotFeedback = IntakeConstants.pivotControl.pidController(Radians);
+  private final PIDController pivotVelocityFeedback =
+      IntakeConstants.pivotVelocityControl.pidController(Radians);
+  private final ArmFeedforward pivotVelocityFeedforward =
+      IntakeConstants.pivotVelocityControl.armFeedforward(Radians);
+
+  private final PIDController pivotPositionFeedback =
+      IntakeConstants.pivotPositionControl.pidController(Radians);
 
   /**
    * Represents the position of the relative encoder where the pivot is bottomed out and the system
@@ -92,14 +99,29 @@ public class IntakeSubsystem extends SubsystemBase {
     Logger.recordOutput("Intake/Roller/SetpointSpeed", RadiansPerSecond.of(0));
   }
 
+  private void runPivotAtSpeed(AngularVelocity speed) {
+    Logger.recordOutput(
+        "diddy",
+        (pivotInputs.appliedVoltage.in(Volts)
+                - pivotVelocityFeedforward.calculate(
+                    pivotInputs.absoluteEncoderPosition.in(Radians), speed.in(RadiansPerSecond)))
+            / pivotInputs.absoluteEncoderVelocity.in(RadiansPerSecond));
+    pivotIO.runOpenLoop(
+        pivotVelocityFeedback.calculate(
+                pivotInputs.absoluteEncoderVelocity.in(RadiansPerSecond),
+                speed.in(RadiansPerSecond))
+            + pivotVelocityFeedforward.calculate(
+                pivotInputs.absoluteEncoderPosition.in(Radians), speed.in(RadiansPerSecond)));
+  }
+
   private void coastPivot() {
     pivotIO.runOpenLoop(0);
   }
 
   public Command intakeCommand() {
     return Commands.runEnd(
-        () -> setRollerVelocity(IntakeConstants.rollerIntakeSpeed), this::coastRoller);
-    // .alongWith(lowerPivotCommand().withTimeout(2.8));
+            () -> setRollerVelocity(IntakeConstants.rollerIntakeSpeed), this::coastRoller)
+        .alongWith(lowerPivotCommand());
   }
 
   public Command outtakeCommand() {
@@ -112,14 +134,15 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public Command raisePivotCommand() {
-    return runOnce(() -> pivotFeedback.reset())
+    return runOnce(() -> pivotPositionFeedback.reset())
         .andThen(
             runEnd(
                 () ->
-                    pivotIO.runOpenLoop(
-                        pivotFeedback.calculate(
-                            pivotInputs.absoluteEncoderPosition.in(Radians),
-                            IntakeConstants.pivotMaxRotation.in(Radians))),
+                    runPivotAtSpeed(
+                        RadiansPerSecond.of(
+                            pivotPositionFeedback.calculate(
+                                pivotInputs.absoluteEncoderPosition.in(Radians),
+                                IntakeConstants.pivotMaxRotation.in(Radians)))),
                 this::coastPivot))
         .withDeadline(
             Commands.waitUntil(
@@ -131,14 +154,15 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public Command lowerPivotCommand() {
-    return runOnce(() -> pivotFeedback.reset())
+    return runOnce(() -> pivotPositionFeedback.reset())
         .andThen(
             runEnd(
                 () ->
-                    pivotIO.runOpenLoop(
-                        pivotFeedback.calculate(
-                            pivotInputs.absoluteEncoderPosition.in(Radians),
-                            IntakeConstants.pivotMinRotation.in(Radians))),
+                    runPivotAtSpeed(
+                        RadiansPerSecond.of(
+                            pivotPositionFeedback.calculate(
+                                pivotInputs.absoluteEncoderPosition.in(Radians),
+                                IntakeConstants.pivotMinRotation.in(Radians)))),
                 this::coastPivot))
         .withDeadline(
             Commands.waitUntil(
@@ -175,8 +199,8 @@ public class IntakeSubsystem extends SubsystemBase {
     return GeneralPurposeCharacterization.sysIdCommand(
         advanceRoutine,
         "Intake/SysId/Pivot",
-        Volts.of(0.4).per(Second),
-        Volts.of(1.2),
+        Volts.of(0.6).per(Second),
+        Volts.of(3),
         Seconds.of(8),
         voltage -> pivotIO.runOpenLoop(voltage.in(Volts)),
         () -> pivotInputs.absoluteEncoderPosition,

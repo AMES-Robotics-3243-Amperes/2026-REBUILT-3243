@@ -20,6 +20,7 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
 import edu.wpi.first.math.Pair;
+import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -145,6 +146,12 @@ public class ControlConstantsBuilder {
   public SimpleMotorFeedforward simpleFeedforward(AngleUnit angleUnit) {
     ControlConstants constants = in(angleUnit, Seconds);
     return new SimpleMotorFeedforward(constants.kS(), constants.kV(), constants.kA(), 0.02);
+  }
+
+  public ArmFeedforward armFeedforward(AngleUnit angleUnit) {
+    ControlConstants constants = in(angleUnit, Seconds);
+    assert (constants.cosCompensatedKg());
+    return new ArmFeedforward(constants.kS(), constants.kG(), constants.kV(), constants.kA(), 0.02);
   }
 
   public PIDController pidController(AngleUnit angleUnit, Angle minWrap, Angle maxWrap) {

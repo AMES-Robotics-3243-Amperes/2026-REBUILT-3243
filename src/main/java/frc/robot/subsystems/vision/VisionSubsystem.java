@@ -107,8 +107,13 @@ public class VisionSubsystem extends SubsystemBase {
         ChassisSpeeds speeds = chassisSpeeds.get();
         boolean rejectPoseOnDisable =
             observation.tagCount() == 0 // Must have at least one tag
-                || Math.abs(observation.pose().getZ())
-                    > VisionConstants.maxZError; // Must have realistic Z coordinate
+
+                // Must have realistic Z coordinate
+                || Math.abs(observation.pose().getZ()) > VisionConstants.maxZError
+
+                // can't trust rotation for megatag 2
+                || observation.type() == PoseObservationType.MEGATAG_2
+                    && DriverStation.isDisabled();
 
         boolean rejectPose =
             (observation.tagCount() == 1
@@ -118,9 +123,6 @@ public class VisionSubsystem extends SubsystemBase {
                 // can't be rotating too fast
                 || Math.abs(speeds.omegaRadiansPerSecond)
                     > VisionConstants.maxAngularVelocity.in(RadiansPerSecond)
-
-                // can't trust rotation for megatag 2
-                || observation.type() == PoseObservationType.MEGATAG_2 && DriverStation.isDisabled()
 
                 // Must be within the field boundaries
                 || observation.pose().getX() < 0.0

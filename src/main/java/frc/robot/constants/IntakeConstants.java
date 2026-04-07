@@ -33,8 +33,10 @@ public class IntakeConstants {
   // pivot
   public static final int pivotId = 3;
 
-  public static final ControlConstantsBuilder pivotControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(1.1, 0, 0);
+  public static final ControlConstantsBuilder pivotVelocityControl =
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.3, 0, 0).sva(0.8, 0, 0).g(0.98, true);
+  public static final ControlConstantsBuilder pivotPositionControl =
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(1.4, 0, 0);
 
   public static final double pivotReduction = 20.0;
 

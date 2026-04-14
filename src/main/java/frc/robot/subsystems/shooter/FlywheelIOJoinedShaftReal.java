@@ -26,6 +26,7 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.util.ControlConstantsBuilder;
+import frc.robot.util.TunableControls;
 import java.util.function.Supplier;
 
 /** Add your docs here. */
@@ -90,6 +91,8 @@ public class FlywheelIOJoinedShaftReal implements FlywheelIO {
     // Configure periodic frames
     BaseStatusSignal.setUpdateFrequencyForAll(100.0, position, velocity, voltage, torque);
     ParentDevice.optimizeBusUtilizationForAll(leader, followers[0], followers[1]);
+
+    TunableControls.registerTalonFXSlotTuning(leader, 0, "shooter", control);
   }
 
   @Override

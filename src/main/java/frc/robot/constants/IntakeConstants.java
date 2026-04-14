@@ -34,9 +34,9 @@ public class IntakeConstants {
   public static final int pivotId = 3;
 
   public static final ControlConstantsBuilder pivotVelocityControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(0.3, 0, 0).sva(0.8, 0, 0).g(0.98, true);
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(1, 0, 0).sva(0.8, 0, 0).g(0.98, true);
   public static final ControlConstantsBuilder pivotPositionControl =
-      ControlConstantsBuilder.fromRadiansAndSeconds().pid(1.4, 0, 0);
+      ControlConstantsBuilder.fromRadiansAndSeconds().pid(1.6, 0, 0);
 
   public static final double pivotReduction = 20.0;
 
@@ -48,7 +48,7 @@ public class IntakeConstants {
   public static final Angle pivotAbsoluteEncoderZeroAngle = Degrees.of(0);
   public static final Angle pivotBacklash = Degrees.of(20);
 
-  public static final Angle pivotPositioningTolerance = Degrees.of(5);
+  public static final Angle pivotPositioningTolerance = Degrees.of(3);
 
   /** If we've been controlling the pivot for this long and it hasn't reached the top, give up. */
   // TODO: we want to rely exclusively on the absolute encoder most of the time. make a secondary

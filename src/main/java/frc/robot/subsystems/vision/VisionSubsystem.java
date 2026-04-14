@@ -7,6 +7,7 @@
 
 package frc.robot.subsystems.vision;
 
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import edu.wpi.first.math.Matrix;
@@ -24,7 +25,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.VisionConstants;
 import frc.robot.subsystems.vision.VisionIO.PoseObservation;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -77,10 +78,10 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     // Initialize logging values
-    List<Pose3d> allTagPoses = new LinkedList<>();
-    List<Pose3d> allRobotPoses = new LinkedList<>();
-    List<Pose3d> allRobotPosesAccepted = new LinkedList<>();
-    List<Pose3d> allRobotPosesRejected = new LinkedList<>();
+    List<Pose3d> allTagPoses = new ArrayList<>();
+    List<Pose3d> allRobotPoses = new ArrayList<>();
+    List<Pose3d> allRobotPosesAccepted = new ArrayList<>();
+    List<Pose3d> allRobotPosesRejected = new ArrayList<>();
 
     // Loop over cameras
     for (int i = 0; i < io.length; i++) {
@@ -88,10 +89,10 @@ public class VisionSubsystem extends SubsystemBase {
       disconnectedAlerts[i].set(!inputs[i].connected);
 
       // Initialize logging values
-      List<Pose3d> tagPoses = new LinkedList<>();
-      List<Pose3d> robotPoses = new LinkedList<>();
-      List<Pose3d> robotPosesAccepted = new LinkedList<>();
-      List<Pose3d> robotPosesRejected = new LinkedList<>();
+      List<Pose3d> tagPoses = new ArrayList<>();
+      List<Pose3d> robotPoses = new ArrayList<>();
+      List<Pose3d> robotPosesAccepted = new ArrayList<>();
+      List<Pose3d> robotPosesRejected = new ArrayList<>();
 
       // Add tag poses
       for (int tagId : inputs[i].tagIds) {
@@ -104,18 +105,15 @@ public class VisionSubsystem extends SubsystemBase {
       // Loop over pose observations
       for (PoseObservation observation : inputs[i].poseObservations) {
         // Check whether to reject pose
+        boolean isEnabled = DriverStation.isEnabled();
         ChassisSpeeds speeds = chassisSpeeds.get();
-        boolean rejectPoseOnDisable =
-            observation.tagCount() == 0 // Must have at least one tag
-
-                // Must have realistic Z coordinate
-                || Math.abs(observation.pose().getZ()) > VisionConstants.maxZError
-
-                // can't trust rotation for megatag 2
-                || observation.type() == PoseObservationType.MEGATAG_2
-                    && DriverStation.isDisabled();
 
         boolean rejectPose =
+            observation.tagCount() == 0 // Must have at least one tag
+                // Must have realistic Z coordinate
+                || Math.abs(observation.pose().getZ()) > VisionConstants.maxZError.in(Meters);
+
+        boolean rejectPoseOnEnable =
             (observation.tagCount() == 1
                     && observation.ambiguity()
                         > VisionConstants.maxAmbiguity) // Cannot be high ambiguity
@@ -129,18 +127,21 @@ public class VisionSubsystem extends SubsystemBase {
                 || observation.pose().getX() > VisionConstants.aprilTagLayout.getFieldLength()
                 || observation.pose().getY() < 0.0
                 || observation.pose().getY() > VisionConstants.aprilTagLayout.getFieldWidth();
-        rejectPose &= DriverStation.isEnabled();
+        rejectPoseOnEnable &= isEnabled;
+
+        boolean rejectPoseOnDisable = observation.type() == PoseObservationType.MEGATAG_2;
+        rejectPoseOnDisable &= !isEnabled;
 
         // Add pose to log
         robotPoses.add(observation.pose());
-        if (rejectPose || rejectPoseOnDisable) {
+        if (rejectPoseOnEnable || rejectPose || rejectPoseOnDisable) {
           robotPosesRejected.add(observation.pose());
         } else {
           robotPosesAccepted.add(observation.pose());
         }
 
         // Skip if rejected
-        if (rejectPose || rejectPoseOnDisable) {
+        if (rejectPoseOnEnable || rejectPose || rejectPoseOnDisable) {
           continue;
         }
 

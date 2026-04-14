@@ -74,7 +74,9 @@ public class IndexerSubsystem extends SubsystemBase {
     double targetRadPerSec =
         velocity.in(MetersPerSecond) / IndexerConstants.kickerWheelRadius.in(Meters);
     return RadiansPerSecond.of(
-        Math.min(targetRadPerSec, IndexerConstants.maxKickerSpeed.in(RadiansPerSecond)));
+        Math.min(
+            targetRadPerSec * IndexerConstants.kickerSpeedMultiplier,
+            IndexerConstants.maxKickerSpeed.in(RadiansPerSecond)));
   }
 
   public Command indexCommand(ShooterSubsystem shooter) {
@@ -122,6 +124,18 @@ public class IndexerSubsystem extends SubsystemBase {
         () -> {
           setKickerVelocity(kickerVelocity.get());
           setSpindexerVelocity(spindexerVelocity);
+        },
+        () -> {
+          coastKicker();
+          coastSpindexer();
+        });
+  }
+
+  public Command backspinSpindexerCommand() {
+    return runEnd(
+        () -> {
+          coastKicker();
+          setSpindexerVelocity(IndexerConstants.spindexerBackspinSpeed.unaryMinus());
         },
         () -> {
           coastKicker();

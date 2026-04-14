@@ -28,7 +28,7 @@ public final class ChoreoVars {
   public static final Mass R_RobotMass = Units.Kilograms.of(52.163);
   public static final Distance R_TrackLength = Units.Meters.of(0.546);
   public static final double R_WheelCOF = 1.5;
-  public static final Distance R_WheelRadius = Units.Meters.of(0.05);
+  public static final Distance R_WheelRadius = Units.Meters.of(0.048);
   public static final Distance S_RushOutRadius = Units.Meters.of(1.2);
 
   public static final class Poses {
@@ -36,7 +36,7 @@ public final class ChoreoVars {
     public static final Pose2d KeepOutTop = new Pose2d(4.625, -5.916, Rotation2d.kZero);
     public static final Pose2d SecondCenterCollectEnd =
         new Pose2d(6.14, 4.87, Rotation2d.fromRadians(-2));
-    public static final Pose2d Shoot = new Pose2d(2.879, 7.273, Rotation2d.fromRadians(-1.076));
+    public static final Pose2d Shoot = new Pose2d(1.611, 6.611, Rotation2d.fromRadians(-0.706));
 
     private Poses() {}
   }

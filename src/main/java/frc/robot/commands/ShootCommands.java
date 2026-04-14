@@ -79,16 +79,6 @@ public class ShootCommands {
     return this;
   }
 
-  public ShootCommands indexAfterDelay(IndexerSubsystem indexer, ShooterSubsystem shooter) {
-    commands.add(
-        Commands.sequence(
-            indexer
-                .spinUpKickerWithFlywheelCommand(shooter)
-                .withDeadline(Commands.waitTime(IndexerConstants.idleTimeBeforeIndexing)),
-            indexer.indexCommand(shooter)));
-    return this;
-  }
-
   /**
    * Included as a static method since it doesn't require a target and should thus have the ability
    * to be made independently of a builder.
@@ -96,11 +86,12 @@ public class ShootCommands {
   public static Command indexWhenReadyCommand(
       IndexerSubsystem indexer, ShooterSubsystem shooter, SwerveSubsystem drivetrain) {
     return Commands.sequence(
-        Commands.waitUntil(
-            new Trigger(drivetrain::atRotationSetpoint).and(shooter::flywheelSpunUp)),
         indexer
             .spinUpKickerWithFlywheelCommand(shooter)
-            .withDeadline(Commands.waitTime(IndexerConstants.idleTimeBeforeIndexing)),
+            .withDeadline(
+                Commands.waitUntil(
+                    new Trigger(drivetrain::atRotationSetpoint).and(shooter::flywheelSpunUp))),
+        Commands.waitTime(IndexerConstants.idleTimeBeforeIndexing),
         indexer.indexCommand(shooter));
   }
 
@@ -110,13 +101,14 @@ public class ShootCommands {
       SwerveSubsystem drivetrain,
       Trigger customReadyTrigger) {
     return Commands.sequence(
-        Commands.waitUntil(
-            new Trigger(drivetrain::atRotationSetpoint)
-                .and(shooter::flywheelSpunUp)
-                .or(customReadyTrigger)),
         indexer
             .spinUpKickerWithFlywheelCommand(shooter)
-            .withDeadline(Commands.waitTime(IndexerConstants.idleTimeBeforeIndexing)),
+            .withDeadline(
+                Commands.waitUntil(
+                    new Trigger(drivetrain::atRotationSetpoint)
+                        .and(shooter::flywheelSpunUp)
+                        .or(customReadyTrigger))),
+        Commands.waitTime(IndexerConstants.idleTimeBeforeIndexing),
         indexer.indexCommand(shooter));
   }
 

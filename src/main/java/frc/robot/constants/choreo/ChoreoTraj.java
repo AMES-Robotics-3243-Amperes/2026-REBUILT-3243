@@ -23,44 +23,44 @@ public record ChoreoTraj(
       new ChoreoTraj(
           "FirstCenterCollect",
           OptionalInt.empty(),
-          4.62277,
+          4.68874,
           new Pose2d(4.295, 7.628, Rotation2d.fromRadians(-1.571)),
-          new Pose2d(2.879, 7.273, Rotation2d.fromRadians(-1.076)));
+          new Pose2d(1.611, 6.611, Rotation2d.fromRadians(-0.706)));
   public static final ChoreoTraj FirstCenterCollect$0 =
       new ChoreoTraj(
           "FirstCenterCollect",
           OptionalInt.of(0),
-          2.48092,
+          2.31221,
           new Pose2d(4.295, 7.628, Rotation2d.fromRadians(-1.571)),
-          new Pose2d(7.813, 4.93, Rotation2d.fromRadians(-1.716)));
+          new Pose2d(7.813, 4.93, Rotation2d.fromRadians(-1.844)));
   public static final ChoreoTraj FirstCenterCollect$1 =
       new ChoreoTraj(
           "FirstCenterCollect",
           OptionalInt.of(1),
-          2.1418500000000003,
-          new Pose2d(7.813, 4.93, Rotation2d.fromRadians(-1.716)),
-          new Pose2d(2.879, 7.273, Rotation2d.fromRadians(-1.076)));
+          2.3765300000000003,
+          new Pose2d(7.813, 4.93, Rotation2d.fromRadians(-1.844)),
+          new Pose2d(1.611, 6.611, Rotation2d.fromRadians(-0.706)));
   public static final ChoreoTraj SecondCenterCollect =
       new ChoreoTraj(
           "SecondCenterCollect",
           OptionalInt.empty(),
-          4.89892,
-          new Pose2d(2.879, 7.273, Rotation2d.fromRadians(-1.076)),
-          new Pose2d(2.879, 7.273, Rotation2d.fromRadians(-1.076)));
+          5.41821,
+          new Pose2d(1.611, 6.611, Rotation2d.fromRadians(-0.706)),
+          new Pose2d(1.611, 6.611, Rotation2d.fromRadians(-0.706)));
   public static final ChoreoTraj SecondCenterCollect$0 =
       new ChoreoTraj(
           "SecondCenterCollect",
           OptionalInt.of(0),
-          2.69067,
-          new Pose2d(2.879, 7.273, Rotation2d.fromRadians(-1.076)),
+          3.01559,
+          new Pose2d(1.611, 6.611, Rotation2d.fromRadians(-0.706)),
           new Pose2d(6.779, 4.758, Rotation2d.fromRadians(-2.239)));
   public static final ChoreoTraj SecondCenterCollect$1 =
       new ChoreoTraj(
           "SecondCenterCollect",
           OptionalInt.of(1),
-          2.2082500000000005,
+          2.40262,
           new Pose2d(6.779, 4.758, Rotation2d.fromRadians(-2.239)),
-          new Pose2d(2.879, 7.273, Rotation2d.fromRadians(-1.076)));
+          new Pose2d(1.611, 6.611, Rotation2d.fromRadians(-0.706)));
 
   /**
    * A map between trajectory names and their corresponding data. This allows for trajectory data to

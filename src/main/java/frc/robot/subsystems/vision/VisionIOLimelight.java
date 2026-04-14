@@ -10,6 +10,7 @@ package frc.robot.subsystems.vision;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Microseconds;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -98,11 +99,17 @@ public class VisionIOLimelight extends VisionIO {
             Rotation2d.fromDegrees(txSubscriber.get()), Rotation2d.fromDegrees(tySubscriber.get()));
 
     // Update orientation for MegaTag 2
-    cameraOffsetPublisher.accept(parseTransform(cameraPoseInRobotSpace));
+    // cameraOffsetPublisher.accept(parseTransform(cameraPoseInRobotSpace));
+    cameraOffsetPublisher.accept(parseTransform(new Transform3d()));
     orientationPublisher.accept(
         new double[] {
-          rotationSupplier.get().getDegrees(),
-          rotationRateSupplier.get().in(DegreesPerSecond),
+          rotationSupplier.get().getDegrees()
+              + Units.radiansToDegrees(cameraPoseInRobotSpace.getRotation().getZ()),
+          rotationRateSupplier.get().in(DegreesPerSecond)
+              * (Math.abs(MathUtil.angleModulus(cameraPoseInRobotSpace.getRotation().getX()))
+                      > Math.PI / 2
+                  ? -1.0
+                  : 1.0),
           0.0,
           0.0,
           0.0,
@@ -145,6 +152,10 @@ public class VisionIOLimelight extends VisionIO {
                   Math.abs(deviation.timestamp - rawMegaTagOneSample.timestamp)
                       < VisionConstants.maxTimestampError.in(Microseconds));
 
+      Pose3d pose =
+          parsePose(rawMegaTagOneSample.value).transformBy(cameraPoseInRobotSpace.inverse());
+      if (pose.getX() == 0.0 && pose.getY() == 0.0) continue;
+
       poseObservations.add(
           new PoseObservation(
               // Timestamp, based on server timestamp of publish and latency
@@ -153,7 +164,7 @@ public class VisionIOLimelight extends VisionIO {
                   - rawMegaTagOneSample.value[7] * 1e-3,
 
               // 3D pose estimate
-              parsePose(rawMegaTagOneSample.value),
+              pose,
 
               // Reported standard deviations
               rawStandardDeviations
@@ -199,6 +210,10 @@ public class VisionIOLimelight extends VisionIO {
                   Math.abs(deviation.timestamp - rawMegaTagTwoSample.timestamp)
                       < VisionConstants.maxTimestampError.in(Microseconds));
 
+      Pose3d pose =
+          parsePose(rawMegaTagTwoSample.value).transformBy(cameraPoseInRobotSpace.inverse());
+      if (pose.getX() == 0.0 && pose.getY() == 0.0) continue;
+
       poseObservations.add(
           new PoseObservation(
               // Timestamp, based on server timestamp of publish and latency
@@ -207,7 +222,7 @@ public class VisionIOLimelight extends VisionIO {
                   - rawMegaTagTwoSample.value[7] * 1e-3,
 
               // 3D pose estimate
-              parsePose(rawMegaTagTwoSample.value),
+              pose,
 
               // Reported standard deviations
               rawStandardDeviations
@@ -263,10 +278,10 @@ public class VisionIOLimelight extends VisionIO {
     Rotation3d rotation = transform.getRotation();
     return new double[] {
       transform.getX(),
-      transform.getY(),
+      -transform.getY(),
       transform.getZ(),
       Units.radiansToDegrees(rotation.getX()),
-      Units.radiansToDegrees(rotation.getY()),
+      -Units.radiansToDegrees(rotation.getY()),
       Units.radiansToDegrees(rotation.getZ()),
     };
   }

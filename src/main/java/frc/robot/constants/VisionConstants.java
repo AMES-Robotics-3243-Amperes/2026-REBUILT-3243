@@ -7,6 +7,7 @@
 
 package frc.robot.constants;
 
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
@@ -19,6 +20,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Time;
 import frc.robot.subsystems.vision.VisionIO.PoseObservation;
 import frc.robot.subsystems.vision.VisionIO.PoseObservationType;
@@ -39,27 +41,30 @@ public class VisionConstants {
           new CameraConfiguration(
               "limelight-front",
               new Transform3d(
-                  Units.inchesToMeters(-1.851),
+                  Units.inchesToMeters(-1.91),
                   Units.inchesToMeters(0),
-                  Units.inchesToMeters(19.33 + 1.8125),
+                  Units.inchesToMeters(21.5 - 0.5),
                   new Rotation3d(0, Units.degreesToRadians(-30), 0)),
               1,
+              CameraType.LimelightFour),
+          new CameraConfiguration(
+              "limelight-back",
+              new Transform3d(
+                  Units.inchesToMeters(-11.5269),
+                  Units.inchesToMeters(9.625),
+                  Units.inchesToMeters(9.3 - 0.5),
+                  new Rotation3d(
+                      Units.degreesToRadians(180),
+                      Units.degreesToRadians(-25),
+                      Units.degreesToRadians(180))),
+              1,
               CameraType.LimelightFour));
-  //   new CameraConfiguration(
-  //       "limelight-back",
-  //       new Transform3d(
-  //           Units.inchesToMeters(-11.5269),
-  //           Units.inchesToMeters(9.625),
-  //           Units.inchesToMeters(7.3 + 1.8125),
-  //           new Rotation3d(180, Units.degreesToRadians(-25), 180)),
-  //       1,
-  //       CameraType.LimelightFour));
 
   // Basic filtering thresholds
   public static final Time maxTimestampError = Milliseconds.of(2);
   public static final AngularVelocity maxAngularVelocity = RotationsPerSecond.of(1);
-  public static final double maxAmbiguity = 0.4;
-  public static final double maxZError = 0.08;
+  public static final double maxAmbiguity = 0.35;
+  public static final Distance maxZError = Inches.of(3);
 
   public static final Vector<N3> calculateStdDev(
       PoseObservation observation, CameraConfiguration config) {

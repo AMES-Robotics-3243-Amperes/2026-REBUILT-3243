@@ -110,7 +110,7 @@ public class AutonomousRoutines {
         routine,
         collectFromMiddle,
         returnToShoot,
-        Seconds.of(0.85),
+        Seconds.of(0.1),
         Seconds.of(8),
         drivetrain,
         shooter,
@@ -156,16 +156,13 @@ public class AutonomousRoutines {
             routine,
             firstCollectFromMiddle,
             firstReturnToShoot,
-            Seconds.of(0.85),
-            Seconds.of(3.5),
+            Seconds.of(0.1),
+            Seconds.of(5),
             drivetrain,
             shooter,
             indexer,
             intake);
-    routine
-        .active()
-        .onTrue(
-            firstCollectFromMiddle.cmd().beforeStarting(firstCollectFromMiddle.resetOdometry()));
+    routine.active().onTrue(firstCollectFromMiddle.cmd());
 
     registerSingleCycle(
         routine,

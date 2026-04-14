@@ -67,6 +67,8 @@ import frc.robot.subsystems.vision.VisionSubsystem;
 import frc.robot.util.ControllerRumble;
 import frc.robot.util.FuelTrajectoryCalculator;
 import frc.robot.util.FuelTrajectoryCalculator.ShootTarget;
+import frc.robot.util.HubActivityManager;
+import frc.robot.util.HubActivityManager.HubState;
 import frc.robot.util.RobotLocationManager;
 import frc.robot.util.TunableControls;
 import org.ironmaple.simulation.IntakeSimulation;
@@ -281,6 +283,16 @@ public class RobotContainer {
             Commands.run(
                 () -> ControllerRumble.rumbleController(primaryController, secondaryController)));
 
+    RobotModeTriggers.teleop()
+        .or(RobotModeTriggers.autonomous())
+        .whileTrue(
+            Commands.run(
+                () -> {
+                  HubState state = HubActivityManager.getHubState();
+                  SmartDashboard.putBoolean("Hub Active", state.ourHubEnabled());
+                  SmartDashboard.putNumber("Time In Shift", state.timeToNextPhase());
+                }));
+
     configureBindings();
   }
 
@@ -299,10 +311,12 @@ public class RobotContainer {
 
     primaryController.leftTrigger().whileTrue(intake.intakeCommand());
 
-    primaryController.leftBumper().whileTrue(intake.raisePivotCommand());
-    primaryController.rightBumper().whileTrue(intake.lowerPivotCommand());
+    secondaryController.leftBumper().whileTrue(intake.lowerPivotCommand());
+    secondaryController.rightBumper().whileTrue(intake.raisePivotCommand());
+    secondaryController.leftTrigger().whileTrue(intake.agitateCommand());
+    secondaryController.b().whileTrue(indexer.backspinSpindexerCommand());
 
-    primaryController.a().onTrue(intake.pivotSysIdCommand(primaryController.a()));
+    primaryController.a().onTrue(shooter.flywheelSysIdCommand(primaryController.a()));
 
     // secondaryController.leftTrigger().whileTrue(intake.agitateCommand());
     // secondaryController.rightTrigger().whileTrue(intake.outtakeCommand());

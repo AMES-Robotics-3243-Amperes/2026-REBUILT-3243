@@ -39,7 +39,7 @@ public class PivotIOReal implements PivotIO {
     config.absoluteEncoder.velocityConversionFactor(1.0);
     config.absoluteEncoder.inverted(true);
 
-    config.idleMode(IdleMode.kCoast).inverted(true);
+    config.idleMode(IdleMode.kBrake).inverted(true);
 
     config.smartCurrentLimit(IntakeConstants.pivotCurrentLimit);
 

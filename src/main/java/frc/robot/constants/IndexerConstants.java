@@ -15,13 +15,14 @@ import frc.robot.util.ControlConstantsBuilder;
 
 /** Add your docs here. */
 public class IndexerConstants {
-  public static final Time idleTimeBeforeIndexing = Milliseconds.of(150);
+  public static final Time idleTimeBeforeIndexing = Milliseconds.of(40);
 
   // spindexer
   public static final int spindexerId = 1;
   public static final double spindexerReduction = 4.0;
 
   public static final AngularVelocity spindexerIndexingSpeed = RPM.of(800);
+  public static final AngularVelocity spindexerBackspinSpeed = RPM.of(300);
 
   public static final int spindexerCurrentLimit = 90;
 
@@ -33,6 +34,8 @@ public class IndexerConstants {
   // kicker
   public static final int kickerId = 4;
   public static final double kickerReduction = 2.0;
+
+  public static final double kickerSpeedMultiplier = 1.1;
 
   public static final AngularVelocity maxKickerSpeed = RPM.of(6000).div(kickerReduction);
   public static final AngularVelocity kickerSpinUpTolerance = RPM.of(40);

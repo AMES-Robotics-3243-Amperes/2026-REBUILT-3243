@@ -120,7 +120,16 @@ public class IntakeSubsystem extends SubsystemBase {
 
   public Command intakeCommand() {
     return Commands.runEnd(
-            () -> setRollerVelocity(IntakeConstants.rollerIntakeSpeed), this::coastRoller)
+            () -> {
+              if (pivotInputs.absoluteEncoderPosition.lt(
+                  IntakeConstants.pivotMinRotation.plus(
+                      IntakeConstants.pivotPositioningTolerance))) {
+                setRollerVelocity(IntakeConstants.rollerIntakeSpeed);
+              } else {
+                coastRoller();
+              }
+            },
+            this::coastRoller)
         .alongWith(lowerPivotCommand());
   }
 

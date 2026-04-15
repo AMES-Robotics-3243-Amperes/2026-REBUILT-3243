@@ -19,10 +19,12 @@ public class HubActivityManager {
 
     // If we have no alliance, we cannot be enabled, therefore no hub.
     if (alliance.isEmpty()) {
+      SmartDashboard.putBoolean("Auto Winner Decided", false);
       return new HubState(-1, false);
     }
 
     if (DriverStation.isAutonomous()) {
+      SmartDashboard.putBoolean("Auto Winner Decided", false);
       return new HubState(matchTime, true);
     }
 
@@ -32,6 +34,7 @@ public class HubActivityManager {
     // If we have no game data, we cannot compute, assume hub is active, as its
     // likely early in teleop.
     if (gameData.isEmpty()) {
+      SmartDashboard.putBoolean("Auto Winner Decided", false);
       return new HubState(matchTime - 130, true);
     }
 
@@ -44,6 +47,8 @@ public class HubActivityManager {
         return new HubState(-1, true);
       }
     }
+
+    SmartDashboard.putBoolean("Auto Winner Decided", true);
 
     // Shift was is active for blue if red won auto, or red if blue won auto.
     boolean shift1Active =

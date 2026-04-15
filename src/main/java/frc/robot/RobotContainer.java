@@ -10,12 +10,17 @@ import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import choreo.auto.AutoChooser;
+import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.controls.SolidColor;
+import com.ctre.phoenix6.hardware.CANdle;
+import com.ctre.phoenix6.signals.RGBWColor;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -294,6 +299,13 @@ public class RobotContainer {
                 }));
 
     configureBindings();
+
+    CANdle candle = new CANdle(1, new CANBus("*"));
+    RobotModeTriggers.teleop()
+        .whileTrue(
+            Commands.run(
+                () ->
+                    candle.setControl(new SolidColor(0, 7).withColor(new RGBWColor(Color.kBlue)))));
   }
 
   //
@@ -309,23 +321,13 @@ public class RobotContainer {
             drivetrain.joystickDriveLinear(SwerveConstants.linearTeleopSpeed, primaryController),
             drivetrain.joystickDriveAngular(primaryController::getRightX)));
 
-    primaryController.leftTrigger().whileTrue(intake.intakeCommand());
+    Trigger intakeBind = primaryController.leftTrigger();
+    intakeBind.whileTrue(intake.intakeCommand());
 
-    secondaryController.leftBumper().whileTrue(intake.lowerPivotCommand());
+    secondaryController.leftBumper().and(intakeBind.negate()).whileTrue(intake.lowerPivotCommand());
     secondaryController.rightBumper().whileTrue(intake.raisePivotCommand());
     secondaryController.leftTrigger().whileTrue(intake.agitateCommand());
     secondaryController.b().whileTrue(indexer.backspinSpindexerCommand());
-
-    primaryController.a().onTrue(shooter.flywheelSysIdCommand(primaryController.a()));
-
-    // secondaryController.leftTrigger().whileTrue(intake.agitateCommand());
-    // secondaryController.rightTrigger().whileTrue(intake.outtakeCommand());
-
-    // secondaryController.rightBumper().whileTrue(intake.lowerPivotCommand());
-    // secondaryController.leftBumper().whileTrue(intake.raisePivotCommand());
-
-    // secondaryController.x().whileTrue(intake.runPivotOpenLoopCommand(Volts.of(3)));
-    // secondaryController.a().whileTrue(intake.runPivotOpenLoopCommand(Volts.of(-3)));
 
     //
     // Shooting

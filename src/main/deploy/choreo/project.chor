@@ -70,8 +70,8 @@
    "R_BumperTolerance":{
     "dimension":"Length",
     "var":{
-     "exp":"3.6 in",
-     "val":0.09144
+     "exp":"4 in",
+     "val":0.1016
     }
    },
    "R_DeployedHopperX":{
@@ -112,8 +112,8 @@
    "R_RobotMass":{
     "dimension":"Mass",
     "var":{
-     "exp":"115 lb",
-     "val":52.16312255
+     "exp":"128 lb",
+     "val":58.05982336
     }
    },
    "R_TrackLength":{
@@ -126,8 +126,8 @@
    "R_WheelCOF":{
     "dimension":"Number",
     "var":{
-     "exp":"1.5",
-     "val":1.5
+     "exp":"1.2",
+     "val":1.2
     }
    },
    "R_WheelRadius":{
@@ -190,16 +190,16 @@
    },
    "Shoot":{
     "x":{
-     "exp":"1.6107271909713745 m",
-     "val":1.6107271909713743
+     "exp":"1.9755442142486572 m",
+     "val":1.9755442142486572
     },
     "y":{
-     "exp":"6.610655307769775 m",
-     "val":6.610655307769775
+     "exp":"6.806092739105225 m",
+     "val":6.806092739105225
     },
     "heading":{
-     "exp":"-0.7057548305600946 rad",
-     "val":-0.7057548305600946
+     "exp":"-0.809548038869174 rad",
+     "val":-0.809548038869174
     }
    }
   }
@@ -227,7 +227,7 @@
   },
   "mass":{
    "exp":"R_RobotMass",
-   "val":52.16312255
+   "val":58.05982336
   },
   "inertia":{
    "exp":"R_RobotMOI",
@@ -251,20 +251,20 @@
   },
   "cof":{
    "exp":"R_WheelCOF",
-   "val":1.5
+   "val":1.2
   },
   "bumper":{
    "front":{
     "exp":"R_BumperTolerance + R_DeployedHopperX",
-    "val":0.72644
+    "val":0.7366
    },
    "side":{
     "exp":"R_BumperTolerance + R_BumperLength / 2",
-    "val":0.5327649999999999
+    "val":0.542925
    },
    "back":{
     "exp":"R_BumperTolerance + R_BumperLength / 2",
-    "val":0.5327649999999999
+    "val":0.542925
    }
   },
   "differentialTrackWidth":{

@@ -158,8 +158,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 () ->
                     pivotInputs.absoluteEncoderPosition.isNear(
                         IntakeConstants.pivotMaxRotation,
-                        IntakeConstants.pivotPositioningTolerance)))
-        .withDeadline(Commands.waitTime(IntakeConstants.pivotControlSafety));
+                        IntakeConstants.pivotPositioningTolerance)));
   }
 
   public Command lowerPivotCommand() {
@@ -178,8 +177,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 () ->
                     pivotInputs.absoluteEncoderPosition.isNear(
                         IntakeConstants.pivotMinRotation,
-                        IntakeConstants.pivotPositioningTolerance)))
-        .withDeadline(Commands.waitTime(IntakeConstants.pivotControlSafety));
+                        IntakeConstants.pivotPositioningTolerance)));
   }
 
   public Command runPivotOpenLoopCommand(Voltage output) {

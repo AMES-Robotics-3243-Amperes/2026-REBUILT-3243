@@ -37,12 +37,14 @@ public class FuelTrajectoryCalculator {
   }
 
   /* The data behind a fuel shot; i.e. the shooter setpoint values. */
-  public record FuelShot(LinearVelocity linearFlywheelSpeed, Angle hoodAngle, Time shotTime) {}
+  public record FuelTrajectory(
+      LinearVelocity linearFlywheelSpeed, Angle hoodAngle, Time shotTime) {}
 
   /* A setpoint for the robot to follow. Most important is the actual shot, but also includes the field-relative rotation the fuel must be shot from. */
-  public record FuelShotSetpoints(FuelShot shooterSetpoint, Rotation2d fuelGroundSpeedRotation) {}
+  public record ShotSetpoints(FuelTrajectory shooterSetpoint, Rotation2d fuelGroundSpeedRotation) {}
 
-  private static FuelShot calculateFuelTrajectory(Translation3d goal, Translation3d shooterStart) {
+  private static FuelTrajectory calculateFuelTrajectory(
+      Translation3d goal, Translation3d shooterStart) {
     double horizontalDistanceToSetpoint =
         shooterStart.toTranslation2d().getDistance(goal.toTranslation2d()); // TODO: constants
     double verticalDistanceToSetpoint = goal.getZ() - shooterStart.getZ();
@@ -101,7 +103,7 @@ public class FuelTrajectoryCalculator {
 
     // the fuel angle is 0 at the horizon but the hood is 0 when shooting upwards, hence the 90 -
     // fuelAngle
-    return new FuelShot(
+    return new FuelTrajectory(
         fuelSpeed.times(1.05),
         Degrees.of(90).minus(fuelAngle),
         Meters.of(horizontalDistanceToSetpoint).div(fuelSpeed.times(fuelAngleCos)));
@@ -122,7 +124,7 @@ public class FuelTrajectoryCalculator {
     return robotPoseWithCorrectRotation.transformBy(ShooterConstants.robotToShooter);
   }
 
-  private static FuelShotSetpoints getFuelShot(
+  public static ShotSetpoints getFuelShot(
       Translation3d goal, Pose2d robotPose, ChassisSpeeds chassisSpeeds) {
     // the approach here is to run secant method on trajectoryTime(lookaheadTime) - lookaheadTime
 
@@ -133,7 +135,7 @@ public class FuelTrajectoryCalculator {
 
     // here, t0 is always just t_(k - 2) and t1 is always t_(k - 1)
     double lookahead0 = 0;
-    FuelShot trajectory0 = calculateFuelTrajectory(goal, shotStart.getTranslation());
+    FuelTrajectory trajectory0 = calculateFuelTrajectory(goal, shotStart.getTranslation());
 
     shotStart =
         getShooterPositionAndRotationFromRobotPosition(
@@ -147,7 +149,7 @@ public class FuelTrajectoryCalculator {
                 .getTranslation());
 
     double lookahead1 = trajectory0.shotTime().in(Seconds);
-    FuelShot trajectory1 = calculateFuelTrajectory(goal, shotStart.getTranslation());
+    FuelTrajectory trajectory1 = calculateFuelTrajectory(goal, shotStart.getTranslation());
 
     // secant method iteration
     for (int i = 0; i < ShooterConstants.secantMethodIterations; i++) {
@@ -181,15 +183,15 @@ public class FuelTrajectoryCalculator {
       trajectory1 = calculateFuelTrajectory(goal, shotStart.getTranslation());
     }
 
-    return new FuelShotSetpoints(trajectory1, shotStart.getRotation().toRotation2d());
+    return new ShotSetpoints(trajectory1, shotStart.getRotation().toRotation2d());
   }
 
   //
   // Caching
   //
-  private static FuelShotSetpoints hubShot = null;
-  private static FuelShotSetpoints allianceZoneShot = null;
-  private static FuelShotSetpoints neutralZoneShot = null;
+  private static ShotSetpoints hubShot = null;
+  private static ShotSetpoints allianceZoneShot = null;
+  private static ShotSetpoints neutralZoneShot = null;
 
   public static Supplier<Pose2d> robotPose = () -> new Pose2d();
   public static Supplier<ChassisSpeeds> robotSpeeds = () -> new ChassisSpeeds();
@@ -200,7 +202,7 @@ public class FuelTrajectoryCalculator {
     neutralZoneShot = null;
   }
 
-  public static FuelShotSetpoints getHubShot() {
+  public static ShotSetpoints getHubShot() {
     if (hubShot == null)
       hubShot =
           getFuelShot(
@@ -212,7 +214,7 @@ public class FuelTrajectoryCalculator {
     return hubShot;
   }
 
-  public static FuelShotSetpoints getAllianceShot() {
+  public static ShotSetpoints getAllianceShot() {
     if (allianceZoneShot == null) {
       Translation2d translation =
           PointOfInterestManager.flipTranslationConditionally(
@@ -228,7 +230,7 @@ public class FuelTrajectoryCalculator {
     return allianceZoneShot;
   }
 
-  public static FuelShotSetpoints getNeutralShot() {
+  public static ShotSetpoints getNeutralShot() {
     if (neutralZoneShot == null) {
       Translation2d translation =
           PointOfInterestManager.flipTranslationConditionally(
@@ -244,7 +246,7 @@ public class FuelTrajectoryCalculator {
     return neutralZoneShot;
   }
 
-  public static FuelShotSetpoints getShot(ShootTarget target) {
+  public static ShotSetpoints getShot(ShootTarget target) {
     return switch (target) {
       case ALLIANCE -> getAllianceShot();
       case HUB -> getHubShot();

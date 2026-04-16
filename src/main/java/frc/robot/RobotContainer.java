@@ -14,7 +14,12 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -23,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.AutonomousRoutines;
 import frc.robot.commands.ShootCommands;
+import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ModeConstants;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.VisionConstants;
@@ -69,6 +75,8 @@ import frc.robot.util.FuelTrajectoryCalculator;
 import frc.robot.util.FuelTrajectoryCalculator.ShootTarget;
 import frc.robot.util.HubActivityManager;
 import frc.robot.util.HubActivityManager.HubState;
+import frc.robot.util.PointOfInterestManager;
+import frc.robot.util.PointOfInterestManager.FlipType;
 import frc.robot.util.RobotLocationManager;
 import frc.robot.util.TunableControls;
 import org.ironmaple.simulation.IntakeSimulation;
@@ -309,19 +317,28 @@ public class RobotContainer {
             drivetrain.joystickDriveLinear(SwerveConstants.linearTeleopSpeed, primaryController),
             drivetrain.joystickDriveAngular(primaryController::getRightX)));
 
-    Trigger intakeBind = primaryController.leftTrigger();
+    Trigger intakeBind = primaryController.leftTrigger(0.05);
     intakeBind.whileTrue(intake.intakeCommand());
 
     secondaryController.leftBumper().and(intakeBind.negate()).whileTrue(intake.lowerPivotCommand());
     secondaryController.rightBumper().whileTrue(intake.raisePivotCommand());
+
     secondaryController.leftTrigger().whileTrue(intake.agitateCommand());
+    secondaryController.a().whileTrue(intake.outtakeCommand());
+
     secondaryController.b().whileTrue(indexer.backspinSpindexerCommand());
 
     //
     // Shooting
     //
-    Trigger shootBind = primaryController.rightTrigger();
-    shootBind
+    Trigger primaryShootBind = primaryController.rightTrigger(0.05);
+    Trigger secondaryShootBind = secondaryController.rightTrigger();
+    Trigger overrideWaitingForShootBind = secondaryController.x();
+
+    Trigger shootWithVision = primaryShootBind.and(secondaryShootBind.negate());
+    Trigger shootWithFixedSetpoint = secondaryShootBind.and(primaryShootBind.negate());
+
+    shootWithVision
         .and(robotLocationManager.inAllianceZone())
         .whileTrue(
             ShootCommands.newBuilder(ShootTarget.HUB)
@@ -329,7 +346,7 @@ public class RobotContainer {
                 .runShooter(shooter)
                 .build());
 
-    shootBind
+    shootWithVision
         .and(robotLocationManager.innNeutralZone())
         .whileTrue(
             ShootCommands.newBuilder(ShootTarget.ALLIANCE)
@@ -337,7 +354,7 @@ public class RobotContainer {
                 .runShooter(shooter)
                 .build());
 
-    shootBind
+    shootWithVision
         .and(robotLocationManager.inOpponentZone())
         .whileTrue(
             ShootCommands.newBuilder(ShootTarget.NEUTRAL)
@@ -345,8 +362,36 @@ public class RobotContainer {
                 .runShooter(shooter)
                 .build());
 
-    shootBind.whileTrue(
-        ShootCommands.indexWhenReadyCommand(indexer, shooter, drivetrain, secondaryController.b()));
+    shootWithFixedSetpoint.whileTrue(
+        shooter.shootTrajectoryCommand(
+            () ->
+                FuelTrajectoryCalculator.getFuelShot(
+                        PointOfInterestManager.flipTranslationConditionally(
+                            new Translation3d(
+                                FieldConstants.barrierLeftX,
+                                FieldConstants.hubPosition.getMeasureY(),
+                                FieldConstants.hubPosition.getMeasureZ()),
+                            FlipType.REFLECT_FOR_OTHER_ALLIANCE),
+                        new Pose2d(
+                            FieldConstants.hubPosition
+                                .toTranslation2d()
+                                .plus(
+                                    new Translation2d(
+                                        ChoreoVars.R_BumperLength.div(2).in(Meters)
+                                            * (DriverStation.getAlliance().orElse(Alliance.Blue)
+                                                    == Alliance.Blue
+                                                ? 1
+                                                : 1),
+                                        0)),
+                            new Rotation2d()),
+                        new ChassisSpeeds())
+                    .shooterSetpoint()));
+
+    shootWithVision
+        .or(shootWithFixedSetpoint)
+        .whileTrue(
+            ShootCommands.indexWhenReadyCommand(
+                indexer, shooter, drivetrain, shootWithFixedSetpoint, overrideWaitingForShootBind));
   }
 
   //

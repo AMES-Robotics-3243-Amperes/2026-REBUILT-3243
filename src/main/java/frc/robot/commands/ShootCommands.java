@@ -52,9 +52,8 @@ public class ShootCommands {
 
   public ShootCommands runShooter(ShooterSubsystem shooter) {
     commands.add(
-        shooter.shootFuelAtSpeedCommand(
-            () -> FuelTrajectoryCalculator.getShot(target).shooterSetpoint().linearFlywheelSpeed(),
-            () -> FuelTrajectoryCalculator.getShot(target).shooterSetpoint().hoodAngle()));
+        shooter.shootTrajectoryCommand(
+            () -> FuelTrajectoryCalculator.getShot(target).shooterSetpoint()));
     return this;
   }
 
@@ -85,20 +84,15 @@ public class ShootCommands {
    */
   public static Command indexWhenReadyCommand(
       IndexerSubsystem indexer, ShooterSubsystem shooter, SwerveSubsystem drivetrain) {
-    return Commands.sequence(
-        indexer
-            .spinUpKickerWithFlywheelCommand(shooter)
-            .withDeadline(
-                Commands.waitUntil(
-                    new Trigger(drivetrain::atRotationSetpoint).and(shooter::flywheelSpunUp))),
-        Commands.waitTime(IndexerConstants.idleTimeBeforeIndexing),
-        indexer.indexCommand(shooter));
+    return indexWhenReadyCommand(
+        indexer, shooter, drivetrain, new Trigger(() -> false), new Trigger(() -> false));
   }
 
   public static Command indexWhenReadyCommand(
       IndexerSubsystem indexer,
       ShooterSubsystem shooter,
       SwerveSubsystem drivetrain,
+      Trigger ignoreDrivetrainRotation,
       Trigger customReadyTrigger) {
     return Commands.sequence(
         indexer
@@ -106,6 +100,7 @@ public class ShootCommands {
             .withDeadline(
                 Commands.waitUntil(
                     new Trigger(drivetrain::atRotationSetpoint)
+                        .or(ignoreDrivetrainRotation)
                         .and(shooter::flywheelSpunUp)
                         .or(customReadyTrigger))),
         Commands.waitTime(IndexerConstants.idleTimeBeforeIndexing),

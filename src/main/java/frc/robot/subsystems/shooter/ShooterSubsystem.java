@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.GeneralPurposeCharacterization;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.util.FuelTrajectoryCalculator;
+import frc.robot.util.FuelTrajectoryCalculator.FuelTrajectory;
 import frc.robot.util.FuelTrajectoryCalculator.ShootTarget;
 import java.util.Arrays;
 import java.util.function.Supplier;
@@ -198,33 +199,28 @@ public class ShooterSubsystem extends SubsystemBase {
     return shootCommand(() -> flywheelSpeed, () -> hoodAngle);
   }
 
-  public Command shootFuelAtSpeedCommand(
-      Supplier<LinearVelocity> flywheelSpeed, Supplier<Angle> hoodAngle) {
+  public Command shootTrajectoryCommand(Supplier<FuelTrajectory> trajectory) {
     return shootCommand(
         () ->
             RadiansPerSecond.of(
-                flywheelSpeed.get().in(MetersPerSecond)
+                trajectory.get().linearFlywheelSpeed().in(MetersPerSecond)
                     / (ShooterConstants.flywheelRadius.in(Meters)
                         * ShooterConstants.fuelToFlywheelLinearSpeedRatio)),
-        hoodAngle::get);
+        () -> trajectory.get().hoodAngle());
   }
 
   public Command shootInHubCommand() {
-    return shootFuelAtSpeedCommand(
-        () -> FuelTrajectoryCalculator.getHubShot().shooterSetpoint().linearFlywheelSpeed(),
-        () -> FuelTrajectoryCalculator.getHubShot().shooterSetpoint().hoodAngle());
+    return shootTrajectoryCommand(() -> FuelTrajectoryCalculator.getHubShot().shooterSetpoint());
   }
 
   public Command shootInAllianceZoneCommand() {
-    return shootFuelAtSpeedCommand(
-        () -> FuelTrajectoryCalculator.getAllianceShot().shooterSetpoint().linearFlywheelSpeed(),
-        () -> FuelTrajectoryCalculator.getAllianceShot().shooterSetpoint().hoodAngle());
+    return shootTrajectoryCommand(
+        () -> FuelTrajectoryCalculator.getAllianceShot().shooterSetpoint());
   }
 
   public Command shootInNeutralZoneCommand() {
-    return shootFuelAtSpeedCommand(
-        () -> FuelTrajectoryCalculator.getNeutralShot().shooterSetpoint().linearFlywheelSpeed(),
-        () -> FuelTrajectoryCalculator.getNeutralShot().shooterSetpoint().hoodAngle());
+    return shootTrajectoryCommand(
+        () -> FuelTrajectoryCalculator.getNeutralShot().shooterSetpoint());
   }
 
   //

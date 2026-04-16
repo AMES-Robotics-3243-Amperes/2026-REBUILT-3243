@@ -50,11 +50,6 @@ public class IntakeConstants {
 
   public static final Angle pivotPositioningTolerance = Degrees.of(3);
 
-  /** If we've been controlling the pivot for this long and it hasn't reached the top, give up. */
-  // TODO: we want to rely exclusively on the absolute encoder most of the time. make a secondary
-  // driver bind to enable this
-  public static final Time pivotControlSafety = Seconds.of(5);
-
   /**
    * Where the "seam" of the pivot's rotation is. If the angle passes this value (which it never
    * ever ever should), it will appear as if it randomly jumps backwards a full rotation.

@@ -35,7 +35,7 @@ public class SpindexerIOReal implements SpindexerIO {
 
     config.encoder.positionConversionFactor(1.0 / IndexerConstants.spindexerReduction);
     config.encoder.velocityConversionFactor(1.0 / IndexerConstants.spindexerReduction);
-    config.idleMode(IdleMode.kCoast).inverted(true);
+    config.idleMode(IdleMode.kCoast).inverted(false);
 
     config.smartCurrentLimit(IndexerConstants.spindexerCurrentLimit);
 

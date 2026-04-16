@@ -15,21 +15,21 @@ import frc.robot.util.ControlConstantsBuilder;
 
 /** Add your docs here. */
 public class IndexerConstants {
-  public static final Time idleTimeBeforeIndexing = Milliseconds.of(40);
+  public static final Time idleTimeBeforeIndexing = Milliseconds.of(50);
 
   // spindexer
   public static final int spindexerId = 1;
-  public static final double spindexerReduction = 4.0;
+  public static final double spindexerReduction = 3.0;
 
-  public static final AngularVelocity spindexerIndexingSpeed = RPM.of(800);
-  public static final AngularVelocity spindexerBackspinSpeed = RPM.of(300);
+  public static final AngularVelocity spindexerIndexingSpeed = RPM.of(400);
+  public static final AngularVelocity spindexerBackspinSpeed = RPM.of(200);
 
   public static final int spindexerCurrentLimit = 90;
 
   public static final ControlConstantsBuilder spindexerControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(0.00026864, 0, 0)
-          .sva(0.30803, 0.069864, 0.0036346);
+          .pid(3.7139e-7, 0, 0)
+          .sva(0.51212, 0.053082, 0.0038288);
 
   // kicker
   public static final int kickerId = 4;

@@ -100,12 +100,6 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   private void runPivotAtSpeed(AngularVelocity speed) {
-    Logger.recordOutput(
-        "diddy",
-        (pivotInputs.appliedVoltage.in(Volts)
-                - pivotVelocityFeedforward.calculate(
-                    pivotInputs.absoluteEncoderPosition.in(Radians), speed.in(RadiansPerSecond)))
-            / pivotInputs.absoluteEncoderVelocity.in(RadiansPerSecond));
     pivotIO.runOpenLoop(
         pivotVelocityFeedback.calculate(
                 pivotInputs.absoluteEncoderVelocity.in(RadiansPerSecond),

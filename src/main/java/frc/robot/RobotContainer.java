@@ -323,17 +323,18 @@ public class RobotContainer {
     secondaryController.leftBumper().and(intakeBind.negate()).whileTrue(intake.lowerPivotCommand());
     secondaryController.rightBumper().whileTrue(intake.raisePivotCommand());
 
-    secondaryController.leftTrigger().whileTrue(intake.agitateCommand());
-    secondaryController.a().whileTrue(intake.outtakeCommand());
+    secondaryController.povLeft().whileTrue(intake.agitateCommand());
+    secondaryController.povRight().whileTrue(intake.outtakeCommand());
 
-    secondaryController.b().whileTrue(indexer.backspinSpindexerCommand());
+    Trigger spindexerBackspinBind = secondaryController.b();
+    spindexerBackspinBind.whileTrue(indexer.backspinSpindexerCommand());
 
     //
     // Shooting
     //
     Trigger primaryShootBind = primaryController.rightTrigger(0.05);
-    Trigger secondaryShootBind = secondaryController.rightTrigger();
-    Trigger overrideWaitingForShootBind = secondaryController.x();
+    Trigger secondaryShootBind = secondaryController.y();
+    Trigger overrideWaitingForShootBind = secondaryController.a();
 
     Trigger shootWithVision = primaryShootBind.and(secondaryShootBind.negate());
     Trigger shootWithFixedSetpoint = secondaryShootBind.and(primaryShootBind.negate());
@@ -377,7 +378,7 @@ public class RobotContainer {
                                 .toTranslation2d()
                                 .plus(
                                     new Translation2d(
-                                        ChoreoVars.R_BumperLength.div(2).in(Meters)
+                                        ChoreoVars.R_BumperLength.times(3.0 / 2.0).in(Meters)
                                             * (DriverStation.getAlliance().orElse(Alliance.Blue)
                                                     == Alliance.Blue
                                                 ? 1
@@ -389,6 +390,7 @@ public class RobotContainer {
 
     shootWithVision
         .or(shootWithFixedSetpoint)
+        .and(spindexerBackspinBind.negate())
         .whileTrue(
             ShootCommands.indexWhenReadyCommand(
                 indexer, shooter, drivetrain, shootWithFixedSetpoint, overrideWaitingForShootBind));

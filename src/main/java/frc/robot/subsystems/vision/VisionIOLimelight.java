@@ -20,6 +20,7 @@ import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.DoubleSubscriber;
+import edu.wpi.first.networktables.IntegerArrayPublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.TimestampedDoubleArray;
@@ -42,6 +43,7 @@ public class VisionIOLimelight extends VisionIO {
 
   private final DoubleArrayPublisher orientationPublisher;
   private final DoubleArrayPublisher cameraOffsetPublisher;
+  private final IntegerArrayPublisher validIdsPublisher;
   private final DoublePublisher rewindEnablePublisher;
   private final DoublePublisher throttlePublisher;
 
@@ -75,6 +77,7 @@ public class VisionIOLimelight extends VisionIO {
 
     orientationPublisher = table.getDoubleArrayTopic("robot_orientation_set").publish();
     cameraOffsetPublisher = table.getDoubleArrayTopic("camerapose_robotspace_set").publish();
+    validIdsPublisher = table.getIntegerArrayTopic("fiducian_id_filters_set").publish();
     rewindEnablePublisher = table.getDoubleTopic("rewind_enable_set").publish();
     throttlePublisher = table.getDoubleTopic("throttle_set").publish();
     latencySubscriber = table.getDoubleTopic("tl").subscribe(0.0);
@@ -259,6 +262,11 @@ public class VisionIOLimelight extends VisionIO {
     for (int id : tagIds) {
       inputs.tagIds[i++] = id;
     }
+  }
+
+  @Override
+  public void overrideValidIds(long[] ids) {
+    validIdsPublisher.accept(ids);
   }
 
   /** Parses the 3D pose from a Limelight botpose array. */

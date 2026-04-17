@@ -10,6 +10,7 @@ package frc.robot.subsystems.vision;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import frc.robot.constants.VisionConstants;
 import frc.robot.constants.VisionConstants.CameraConfiguration;
 import org.littletonrobotics.junction.AutoLog;
 
@@ -73,4 +74,13 @@ public abstract class VisionIO {
   }
 
   public void updateInputs(VisionIOInputs inputs) {}
+
+  public void overrideValidIds(long[] ids) {}
+
+  public void allowAllIds() {
+    overrideValidIds(
+        VisionConstants.aprilTagLayout.getTags().stream()
+            .mapToLong(tag -> (long) tag.ID)
+            .toArray());
+  }
 }

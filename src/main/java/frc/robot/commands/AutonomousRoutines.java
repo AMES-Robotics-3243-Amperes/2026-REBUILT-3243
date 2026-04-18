@@ -194,7 +194,7 @@ public class AutonomousRoutines {
         .active()
         .onTrue(
             firstCollectFromMiddle
-                .cmd()
+                .cmd()      
                 .beforeStarting(
                     optionallyResetOdometry(
                         drivetrain,

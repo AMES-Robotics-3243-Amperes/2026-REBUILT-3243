@@ -36,7 +36,7 @@ public final class ChoreoVars {
         public static final Pose2d KeepOutBottom = new Pose2d(4.625, 13.985, Rotation2d.kZero);
         public static final Pose2d KeepOutTop = new Pose2d(4.625, -5.916, Rotation2d.kZero);
         public static final Pose2d SecondCenterCollectEnd = new Pose2d(6.14, 4.87, Rotation2d.fromRadians(-2));
-        public static final Pose2d Shoot = new Pose2d(1.976, 6.806, Rotation2d.fromRadians(-0.81));
+        public static final Pose2d Shoot = new Pose2d(2.359, 6.33, Rotation2d.fromRadians(-0.793));
 
         private Poses() {}
     }

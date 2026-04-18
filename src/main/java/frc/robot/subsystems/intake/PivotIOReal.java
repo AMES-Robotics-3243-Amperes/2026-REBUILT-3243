@@ -41,7 +41,7 @@ public class PivotIOReal implements PivotIO {
 
     config.idleMode(IdleMode.kCoast).inverted(true);
 
-    config.smartCurrentLimit(IntakeConstants.pivotCurrentLimit);
+    config.smartCurrentLimit(IntakeConstants.pivotCurrentLimit, IntakeConstants.pivotCurrentLimit);
 
     sparkMax.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 

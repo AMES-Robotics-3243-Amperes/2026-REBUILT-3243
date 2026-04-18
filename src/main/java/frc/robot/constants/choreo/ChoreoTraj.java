@@ -61,6 +61,13 @@ public record ChoreoTraj(
           2.4234400000000003,
           new Pose2d(6.779, 4.758, Rotation2d.fromRadians(-2.239)),
           new Pose2d(1.976, 6.806, Rotation2d.fromRadians(-0.81)));
+  public static final ChoreoTraj CollectDepot =
+      new ChoreoTraj(
+          "CollectDepot",
+          OptionalInt.empty(),
+          5.08071,
+          new Pose2d(3.581, 4.035, Rotation2d.fromRadians(0)),
+          new Pose2d(2.185, 4.977, Rotation2d.fromRadians(-0.494)));
 
   /**
    * A map between trajectory names and their corresponding data. This allows for trajectory data to
@@ -73,7 +80,8 @@ public record ChoreoTraj(
           Map.entry("FirstCenterCollect$1", FirstCenterCollect$1),
           Map.entry("SecondCenterCollect", SecondCenterCollect),
           Map.entry("SecondCenterCollect$0", SecondCenterCollect$0),
-          Map.entry("SecondCenterCollect$1", SecondCenterCollect$1));
+          Map.entry("SecondCenterCollect$1", SecondCenterCollect$1),
+          Map.entry("CollectDepot", CollectDepot));
 
   /**
    * Looks up the ChoreoTraj segment of the given overall ChoreoTraj. WARNING: will raise an

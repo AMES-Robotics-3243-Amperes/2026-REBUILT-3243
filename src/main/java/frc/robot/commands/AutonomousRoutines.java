@@ -1,12 +1,20 @@
 package frc.robot.commands;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
 
 import choreo.auto.AutoChooser;
 import choreo.auto.AutoFactory;
 import choreo.auto.AutoRoutine;
 import choreo.auto.AutoTrajectory;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.constants.choreo.ChoreoTraj;
 import frc.robot.subsystems.drivetrain.SwerveSubsystem;
@@ -14,6 +22,8 @@ import frc.robot.subsystems.indexer.IndexerSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.util.FuelTrajectoryCalculator.ShootTarget;
+import frc.robot.util.PointOfInterestManager;
+import frc.robot.util.PointOfInterestManager.FlipType;
 
 public class AutonomousRoutines {
   public static void populateAutoChooser(
@@ -32,18 +42,14 @@ public class AutonomousRoutines {
             drivetrain);
 
     autoChooser.addRoutine(
-        "depot side one cycle",
-        () -> depotSideOneCycle(autoFactory, drivetrain, shooter, indexer, intake));
-    autoChooser.addRoutine(
-        "outpost side one cycle",
-        () -> outpostSideOneCycle(autoFactory, drivetrain, shooter, indexer, intake));
-
-    autoChooser.addRoutine(
         "depot side two cycle",
         () -> depotSideTwoCycle(autoFactory, drivetrain, shooter, indexer, intake));
     autoChooser.addRoutine(
         "outpost side two cycle",
         () -> outpostSideTwoCycle(autoFactory, drivetrain, shooter, indexer, intake));
+    autoChooser.addRoutine(
+        "center depot cycle",
+        () -> depotCollect(autoFactory, drivetrain, shooter, indexer, intake));
   }
 
   /**
@@ -92,44 +98,56 @@ public class AutonomousRoutines {
   }
 
   //
-  // Single cycle autos
+  // Helper Commands
   //
 
-  private static AutoRoutine depotSideOneCycle(
-      AutoFactory autoFactory,
-      SwerveSubsystem drivetrain,
-      ShooterSubsystem shooter,
-      IndexerSubsystem indexer,
-      IntakeSubsystem intake) {
-    AutoRoutine routine = autoFactory.newRoutine("one cycle");
+  public static Command optionallyResetOdometry(SwerveSubsystem swerve, Pose2d resetTo) {
+    double distanceForReset = Units.inchesToMeters(8);
+    Angle rotationForReset = Degrees.of(20);
 
-    AutoTrajectory collectFromMiddle = ChoreoTraj.FirstCenterCollect$0.asAutoTraj(routine);
-    AutoTrajectory returnToShoot = ChoreoTraj.FirstCenterCollect$1.asAutoTraj(routine);
+    return Commands.runOnce(
+        () -> {
+          Pose2d pose = swerve.getPose();
 
-    registerSingleCycle(
-        routine,
-        collectFromMiddle,
-        returnToShoot,
-        Seconds.of(0.1),
-        Seconds.of(8),
-        drivetrain,
-        shooter,
-        indexer,
-        intake);
-    routine.active().onTrue(collectFromMiddle.cmd());
+          if (pose.getTranslation().getDistance(resetTo.getTranslation()) < distanceForReset
+              && Math.abs(
+                      MathUtil.angleModulus(
+                          pose.getRotation().getRadians() - resetTo.getRotation().getRadians()))
+                  < rotationForReset.in(Radians)) {
+            return;
+          }
 
-    return routine;
+          swerve.setPose(resetTo);
+        },
+        swerve);
   }
 
-  private static AutoRoutine outpostSideOneCycle(
+  //
+  // Depot
+  //
+
+  private static AutoRoutine depotCollect(
       AutoFactory autoFactory,
       SwerveSubsystem drivetrain,
       ShooterSubsystem shooter,
       IndexerSubsystem indexer,
       IntakeSubsystem intake) {
-    // this is just the depot one cycle flipped along the field width
-    AutoRoutine routine = depotSideOneCycle(autoFactory, drivetrain, shooter, indexer, intake);
-    routine.active().whileTrue(drivetrain.driveFlippedAlongFieldWidth());
+    AutoRoutine routine = autoFactory.newRoutine("depot");
+
+    AutoTrajectory collect = ChoreoTraj.CollectDepot.asAutoTraj(routine);
+    routine.active().onTrue(collect.cmd().beforeStarting(collect.resetOdometry()));
+    collect.atTime(0.7).onTrue(intake.intakeCommand().until(collect.active().negate()));
+    collect
+        .done()
+        .onTrue(
+            ShootCommands.newBuilder(ShootTarget.HUB)
+                .rotateDrivetrain(drivetrain)
+                .runShooter(shooter)
+                .indexWhenReady(indexer, shooter, drivetrain)
+                .automaticallyAgitate(intake)
+                .build()
+                .withTimeout(Seconds.of(6)));
+
     return routine;
   }
 
@@ -137,12 +155,13 @@ public class AutonomousRoutines {
   // Double Cycle
   //
 
-  private static AutoRoutine depotSideTwoCycle(
+  private static AutoRoutine twoCycle(
       AutoFactory autoFactory,
       SwerveSubsystem drivetrain,
       ShooterSubsystem shooter,
       IndexerSubsystem indexer,
-      IntakeSubsystem intake) {
+      IntakeSubsystem intake,
+      Pose2d odometryResetPoseBlue) {
     AutoRoutine routine = autoFactory.newRoutine("two cycle");
 
     AutoTrajectory firstCollectFromMiddle = ChoreoTraj.FirstCenterCollect$0.asAutoTraj(routine);
@@ -162,7 +181,16 @@ public class AutonomousRoutines {
             shooter,
             indexer,
             intake);
-    routine.active().onTrue(firstCollectFromMiddle.cmd());
+    routine
+        .active()
+        .onTrue(
+            firstCollectFromMiddle
+                .cmd()
+                .beforeStarting(
+                    optionallyResetOdometry(
+                        drivetrain,
+                        PointOfInterestManager.flipPoseConditionally(
+                            odometryResetPoseBlue, FlipType.REFLECT_FOR_OTHER_ALLIANCE))));
 
     registerSingleCycle(
         routine,
@@ -179,6 +207,21 @@ public class AutonomousRoutines {
     return routine;
   }
 
+  private static AutoRoutine depotSideTwoCycle(
+      AutoFactory autoFactory,
+      SwerveSubsystem drivetrain,
+      ShooterSubsystem shooter,
+      IndexerSubsystem indexer,
+      IntakeSubsystem intake) {
+    return twoCycle(
+        autoFactory,
+        drivetrain,
+        shooter,
+        indexer,
+        intake,
+        ChoreoTraj.FirstCenterCollect.initialPoseBlue());
+  }
+
   private static AutoRoutine outpostSideTwoCycle(
       AutoFactory autoFactory,
       SwerveSubsystem drivetrain,
@@ -186,7 +229,15 @@ public class AutonomousRoutines {
       IndexerSubsystem indexer,
       IntakeSubsystem intake) {
     // this is just the depot one cycle flipped along the field width
-    AutoRoutine routine = depotSideTwoCycle(autoFactory, drivetrain, shooter, indexer, intake);
+    AutoRoutine routine =
+        twoCycle(
+            autoFactory,
+            drivetrain,
+            shooter,
+            indexer,
+            intake,
+            PointOfInterestManager.flipPose(
+                ChoreoTraj.FirstCenterCollect.initialPoseBlue(), FlipType.REFLECT_Y));
     routine.active().whileTrue(drivetrain.driveFlippedAlongFieldWidth());
     return routine;
   }

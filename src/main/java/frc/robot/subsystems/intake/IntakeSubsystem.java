@@ -4,10 +4,8 @@
 
 package frc.robot.subsystems.intake;
 
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
@@ -23,7 +21,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.GeneralPurposeCharacterization;
 import frc.robot.constants.IntakeConstants;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class IntakeSubsystem extends SubsystemBase {
@@ -41,14 +38,6 @@ public class IntakeSubsystem extends SubsystemBase {
   private final PIDController pivotPositionFeedback =
       IntakeConstants.pivotPositionControl.pidController(Radians);
 
-  /**
-   * Represents the position of the relative encoder where the pivot is bottomed out and the system
-   * at the "edge" of the backlash, i.e. spinning the motor at all will immediately pivot the
-   * intake.
-   */
-  @AutoLogOutput(key = "Intake/Pivot/RelativeEncoderBottom")
-  private Angle pivotRelativeEncoderBottom = Rotations.of(0);
-
   private boolean hasInitilizedRelativeBottom = false;
 
   /** Creates a new IntakeSubsystem. */
@@ -64,29 +53,6 @@ public class IntakeSubsystem extends SubsystemBase {
 
     pivotIO.updateInputs(pivotInputs);
     Logger.processInputs("Intake/Pivot", pivotInputs);
-
-    if (!hasInitilizedRelativeBottom) {
-      pivotRelativeEncoderBottom =
-          pivotInputs.internalEncoderPosition.minus(pivotInputs.absoluteEncoderPosition);
-      hasInitilizedRelativeBottom = true;
-    }
-
-    // rezero backlash if necessary - see the comments above these constants for more info
-    if (pivotInputs.absoluteEncoderVelocity.gt(IntakeConstants.pivotAbsoluteVelocityForRezero)
-        && pivotInputs.absoluteEncoderPosition.lt(
-            Degrees.of(90).minus(IntakeConstants.pivotAbsolutePositionToleranceForRezero))) {
-      pivotRelativeEncoderBottom =
-          pivotInputs.internalEncoderPosition.minus(pivotInputs.absoluteEncoderPosition);
-    } else if (pivotInputs.absoluteEncoderVelocity.lt(
-            IntakeConstants.pivotAbsoluteVelocityForRezero.unaryMinus())
-        && pivotInputs.absoluteEncoderPosition.gt(
-            Degrees.of(90).plus(IntakeConstants.pivotAbsolutePositionToleranceForRezero))) {
-      pivotRelativeEncoderBottom =
-          pivotInputs
-              .internalEncoderPosition
-              .minus(pivotInputs.absoluteEncoderPosition)
-              .plus(IntakeConstants.pivotBacklash);
-    }
   }
 
   private void setRollerVelocity(AngularVelocity velocity) {
@@ -116,8 +82,7 @@ public class IntakeSubsystem extends SubsystemBase {
     return Commands.runEnd(
             () -> {
               if (pivotInputs.absoluteEncoderPosition.lt(
-                  IntakeConstants.pivotMinRotation.plus(
-                      IntakeConstants.pivotPositioningTolerance))) {
+                  IntakeConstants.pivotMinRotation.plus(IntakeConstants.pivotIntakeTolerance))) {
                 setRollerVelocity(IntakeConstants.rollerIntakeSpeed);
               } else {
                 coastRoller();

@@ -50,6 +50,7 @@ public class IntakeConstants {
   public static final Angle pivotBacklash = Degrees.of(20);
 
   public static final Angle pivotPositioningTolerance = Degrees.of(3);
+  public static final Angle pivotIntakeTolerance = Degrees.of(8);
 
   /**
    * Where the "seam" of the pivot's rotation is. If the angle passes this value (which it never

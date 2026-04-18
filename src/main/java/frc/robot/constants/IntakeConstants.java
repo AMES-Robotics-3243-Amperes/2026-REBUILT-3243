@@ -43,6 +43,7 @@ public class IntakeConstants {
   public static final int pivotCurrentLimit = 40;
 
   public static final Angle pivotMinRotation = Degrees.of(0);
+  public static final Angle pivotRaiseTargetAngle = Degrees.of(110);
   public static final Angle pivotMaxRotation = Degrees.of(130);
 
   public static final Angle pivotAbsoluteEncoderZeroAngle = Degrees.of(0);

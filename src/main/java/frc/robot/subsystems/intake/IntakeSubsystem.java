@@ -145,13 +145,13 @@ public class IntakeSubsystem extends SubsystemBase {
                         RadiansPerSecond.of(
                             pivotPositionFeedback.calculate(
                                 pivotInputs.absoluteEncoderPosition.in(Radians),
-                                IntakeConstants.pivotMaxRotation.in(Radians)))),
+                                IntakeConstants.pivotRaiseTargetAngle.in(Radians)))),
                 this::coastPivot))
         .withDeadline(
             Commands.waitUntil(
                 () ->
                     pivotInputs.absoluteEncoderPosition.isNear(
-                        IntakeConstants.pivotMaxRotation,
+                        IntakeConstants.pivotRaiseTargetAngle,
                         IntakeConstants.pivotPositioningTolerance)));
   }
 

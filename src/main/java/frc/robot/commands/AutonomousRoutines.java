@@ -135,8 +135,17 @@ public class AutonomousRoutines {
     AutoRoutine routine = autoFactory.newRoutine("depot");
 
     AutoTrajectory collect = ChoreoTraj.CollectDepot.asAutoTraj(routine);
-    routine.active().onTrue(collect.cmd().beforeStarting(collect.resetOdometry()));
+    routine
+        .active()
+        .onTrue(
+            collect
+                .cmd()
+                .beforeStarting(
+                    optionallyResetOdometry(
+                        drivetrain, ChoreoTraj.CollectDepot.initialPoseBlue())));
+
     collect.atTime(0.7).onTrue(intake.intakeCommand().until(collect.active().negate()));
+
     collect
         .done()
         .onTrue(

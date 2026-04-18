@@ -34,7 +34,6 @@ import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.VisionConstants;
 import frc.robot.constants.VisionConstants.CameraType;
 import frc.robot.constants.choreo.ChoreoVars;
-import frc.robot.constants.swerve.ModuleConstants;
 import frc.robot.constants.swerve.SwerveConstants;
 import frc.robot.constants.swerve.TunerConstants;
 import frc.robot.subsystems.drivetrain.GyroIO;
@@ -78,7 +77,6 @@ import frc.robot.util.HubActivityManager.HubState;
 import frc.robot.util.PointOfInterestManager;
 import frc.robot.util.PointOfInterestManager.FlipType;
 import frc.robot.util.RobotLocationManager;
-import frc.robot.util.TunableControls;
 import org.ironmaple.simulation.IntakeSimulation;
 import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
@@ -113,32 +111,7 @@ public class RobotContainer {
         ModuleIOTalonFXReal bl = new ModuleIOTalonFXReal(TunerConstants.BackLeft);
         ModuleIOTalonFXReal br = new ModuleIOTalonFXReal(TunerConstants.BackRight);
 
-        TunableControls.registerTalonFXSlotTuning(
-            0,
-            "Drivetrain/Drive",
-            ModuleConstants.driveControl,
-            fl.driveTalon,
-            fr.driveTalon,
-            bl.driveTalon,
-            br.driveTalon);
-
-        TunableControls.registerTalonFXSlotTuning(
-            0,
-            "Drivetrain/Azimuth",
-            ModuleConstants.steerControl,
-            fl.turnTalon,
-            fr.turnTalon,
-            bl.turnTalon,
-            br.turnTalon);
-
         drivetrain = new SwerveSubsystem(new GyroIOPigeon2(), fl, fr, bl, br);
-        // drivetrain =
-        //     new SwerveSubsystem(
-        //         new GyroIO() {},
-        //         new ModuleIO() {},
-        //         new ModuleIO() {},
-        //         new ModuleIO() {},
-        //         new ModuleIO() {});
         intake = new IntakeSubsystem(new RollerIOReal(), new PivotIOReal());
         shooter =
             new ShooterSubsystem(

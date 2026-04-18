@@ -111,7 +111,8 @@ public class VisionSubsystem extends SubsystemBase {
         boolean rejectPose =
             observation.tagCount() == 0 // Must have at least one tag
                 // Must have realistic Z coordinate
-                || Math.abs(observation.pose().getZ()) > VisionConstants.maxZError.in(Meters);
+                || Math.abs(observation.pose().getZ()) > VisionConstants.maxZError.in(Meters)
+                || !io[i].configuration.enable();
 
         boolean rejectPoseOnEnable =
             (observation.tagCount() == 1

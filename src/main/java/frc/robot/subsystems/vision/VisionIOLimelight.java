@@ -213,7 +213,7 @@ public class VisionIOLimelight extends VisionIO {
                   Math.abs(deviation.timestamp - rawMegaTagTwoSample.timestamp)
                       < VisionConstants.maxTimestampError.in(Microseconds));
 
-                            if (poseIsZero(rawMegaTagTwoSample.value)) continue;
+      if (poseIsZero(rawMegaTagTwoSample.value)) continue;
 
       if (poseIsZero(rawMegaTagTwoSample.value)) continue;
       Pose3d pose =
@@ -283,8 +283,8 @@ public class VisionIOLimelight extends VisionIO {
             Units.degreesToRadians(rawLLArray[5])));
   }
 
-    private static boolean poseIsZero(double[] rawLLArray) {
-      return rawLLArray[0] == 0 && rawLLArray[1] == 0 && rawLLArray[2] == 0;
+  private static boolean poseIsZero(double[] rawLLArray) {
+    return rawLLArray[0] == 0 && rawLLArray[1] == 0 && rawLLArray[2] == 0;
   }
 
   /** Parses the 3D transform into a Limelight botpose array. */

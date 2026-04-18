@@ -33,7 +33,11 @@ public class VisionConstants {
   }
 
   public record CameraConfiguration(
-      String name, Transform3d robotToCamera, double stdDevFactor, CameraType type) {}
+      String name,
+      Transform3d robotToCamera,
+      double stdDevFactor,
+      CameraType type,
+      boolean enable) {}
 
   // Map from camera names to their configuration
   public static final List<CameraConfiguration> cameras =
@@ -43,28 +47,30 @@ public class VisionConstants {
               new Transform3d(
                   Units.inchesToMeters(-1.91),
                   Units.inchesToMeters(0),
-                  Units.inchesToMeters(21.5 - 0.5),
-                  new Rotation3d(0, Units.degreesToRadians(-30), 0)),
+                  Units.inchesToMeters(21.5),
+                  new Rotation3d(0, Units.degreesToRadians(-31.4), Units.degreesToRadians(1))),
               1,
-              CameraType.LimelightFour),
+              CameraType.LimelightFour,
+              true),
           new CameraConfiguration(
               "limelight-back",
               new Transform3d(
                   Units.inchesToMeters(-11.5269),
                   Units.inchesToMeters(9.625),
-                  Units.inchesToMeters(9.3 - 0.5),
+                  Units.inchesToMeters(9.3),
                   new Rotation3d(
                       Units.degreesToRadians(180),
                       Units.degreesToRadians(-25),
                       Units.degreesToRadians(180))),
               1,
-              CameraType.LimelightFour));
+              CameraType.LimelightFour,
+              false));
 
   // Basic filtering thresholds
   public static final Time maxTimestampError = Milliseconds.of(2);
   public static final AngularVelocity maxAngularVelocity = RotationsPerSecond.of(1);
   public static final double maxAmbiguity = 0.35;
-  public static final Distance maxZError = Inches.of(3);
+  public static final Distance maxZError = Inches.of(6); // Inches.of(3);
 
   public static final Vector<N3> calculateStdDev(
       PoseObservation observation, CameraConfiguration config) {

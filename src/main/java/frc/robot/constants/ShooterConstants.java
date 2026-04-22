@@ -44,7 +44,7 @@ public class ShooterConstants {
   public static final Distance flywheelRadius = Inches.of(2);
   public static final double flywheelGearReduction = 4.0 / 3.0;
 
-  public static final Current flywheelStatorCurrentLimit = Amps.of(90);
+  public static final Current flywheelStatorCurrentLimit = Amps.of(80);
   public static final Current flywheelSupplyCurrentLimit = Amps.of(40);
 
   public static final double fuelToFlywheelLinearSpeedRatio = 0.488;
@@ -53,9 +53,8 @@ public class ShooterConstants {
 
   public static final ControlConstantsBuilder flywheelControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(0, 0, 0)
-          .sva(0.11123, 0.023961, 0.0019694)
-          .pid(0.0145, 0, 0);
+          .sva(0.11933, 0.023903, 0.0016222)
+          .pid(0.017, 0, 0);
 
   // hood
   public static final int hoodId = 5;

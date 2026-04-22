@@ -52,25 +52,25 @@ public class VisionConstants {
               1,
               CameraType.LimelightFour,
               true));
-        //   new CameraConfiguration(
-        //       "limelight-back",
-        //       new Transform3d(
-        //           Units.inchesToMeters(-11.5269),
-        //           Units.inchesToMeters(9.625),
-        //           Units.inchesToMeters(9.3),
-        //           new Rotation3d(
-        //               Units.degreesToRadians(180),
-        //               Units.degreesToRadians(-25),
-        //               Units.degreesToRadians(180))),
-        //       1,
-        //       CameraType.LimelightFour,
-        //       false));
+  //   new CameraConfiguration(
+  //       "limelight-back",
+  //       new Transform3d(
+  //           Units.inchesToMeters(-11.5269),
+  //           Units.inchesToMeters(9.625),
+  //           Units.inchesToMeters(9.3),
+  //           new Rotation3d(
+  //               Units.degreesToRadians(180),
+  //               Units.degreesToRadians(-25),
+  //               Units.degreesToRadians(180))),
+  //       1,
+  //       CameraType.LimelightFour,
+  //       false));
 
   // Basic filtering thresholds
   public static final Time maxTimestampError = Milliseconds.of(2);
   public static final AngularVelocity maxAngularVelocity = RotationsPerSecond.of(1);
   public static final double maxAmbiguity = 0.35;
-  public static final Distance maxZError = Inches.of(5); // Inches.of(3);
+  public static final Distance maxZError = Inches.of(10); // Inches.of(3);
 
   public static final Vector<N3> calculateStdDev(
       PoseObservation observation, CameraConfiguration config) {

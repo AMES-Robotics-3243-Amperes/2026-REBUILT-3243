@@ -133,8 +133,8 @@
    "R_WheelRadius":{
     "dimension":"Length",
     "var":{
-     "exp":"1.908 in",
-     "val":0.0484632
+     "exp":"1.938 in",
+     "val":0.0492252
     }
    },
    "S_RushOutRadius":{
@@ -239,7 +239,7 @@
   },
   "radius":{
    "exp":"R_WheelRadius",
-   "val":0.0484632
+   "val":0.0492252
   },
   "vmax":{
    "exp":"R_MaxDriveRPM",

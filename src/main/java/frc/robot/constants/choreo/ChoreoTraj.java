@@ -23,49 +23,49 @@ public record ChoreoTraj(
       new ChoreoTraj(
           "CollectDepot",
           OptionalInt.empty(),
-          6.5431,
+          6.5535,
           new Pose2d(3.581, 4.035, Rotation2d.fromRadians(3.142)),
           new Pose2d(2.586, 3.786, Rotation2d.fromRadians(0.126)));
   public static final ChoreoTraj FirstCenterCollect =
       new ChoreoTraj(
           "FirstCenterCollect",
           OptionalInt.empty(),
-          4.84605,
+          17.13692,
           new Pose2d(4.295, 7.628, Rotation2d.fromRadians(-1.571)),
           new Pose2d(2.359, 6.33, Rotation2d.fromRadians(-0.793)));
   public static final ChoreoTraj FirstCenterCollect$0 =
       new ChoreoTraj(
           "FirstCenterCollect",
           OptionalInt.of(0),
-          2.40389,
+          7.6697,
           new Pose2d(4.295, 7.628, Rotation2d.fromRadians(-1.571)),
           new Pose2d(7.813, 4.93, Rotation2d.fromRadians(-1.844)));
   public static final ChoreoTraj FirstCenterCollect$1 =
       new ChoreoTraj(
           "FirstCenterCollect",
           OptionalInt.of(1),
-          2.44216,
+          9.467220000000001,
           new Pose2d(7.813, 4.93, Rotation2d.fromRadians(-1.844)),
           new Pose2d(2.359, 6.33, Rotation2d.fromRadians(-0.793)));
   public static final ChoreoTraj SecondCenterCollect =
       new ChoreoTraj(
           "SecondCenterCollect",
           OptionalInt.empty(),
-          5.57698,
+          5.59869,
           new Pose2d(2.359, 6.33, Rotation2d.fromRadians(-0.793)),
           new Pose2d(2.359, 6.33, Rotation2d.fromRadians(-0.793)));
   public static final ChoreoTraj SecondCenterCollect$0 =
       new ChoreoTraj(
           "SecondCenterCollect",
           OptionalInt.of(0),
-          3.07428,
+          3.07922,
           new Pose2d(2.359, 6.33, Rotation2d.fromRadians(-0.793)),
           new Pose2d(6.779, 4.758, Rotation2d.fromRadians(-2.239)));
   public static final ChoreoTraj SecondCenterCollect$1 =
       new ChoreoTraj(
           "SecondCenterCollect",
           OptionalInt.of(1),
-          2.5027,
+          2.5194700000000005,
           new Pose2d(6.779, 4.758, Rotation2d.fromRadians(-2.239)),
           new Pose2d(2.359, 6.33, Rotation2d.fromRadians(-0.793)));
 

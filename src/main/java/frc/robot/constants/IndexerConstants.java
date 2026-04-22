@@ -21,15 +21,15 @@ public class IndexerConstants {
   public static final int spindexerId = 1;
   public static final double spindexerReduction = 3.0;
 
-  public static final AngularVelocity spindexerIndexingSpeed = RPM.of(500);
-  public static final AngularVelocity spindexerBackspinSpeed = RPM.of(200);
+  public static final AngularVelocity spindexerIndexingSpeed = RPM.of(300);
+  public static final AngularVelocity spindexerBackspinSpeed = RPM.of(120);
 
   public static final int spindexerCurrentLimit = 90;
 
   public static final ControlConstantsBuilder spindexerControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(3.7139e-7, 0, 0)
-          .sva(0.51212, 0.053082, 0.0038288);
+          .pid(4e-5, 0, 0)
+          .sva(0.27696, 0.05241, 0.0036329);
 
   // kicker
   public static final int kickerId = 4;

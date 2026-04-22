@@ -28,7 +28,7 @@ public final class ChoreoVars {
   public static final Mass R_RobotMass = Units.Kilograms.of(58.06);
   public static final Distance R_TrackLength = Units.Meters.of(0.546);
   public static final double R_WheelCOF = 1.2;
-  public static final Distance R_WheelRadius = Units.Meters.of(0.048);
+  public static final Distance R_WheelRadius = Units.Meters.of(0.049);
   public static final Distance S_RushOutRadius = Units.Meters.of(1.2);
 
   public static final class Poses {

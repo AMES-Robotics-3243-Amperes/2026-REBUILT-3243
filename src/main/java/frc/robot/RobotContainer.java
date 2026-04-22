@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.AutonomousRoutines;
+import frc.robot.commands.DriveCharacterizations;
 import frc.robot.commands.ShootCommands;
 import frc.robot.constants.FieldConstants;
 import frc.robot.constants.ModeConstants;
@@ -301,6 +302,8 @@ public class RobotContainer {
 
     Trigger spindexerBackspinBind = secondaryController.b();
     spindexerBackspinBind.whileTrue(indexer.backspinSpindexerCommand());
+
+    primaryController.a().onTrue(DriveCharacterizations.wheelRadiusCharacterization(drivetrain));
 
     //
     // Shooting

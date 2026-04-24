@@ -12,6 +12,7 @@ import static edu.wpi.first.units.Units.Volts;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.GeneralPurposeCharacterization;
@@ -80,9 +81,20 @@ public class IndexerSubsystem extends SubsystemBase {
   }
 
   public Command indexCommand(ShooterSubsystem shooter) {
-    return runAtSpeedCommand(
-        () -> getKickerVelocityFromLinearVelocity(shooter.getSetpointFuelVelocity()),
-        IndexerConstants.spindexerIndexingSpeed);
+    return runKickerAtSpeedCommand(
+            () -> getKickerVelocityFromLinearVelocity(shooter.getSetpointFuelVelocity()))
+        .alongWith(
+            Commands.sequence(
+                    Commands.run(
+                            () -> setSpindexerVelocity(IndexerConstants.spindexerIndexingSpeed))
+                        .withTimeout(IndexerConstants.spindexerIndexTime),
+                    Commands.run(
+                            () ->
+                                setSpindexerVelocity(
+                                    IndexerConstants.spindexerBackspinSpeed.unaryMinus()))
+                        .withTimeout(IndexerConstants.spindexerBackspinTime))
+                .repeatedly()
+                .finallyDo(this::coastSpindexer));
   }
 
   public Command spinUpKickerWithFlywheelCommand(ShooterSubsystem shooter) {

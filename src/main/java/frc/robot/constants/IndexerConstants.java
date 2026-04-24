@@ -7,6 +7,7 @@ package frc.robot.constants;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.RPM;
+import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
@@ -21,14 +22,17 @@ public class IndexerConstants {
   public static final int spindexerId = 1;
   public static final double spindexerReduction = 3.0;
 
-  public static final AngularVelocity spindexerIndexingSpeed = RPM.of(300);
-  public static final AngularVelocity spindexerBackspinSpeed = RPM.of(120);
+  public static final AngularVelocity spindexerIndexingSpeed = RPM.of(420);
+  public static final AngularVelocity spindexerBackspinSpeed = RPM.of(240);
+
+  public static final Time spindexerIndexTime = Seconds.of(2.6);
+  public static final Time spindexerBackspinTime = Milliseconds.of(200);
 
   public static final int spindexerCurrentLimit = 90;
 
   public static final ControlConstantsBuilder spindexerControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(4e-5, 0, 0)
+          .pid(3e-5, 0, 0)
           .sva(0.27696, 0.05241, 0.0036329);
 
   // kicker

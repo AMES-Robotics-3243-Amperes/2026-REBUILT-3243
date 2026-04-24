@@ -47,14 +47,14 @@ public class ShooterConstants {
   public static final Current flywheelStatorCurrentLimit = Amps.of(80);
   public static final Current flywheelSupplyCurrentLimit = Amps.of(40);
 
-  public static final double fuelToFlywheelLinearSpeedRatio = 0.488;
+  public static final double fuelToFlywheelLinearSpeedRatio = 0.484;
 
   public static final ClosedLoopOutputType flywheelClosedLoopOutput = ClosedLoopOutputType.Voltage;
 
   public static final ControlConstantsBuilder flywheelControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .sva(0.11933, 0.023903, 0.0016222)
-          .pid(0.017, 0, 0);
+          .sva(0.13115, 0.023932, 0.0013412)
+          .pid(0.001, 0, 0);
 
   // hood
   public static final int hoodId = 5;

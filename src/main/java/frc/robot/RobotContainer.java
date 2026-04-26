@@ -293,11 +293,27 @@ public class RobotContainer {
     Trigger intakeBind = primaryController.leftTrigger(0.05);
     intakeBind.whileTrue(intake.intakeCommand());
 
-    secondaryController.leftBumper().and(intakeBind.negate()).whileTrue(intake.lowerPivotCommand());
-    secondaryController.rightBumper().whileTrue(intake.raisePivotCommand());
+    Trigger pivotUpBind = secondaryController.rightBumper();
+    Trigger pivotDownBind = secondaryController.leftBumper();
+    Trigger agitateRollerBind = secondaryController.povLeft();
+    Trigger outtakeRollerBind = secondaryController.povRight();
 
-    secondaryController.povLeft().whileTrue(intake.agitateCommand());
-    secondaryController.povRight().whileTrue(intake.outtakeCommand());
+    pivotUpBind.and(agitateRollerBind.negate()).whileTrue(intake.raisePivotCommand());
+    pivotUpBind.and(agitateRollerBind).whileTrue(intake.raiseWhileAgitating());
+    pivotDownBind
+        .and(agitateRollerBind.negate())
+        .and(intakeBind.negate())
+        .whileTrue(intake.lowerPivotCommand());
+    pivotDownBind.and(agitateRollerBind).whileFalse(intake.lowerWhileAgitating());
+
+    agitateRollerBind
+        .and(pivotUpBind.negate())
+        .and(pivotDownBind.negate())
+        .whileTrue(intake.agitateCommand());
+    outtakeRollerBind
+        .and(pivotUpBind.negate())
+        .and(pivotDownBind.negate())
+        .whileTrue(intake.outtakeCommand());
 
     Trigger spindexerBackspinBind = secondaryController.b();
     spindexerBackspinBind.whileTrue(indexer.backspinSpindexerCommand());

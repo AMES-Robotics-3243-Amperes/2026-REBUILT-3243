@@ -27,7 +27,10 @@ public class IntakeConstants {
           .pid(0.0044275, 0, 0)
           .sva(0.25572, 0.03424, 0.0017386);
 
-  public static final AngularVelocity rollerIntakeSpeed = RPM.of(2600);
+  public static final int rollerStallLimit = 65;
+  public static final int rollerFreeLimit = 30;
+
+  public static final AngularVelocity rollerIntakeSpeed = RPM.of(2200);
   public static final AngularVelocity rollerAgitateSpeed = RPM.of(1500);
 
   // pivot

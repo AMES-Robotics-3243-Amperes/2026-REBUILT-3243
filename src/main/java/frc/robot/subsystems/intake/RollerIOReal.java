@@ -41,6 +41,8 @@ public class RollerIOReal implements RollerIO {
 
     config.closedLoop.apply(IntakeConstants.rollerControl.revClosedLoopConfig());
 
+    config.smartCurrentLimit(IntakeConstants.rollerStallLimit, IntakeConstants.rollerFreeLimit);
+
     sparkMax.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     encoder = sparkMax.getEncoder();

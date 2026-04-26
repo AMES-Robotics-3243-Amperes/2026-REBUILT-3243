@@ -97,46 +97,71 @@ public class IntakeSubsystem extends SubsystemBase {
         () -> setRollerVelocity(IntakeConstants.rollerIntakeSpeed.unaryMinus()), this::coastRoller);
   }
 
+  private Command dependencyFreeAgitateCommand() {
+    return Commands.runEnd(
+        () -> setRollerVelocity(IntakeConstants.rollerAgitateSpeed), this::coastRoller);
+  }
+
   public Command agitateCommand() {
-    return runEnd(() -> setRollerVelocity(IntakeConstants.rollerAgitateSpeed), this::coastRoller);
+    Command command = dependencyFreeAgitateCommand();
+    command.addRequirements(this);
+    return command;
+  }
+
+  private Trigger pivotRaised() {
+    return new Trigger(
+        () ->
+            pivotInputs.absoluteEncoderPosition.isNear(
+                IntakeConstants.pivotRaiseTargetAngle, IntakeConstants.pivotPositioningTolerance));
   }
 
   public Command raisePivotCommand() {
+    Trigger pivotRaised = pivotRaised();
     return runOnce(() -> pivotPositionFeedback.reset())
         .andThen(
             runEnd(
-                () ->
+                () -> {
+                  if (pivotRaised.getAsBoolean()) coastPivot();
+                  else
                     runPivotAtSpeed(
                         RadiansPerSecond.of(
                             pivotPositionFeedback.calculate(
                                 pivotInputs.absoluteEncoderPosition.in(Radians),
-                                IntakeConstants.pivotRaiseTargetAngle.in(Radians)))),
-                this::coastPivot))
-        .withDeadline(
-            Commands.waitUntil(
-                () ->
-                    pivotInputs.absoluteEncoderPosition.isNear(
-                        IntakeConstants.pivotRaiseTargetAngle,
-                        IntakeConstants.pivotPositioningTolerance)));
+                                IntakeConstants.pivotRaiseTargetAngle.in(Radians))));
+                },
+                this::coastPivot));
+  }
+
+  private Trigger pivotLowered() {
+    return new Trigger(
+        () ->
+            pivotInputs.absoluteEncoderPosition.isNear(
+                IntakeConstants.pivotMinRotation, IntakeConstants.pivotPositioningTolerance));
   }
 
   public Command lowerPivotCommand() {
+    Trigger pivotLowered = pivotLowered();
     return runOnce(() -> pivotPositionFeedback.reset())
         .andThen(
             runEnd(
-                () ->
+                () -> {
+                  if (pivotLowered.getAsBoolean()) coastPivot();
+                  else
                     runPivotAtSpeed(
                         RadiansPerSecond.of(
                             pivotPositionFeedback.calculate(
                                 pivotInputs.absoluteEncoderPosition.in(Radians),
-                                IntakeConstants.pivotMinRotation.in(Radians)))),
-                this::coastPivot))
-        .withDeadline(
-            Commands.waitUntil(
-                () ->
-                    pivotInputs.absoluteEncoderPosition.isNear(
-                        IntakeConstants.pivotMinRotation,
-                        IntakeConstants.pivotPositioningTolerance)));
+                                IntakeConstants.pivotMinRotation.in(Radians))));
+                },
+                this::coastPivot));
+  }
+
+  public Command raiseWhileAgitating() {
+    return raisePivotCommand().alongWith(dependencyFreeAgitateCommand());
+  }
+
+  public Command lowerWhileAgitating() {
+    return lowerPivotCommand().alongWith(dependencyFreeAgitateCommand());
   }
 
   public Command runPivotOpenLoopCommand(Voltage output) {

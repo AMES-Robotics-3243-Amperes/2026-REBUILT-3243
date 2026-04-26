@@ -53,13 +53,13 @@ public class ShooterConstants {
 
   public static final ControlConstantsBuilder flywheelControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .sva(0.13115, 0.023932, 0.0013412)
-          .pid(0.001, 0, 0);
+          .sva(0.17718, 0.024084, 0.0017727)
+          .pid(0.013266, 0, 0);
 
   // hood
   public static final int hoodId = 5;
 
-  public static final Angle hoodAbsoluteEncoderZeroedRotation = Degrees.of(17.8);
+  public static final Angle hoodAbsoluteEncoderZeroedRotation = Degrees.of(22.8);
   public static final Angle hoodMinRotation = Degrees.of(17);
   public static final Angle hoodMaxRotation = Degrees.of(46);
 

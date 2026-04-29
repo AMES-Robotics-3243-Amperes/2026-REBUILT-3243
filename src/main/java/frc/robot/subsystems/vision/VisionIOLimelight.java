@@ -10,7 +10,6 @@ package frc.robot.subsystems.vision;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Microseconds;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -55,7 +54,6 @@ public class VisionIOLimelight extends VisionIO {
   private final DoubleArraySubscriber standardDeviationsSubscriber;
 
   protected final NetworkTable table;
-  private final Transform3d cameraPoseInRobotSpace;
 
   /**
    * Creates a new VisionIOLimelight.
@@ -69,7 +67,6 @@ public class VisionIOLimelight extends VisionIO {
       Supplier<AngularVelocity> rotationRateSupplier) {
     super(configuration);
 
-    this.cameraPoseInRobotSpace = configuration.robotToCamera();
     this.table = NetworkTableInstance.getDefault().getTable(this.configuration.name());
 
     this.rotationSupplier = rotationSupplier;
@@ -102,17 +99,11 @@ public class VisionIOLimelight extends VisionIO {
             Rotation2d.fromDegrees(txSubscriber.get()), Rotation2d.fromDegrees(tySubscriber.get()));
 
     // Update orientation for MegaTag 2
-    // cameraOffsetPublisher.accept(parseTransform(cameraPoseInRobotSpace));
-    cameraOffsetPublisher.accept(parseTransform(new Transform3d()));
+    cameraOffsetPublisher.accept(parseTransform(configuration.robotToCamera()));
     orientationPublisher.accept(
         new double[] {
-          rotationSupplier.get().getDegrees()
-              + Units.radiansToDegrees(cameraPoseInRobotSpace.getRotation().getZ()),
-          rotationRateSupplier.get().in(DegreesPerSecond)
-              * (Math.abs(MathUtil.angleModulus(cameraPoseInRobotSpace.getRotation().getX()))
-                      > Math.PI / 2
-                  ? -1.0
-                  : 1.0),
+          rotationSupplier.get().getDegrees(),
+          rotationRateSupplier.get().in(DegreesPerSecond),
           0.0,
           0.0,
           0.0,
@@ -156,8 +147,7 @@ public class VisionIOLimelight extends VisionIO {
                       < VisionConstants.maxTimestampError.in(Microseconds));
 
       if (poseIsZero(rawMegaTagOneSample.value)) continue;
-      Pose3d pose =
-          parsePose(rawMegaTagOneSample.value).transformBy(cameraPoseInRobotSpace.inverse());
+      Pose3d pose = parsePose(rawMegaTagOneSample.value);
 
       poseObservations.add(
           new PoseObservation(
@@ -216,8 +206,7 @@ public class VisionIOLimelight extends VisionIO {
       if (poseIsZero(rawMegaTagTwoSample.value)) continue;
 
       if (poseIsZero(rawMegaTagTwoSample.value)) continue;
-      Pose3d pose =
-          parsePose(rawMegaTagTwoSample.value).transformBy(cameraPoseInRobotSpace.inverse());
+      Pose3d pose = parsePose(rawMegaTagTwoSample.value);
 
       poseObservations.add(
           new PoseObservation(

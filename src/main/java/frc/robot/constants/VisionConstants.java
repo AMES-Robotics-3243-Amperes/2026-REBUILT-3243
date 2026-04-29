@@ -48,23 +48,20 @@ public class VisionConstants {
                   Units.inchesToMeters(-1.91),
                   Units.inchesToMeters(0),
                   Units.inchesToMeters(21.5),
-                  new Rotation3d(0, Units.degreesToRadians(-31.4), Units.degreesToRadians(1))),
+                  new Rotation3d(0, Units.degreesToRadians(-31.4), 0)),
               1,
               CameraType.LimelightFour,
               true),
-    new CameraConfiguration(
-        "limelight-back",
-        new Transform3d(
-            Units.inchesToMeters(-11.5269),
-            Units.inchesToMeters(9.625),
-            Units.inchesToMeters(9.3),
-            new Rotation3d(
-                0,
-                Units.degreesToRadians(-25),
-                Units.degreesToRadians(180))),
-        1,
-        CameraType.LimelightFour,
-        false));
+          new CameraConfiguration(
+              "limelight-back",
+              new Transform3d(
+                  Units.inchesToMeters(-11.5269),
+                  Units.inchesToMeters(9.625),
+                  Units.inchesToMeters(9.3),
+                  new Rotation3d(0, Units.degreesToRadians(-25), Units.degreesToRadians(180))),
+              1,
+              CameraType.LimelightFour,
+              false));
 
   // Basic filtering thresholds
   public static final Time maxTimestampError = Milliseconds.of(2);

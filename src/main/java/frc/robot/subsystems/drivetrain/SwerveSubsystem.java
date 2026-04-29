@@ -69,10 +69,7 @@ import frc.robot.constants.swerve.TunerConstants;
 import frc.robot.util.Container;
 import frc.robot.util.FuelTrajectoryCalculator;
 import frc.robot.util.FuelTrajectoryCalculator.ShootTarget;
-import frc.robot.util.PointOfInterestManager;
-import frc.robot.util.PointOfInterestManager.FlipType;
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -532,32 +529,6 @@ public class SwerveSubsystem extends SubsystemBase {
   // Path following
   //
 
-  private boolean flipPathAcrossFieldWidth = false;
-  private Optional<Supplier<AngularVelocity>> pathFollowingAngularOverride = Optional.empty();
-
-  /**
-   * These are used to control the behavior of choreo path following in a command-centric way
-   * (hopefully) without running into race conditions or other weird "only one option at once"
-   * issues.
-   */
-  private SubsystemBase choreoFlippedSubsystem = new SubsystemBase("SwerveAutoFlipped") {};
-
-  private SubsystemBase choreoCustomRotationSubsystem = new SubsystemBase("SwerveAutoRotation") {};
-
-  public Command driveFlippedAlongFieldWidth() {
-    return Commands.runEnd(
-        () -> flipPathAcrossFieldWidth = true,
-        () -> flipPathAcrossFieldWidth = false,
-        choreoFlippedSubsystem);
-  }
-
-  public Command rotateIndependentlyOfPath(Supplier<AngularVelocity> angularStrategy) {
-    return Commands.runEnd(
-        () -> pathFollowingAngularOverride = Optional.of(angularStrategy),
-        () -> pathFollowingAngularOverride = Optional.empty(),
-        choreoCustomRotationSubsystem);
-  }
-
   private PIDController choreoXController =
       new PIDController(
           SwerveConstants.driveControl.kP,
@@ -575,27 +546,16 @@ public class SwerveSubsystem extends SubsystemBase {
   public void followChoreoTrajecotry(SwerveSample sample) {
     Pose2d robotPose = getPose();
 
-    Pose2d poseSetpoint = new Pose2d(sample.x, sample.y, Rotation2d.fromRadians(sample.heading));
-    if (flipPathAcrossFieldWidth)
-      poseSetpoint = PointOfInterestManager.flipPose(poseSetpoint, FlipType.REFLECT_Y);
-
     ChassisSpeeds feedbackSpeeds =
         new ChassisSpeeds(
-            choreoXController.calculate(robotPose.getX(), poseSetpoint.getX()),
-            choreoYController.calculate(robotPose.getY(), poseSetpoint.getY()),
+            choreoXController.calculate(robotPose.getX(), sample.x),
+            choreoYController.calculate(robotPose.getY(), sample.y),
             choreoHeadingController.calculate(
-                robotPose.getRotation().getRadians(), poseSetpoint.getRotation().getRadians()));
+                robotPose.getRotation().getRadians(), sample.heading));
 
-    ChassisSpeeds feedforwardSpeeds =
-        new ChassisSpeeds(
-            sample.vx,
-            flipPathAcrossFieldWidth ? -sample.vy : sample.vy,
-            flipPathAcrossFieldWidth ? -sample.omega : sample.omega);
+    ChassisSpeeds feedforwardSpeeds = new ChassisSpeeds(sample.vx, sample.vy, sample.omega);
 
     ChassisSpeeds finalSpeeds = feedbackSpeeds.plus(feedforwardSpeeds);
-    pathFollowingAngularOverride.ifPresent(
-        angularStrategy ->
-            finalSpeeds.omegaRadiansPerSecond = angularStrategy.get().in(RadiansPerSecond));
 
     // TODO: the sample contains acceleration information, we should probably use this information
     // to get module feedforwards and directly set module states

@@ -10,7 +10,7 @@ public class ModeConstants {
     REPLAY
   }
 
-  public static final Mode realMode = Mode.REAL;
+  public static final Mode realMode = Mode.REAL_COMPETITION;
   public static final Mode simMode = Mode.SIM;
 
   public static final Mode robotMode = RobotBase.isReal() ? realMode : simMode;

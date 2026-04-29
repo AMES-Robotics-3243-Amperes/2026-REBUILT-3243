@@ -53,6 +53,13 @@
      "val":1.27889
     }
    },
+   "M_BumpSpeed":{
+    "dimension":"LinVel",
+    "var":{
+     "exp":"1.5 m / s",
+     "val":1.5
+    }
+   },
    "M_MaxCollectVelocity":{
     "dimension":"LinVel",
     "var":{
@@ -98,8 +105,8 @@
    "R_MaxDriveTorque":{
     "dimension":"Torque",
     "var":{
-     "exp":"0.8 N * m",
-     "val":0.8
+     "exp":"0.75 N * m",
+     "val":0.75
     }
    },
    "R_RobotMOI":{
@@ -247,7 +254,7 @@
   },
   "tmax":{
    "exp":"R_MaxDriveTorque",
-   "val":0.8
+   "val":0.75
   },
   "cof":{
    "exp":"R_WheelCOF",

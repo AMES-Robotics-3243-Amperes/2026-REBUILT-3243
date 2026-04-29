@@ -38,8 +38,6 @@ public class IntakeSubsystem extends SubsystemBase {
   private final PIDController pivotPositionFeedback =
       IntakeConstants.pivotPositionControl.pidController(Radians);
 
-  private boolean hasInitilizedRelativeBottom = false;
-
   /** Creates a new IntakeSubsystem. */
   public IntakeSubsystem(RollerIO rollerIO, PivotIO pivotIO) {
     this.rollerIO = rollerIO;

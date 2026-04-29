@@ -167,7 +167,7 @@ public class AutonomousRoutines {
         .onTrue(
             goIntoMiddle
                 .resetOdometry()
-                .andThen(Commands.sequence(Commands.waitSeconds(4.5), goIntoMiddle.cmd())));
+                .andThen(Commands.sequence(Commands.waitSeconds(5.5), goIntoMiddle.cmd())));
 
     return routine;
   }

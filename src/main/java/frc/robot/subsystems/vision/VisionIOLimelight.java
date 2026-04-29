@@ -281,7 +281,7 @@ public class VisionIOLimelight extends VisionIO {
     Rotation3d rotation = transform.getRotation();
     return new double[] {
       transform.getX(),
-      -transform.getY(),
+      transform.getY(),
       transform.getZ(),
       Units.radiansToDegrees(rotation.getX()),
       -Units.radiansToDegrees(rotation.getY()),

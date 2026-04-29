@@ -61,7 +61,7 @@ public class VisionConstants {
                   new Rotation3d(0, Units.degreesToRadians(-25), Units.degreesToRadians(180))),
               1,
               CameraType.LimelightFour,
-              false));
+              true));
 
   // Basic filtering thresholds
   public static final Time maxTimestampError = Milliseconds.of(2);

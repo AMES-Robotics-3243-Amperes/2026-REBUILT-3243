@@ -53,17 +53,17 @@ public class VisionConstants {
                   new Rotation3d(0, Units.degreesToRadians(-31.4), Units.degreesToRadians(1))),
               1,
               CameraType.LimelightFour,
-              true),
-          new CameraConfiguration(
-              "limelight-back",
-              new Transform3d(
-                  Units.inchesToMeters(-11.5269),
-                  Units.inchesToMeters(9.625),
-                  Units.inchesToMeters(9.3),
-                  new Rotation3d(0, Units.degreesToRadians(-25), Units.degreesToRadians(180))),
-              2.5,
-              CameraType.LimelightFour,
               true));
+        //   new CameraConfiguration(
+        //       "limelight-back",
+        //       new Transform3d(
+        //           Units.inchesToMeters(-11.5269),
+        //           Units.inchesToMeters(9.625),
+        //           Units.inchesToMeters(9.3),
+        //           new Rotation3d(0, Units.degreesToRadians(-25), Units.degreesToRadians(180))),
+        //       2.5,
+        //       CameraType.LimelightFour,
+        //       true));
 
   // Basic filtering thresholds
   public static final Time maxTimestampError = Milliseconds.of(2);

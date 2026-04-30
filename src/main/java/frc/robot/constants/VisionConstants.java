@@ -48,7 +48,7 @@ public class VisionConstants {
                   Units.inchesToMeters(-1.91),
                   Units.inchesToMeters(0),
                   Units.inchesToMeters(21.5),
-                  new Rotation3d(0, Units.degreesToRadians(-31.4), 0)),
+                  new Rotation3d(0, Units.degreesToRadians(-31.4), Units.degreesToRadians(1))),
               1,
               CameraType.LimelightFour,
               true),
@@ -59,15 +59,15 @@ public class VisionConstants {
                   Units.inchesToMeters(9.625),
                   Units.inchesToMeters(9.3),
                   new Rotation3d(0, Units.degreesToRadians(-25), Units.degreesToRadians(180))),
-              1,
+              2.5,
               CameraType.LimelightFour,
-              false));
+              true));
 
   // Basic filtering thresholds
   public static final Time maxTimestampError = Milliseconds.of(2);
   public static final AngularVelocity maxAngularVelocity = RotationsPerSecond.of(1);
-  public static final double maxAmbiguity = 0.35;
-  public static final Distance maxZError = Inches.of(10); // Inches.of(3);
+  public static final double maxAmbiguity = 0.2;
+  public static final Distance maxZError = Inches.of(3); // Inches.of(3);
 
   public static final Vector<N3> calculateStdDev(
       PoseObservation observation, CameraConfiguration config) {

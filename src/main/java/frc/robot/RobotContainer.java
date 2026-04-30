@@ -97,7 +97,7 @@ public class RobotContainer {
   public final ShooterSubsystem shooter;
 
   private final SwerveDriveSimulation driveSimulation;
-  //   private final LoggedDashboardChooser<Command> autoChooser;
+  // private final LoggedDashboardChooser<Command> autoChooser;
   private final RobotLocationManager robotLocationManager;
 
   public RobotContainer() {

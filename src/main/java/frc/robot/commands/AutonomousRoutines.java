@@ -16,6 +16,7 @@ import frc.robot.subsystems.indexer.IndexerSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.util.FuelTrajectoryCalculator.ShootTarget;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 public class AutonomousRoutines {
   public static void populateAutoChooser(
@@ -42,12 +43,33 @@ public class AutonomousRoutines {
         "outpost side two cycle",
         () -> outpostSideTwoCycle(autoFactory, drivetrain, shooter, indexer, intake));
 
+    LoggedNetworkNumber returnTimeChooserSeconds =
+        new LoggedNetworkNumber("Return Time Seconds", 11.0);
+    Time returnTimeInPath = Seconds.of(5.0);
     autoChooser.addRoutine(
         "depot side follow",
-        () -> follow(autoFactory, drivetrain, shooter, indexer, intake, false));
+        () ->
+            follow(
+                autoFactory,
+                drivetrain,
+                shooter,
+                indexer,
+                intake,
+                returnTimeInPath,
+                returnTimeChooserSeconds,
+                false));
     autoChooser.addRoutine(
         "outpost side follow",
-        () -> follow(autoFactory, drivetrain, shooter, indexer, intake, true));
+        () ->
+            follow(
+                autoFactory,
+                drivetrain,
+                shooter,
+                indexer,
+                intake,
+                returnTimeInPath,
+                returnTimeChooserSeconds,
+                true));
 
     autoChooser.addRoutine(
         "center depot cycle",
@@ -140,6 +162,8 @@ public class AutonomousRoutines {
       ShooterSubsystem shooter,
       IndexerSubsystem indexer,
       IntakeSubsystem intake,
+      Time returnTimeInpath,
+      LoggedNetworkNumber returnTimeChooserSeconds,
       boolean reflectY) {
     AutoRoutine routine = autoFactory.newRoutine("follow");
 
@@ -165,9 +189,13 @@ public class AutonomousRoutines {
     routine
         .active()
         .onTrue(
-            goIntoMiddle
-                .resetOdometry()
-                .andThen(Commands.sequence(Commands.waitSeconds(5.5), goIntoMiddle.cmd())));
+            Commands.sequence(
+                goIntoMiddle.resetOdometry(),
+                Commands.deferredProxy(
+                    () ->
+                        Commands.waitSeconds(
+                            returnTimeChooserSeconds.getAsDouble() - returnTimeInpath.in(Seconds))),
+                goIntoMiddle.cmd()));
 
     return routine;
   }

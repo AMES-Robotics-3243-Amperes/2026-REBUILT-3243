@@ -53,8 +53,8 @@ public class ShooterConstants {
 
   public static final ControlConstantsBuilder flywheelControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .sva(0.17718, 0.024084, 0.0017727)
-          .pid(0.013266, 0, 0);
+          .sva(0.12766, 0.023994, 0.0019976)
+          .pid(0.012, 0, 0);
 
   // hood
   public static final int hoodId = 5;

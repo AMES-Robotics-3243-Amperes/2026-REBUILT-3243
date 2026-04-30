@@ -36,6 +36,9 @@ public class AutonomousRoutines {
 
     CommandScheduler.getInstance().schedule(autoFactory.warmupCmd());
 
+       LoggedNetworkNumber returnTimeChooserSeconds =
+        new LoggedNetworkNumber("Return Time Seconds", 10.0);
+
     autoChooser.addRoutine(
         "depot side two cycle",
         () -> depotSideTwoCycle(autoFactory, drivetrain, shooter, indexer, intake));
@@ -43,9 +46,33 @@ public class AutonomousRoutines {
         "outpost side two cycle",
         () -> outpostSideTwoCycle(autoFactory, drivetrain, shooter, indexer, intake));
 
-    LoggedNetworkNumber returnTimeChooserSeconds =
-        new LoggedNetworkNumber("Return Time Seconds", 11.0);
-    Time returnTimeInPath = Seconds.of(5.0);
+                Time returnTimeInSinglePath = Seconds.of(3.85);
+ autoChooser.addRoutine(
+        "depot side single",
+        () ->
+            follow(
+                autoFactory,
+                drivetrain,
+                shooter,
+                indexer,
+                intake,
+                returnTimeInSinglePath,
+                returnTimeChooserSeconds,
+                false));
+    autoChooser.addRoutine(
+        "outpost side single",
+        () ->
+            follow(
+                autoFactory,
+                drivetrain,
+                shooter,
+                indexer,
+                intake,
+                returnTimeInSinglePath,
+                returnTimeChooserSeconds,
+                true));
+
+    Time returnTimeInFollowPath = Seconds.of(5.0);
     autoChooser.addRoutine(
         "depot side follow",
         () ->
@@ -55,7 +82,7 @@ public class AutonomousRoutines {
                 shooter,
                 indexer,
                 intake,
-                returnTimeInPath,
+                returnTimeInFollowPath,
                 returnTimeChooserSeconds,
                 false));
     autoChooser.addRoutine(
@@ -67,7 +94,7 @@ public class AutonomousRoutines {
                 shooter,
                 indexer,
                 intake,
-                returnTimeInPath,
+                returnTimeInFollowPath,
                 returnTimeChooserSeconds,
                 true));
 
@@ -169,6 +196,54 @@ public class AutonomousRoutines {
 
     AutoTrajectory goIntoMiddle = ChoreoTraj.FollowIntoCenter$0.asAutoTraj(routine);
     AutoTrajectory returnFromMiddle = ChoreoTraj.FollowIntoCenter$1.asAutoTraj(routine);
+
+    if (reflectY) {
+      goIntoMiddle = goIntoMiddle.mirrorY();
+      returnFromMiddle = returnFromMiddle.mirrorY();
+    }
+
+    registerSingleCycle(
+        routine,
+        goIntoMiddle,
+        returnFromMiddle,
+        Seconds.of(0.1),
+        Seconds.of(9),
+        drivetrain,
+        shooter,
+        indexer,
+        intake);
+
+    routine
+        .active()
+        .onTrue(
+            Commands.sequence(
+                goIntoMiddle.resetOdometry(),
+                Commands.deferredProxy(
+                    () ->
+                        Commands.waitSeconds(
+                            returnTimeChooserSeconds.getAsDouble() - returnTimeInpath.in(Seconds))),
+                goIntoMiddle.cmd()));
+
+    return routine;
+  }
+
+  //
+  // Single Cycle
+  //
+
+    private static AutoRoutine singleCycle(
+      AutoFactory autoFactory,
+      SwerveSubsystem drivetrain,
+      ShooterSubsystem shooter,
+      IndexerSubsystem indexer,
+      IntakeSubsystem intake,
+      Time returnTimeInpath,
+      LoggedNetworkNumber returnTimeChooserSeconds,
+      boolean reflectY) {
+    AutoRoutine routine = autoFactory.newRoutine("single cycle");
+
+    AutoTrajectory goIntoMiddle = ChoreoTraj.FirstCenterCollect$0.asAutoTraj(routine);
+    AutoTrajectory returnFromMiddle = ChoreoTraj.FirstCenterCollect$1.asAutoTraj(routine);
 
     if (reflectY) {
       goIntoMiddle = goIntoMiddle.mirrorY();

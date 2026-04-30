@@ -36,7 +36,7 @@ public class AutonomousRoutines {
 
     CommandScheduler.getInstance().schedule(autoFactory.warmupCmd());
 
-       LoggedNetworkNumber returnTimeChooserSeconds =
+    LoggedNetworkNumber returnTimeChooserSeconds =
         new LoggedNetworkNumber("Return Time Seconds", 10.0);
 
     autoChooser.addRoutine(
@@ -46,11 +46,11 @@ public class AutonomousRoutines {
         "outpost side two cycle",
         () -> outpostSideTwoCycle(autoFactory, drivetrain, shooter, indexer, intake));
 
-                Time returnTimeInSinglePath = Seconds.of(3.85);
- autoChooser.addRoutine(
+    Time returnTimeInSinglePath = Seconds.of(3.85);
+    autoChooser.addRoutine(
         "depot side single",
         () ->
-            follow(
+            singleCycle(
                 autoFactory,
                 drivetrain,
                 shooter,
@@ -62,7 +62,7 @@ public class AutonomousRoutines {
     autoChooser.addRoutine(
         "outpost side single",
         () ->
-            follow(
+            singleCycle(
                 autoFactory,
                 drivetrain,
                 shooter,
@@ -231,7 +231,7 @@ public class AutonomousRoutines {
   // Single Cycle
   //
 
-    private static AutoRoutine singleCycle(
+  private static AutoRoutine singleCycle(
       AutoFactory autoFactory,
       SwerveSubsystem drivetrain,
       ShooterSubsystem shooter,

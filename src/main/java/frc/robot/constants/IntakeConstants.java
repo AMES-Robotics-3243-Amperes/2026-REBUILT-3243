@@ -15,7 +15,7 @@ import frc.robot.util.ControlConstantsBuilder;
 public class IntakeConstants {
   // agitating
   public static final Time timeBeforeAgitating = Seconds.of(1.2);
-  public static final Time timeSpentRunningRollers = Seconds.of(2);
+  public static final Time timeSpentRunningRollers = Seconds.of(4);
 
   // roller
   public static final int rollerId = 2;

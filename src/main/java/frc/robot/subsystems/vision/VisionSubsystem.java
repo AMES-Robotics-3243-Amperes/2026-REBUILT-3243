@@ -8,8 +8,10 @@
 package frc.robot.subsystems.vision;
 
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -112,7 +114,11 @@ public class VisionSubsystem extends SubsystemBase {
             observation.tagCount() == 0 // Must have at least one tag
                 // Must have realistic Z coordinate
                 || Math.abs(observation.pose().getZ()) > VisionConstants.maxZError.in(Meters)
-                || !io[i].configuration.enable();
+                || !io[i].configuration.enable()
+                || Math.abs(MathUtil.angleModulus(observation.pose().getRotation().getX()))
+                    > VisionConstants.maxPitchAndRoll.in(Radians)
+                || Math.abs(MathUtil.angleModulus(observation.pose().getRotation().getY()))
+                    > VisionConstants.maxPitchAndRoll.in(Radians);
 
         boolean rejectPoseOnEnable =
             (observation.tagCount() == 1

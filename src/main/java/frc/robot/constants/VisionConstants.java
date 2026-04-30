@@ -7,6 +7,7 @@
 
 package frc.robot.constants;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -19,6 +20,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Time;
@@ -61,18 +63,19 @@ public class VisionConstants {
                   new Rotation3d(0, Units.degreesToRadians(-25), Units.degreesToRadians(180))),
               2.5,
               CameraType.LimelightFour,
-              false));
+              true));
 
   // Basic filtering thresholds
   public static final Time maxTimestampError = Milliseconds.of(2);
   public static final AngularVelocity maxAngularVelocity = RotationsPerSecond.of(1);
-  public static final double maxAmbiguity = 0.2;
+  public static final double maxAmbiguity = 0.15;
   public static final Distance maxZError = Inches.of(4); // Inches.of(3);
+  public static final Angle maxPitchAndRoll = Degrees.of(4);
 
   public static final Vector<N3> calculateStdDev(
       PoseObservation observation, CameraConfiguration config) {
-    double minCameraPosStdDev = 0.5;
-    double minCameraRotStdDev = 1.5;
+    double minCameraPosStdDev = 0.6;
+    double minCameraRotStdDev = 5;
     if (observation.cameraReportedStdDevs().present()) {
       return VecBuilder.fill(
           Double.max(minCameraPosStdDev, observation.cameraReportedStdDevs().x())

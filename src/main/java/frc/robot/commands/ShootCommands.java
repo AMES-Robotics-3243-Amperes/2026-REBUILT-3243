@@ -102,7 +102,7 @@ public class ShootCommands {
                     new Trigger(drivetrain::atRotationSetpoint)
                         .or(ignoreDrivetrainRotation)
                         .and(shooter::flywheelSpunUp)
-                        .or(customReadyTrigger))),
+                        .or(customReadyTrigger)).deadlineFor(Commands.run(() -> System.out.println(shooter.flywheelSpunUp())))),
         Commands.waitTime(IndexerConstants.idleTimeBeforeIndexing),
         indexer.indexCommand(shooter));
   }

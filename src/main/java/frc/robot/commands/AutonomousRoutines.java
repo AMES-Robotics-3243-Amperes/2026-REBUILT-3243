@@ -15,7 +15,6 @@ import frc.robot.subsystems.drivetrain.SwerveSubsystem;
 import frc.robot.subsystems.indexer.IndexerSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
-import frc.robot.util.Container;
 import frc.robot.util.FuelTrajectoryCalculator.ShootTarget;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
@@ -38,7 +37,7 @@ public class AutonomousRoutines {
     CommandScheduler.getInstance().schedule(autoFactory.warmupCmd());
 
     LoggedNetworkNumber miscPickerOne = new LoggedNetworkNumber("Misc 1", 10.0);
-        LoggedNetworkNumber miscPickerTwo = new LoggedNetworkNumber("Misc 2", 10.0);
+    LoggedNetworkNumber miscPickerTwo = new LoggedNetworkNumber("Misc 2", 10.0);
 
     // double cycle
     autoChooser.addRoutine(
@@ -203,10 +202,10 @@ public class AutonomousRoutines {
     AutoTrajectory goToWait = ChoreoTraj.GoToWait.asAutoTraj(routine);
 
     AutoTrajectory intakeFromTrench = ChoreoTraj.WaitThroughTrench$0.asAutoTraj(routine);
-        AutoTrajectory returnFromTrench = ChoreoTraj.WaitThroughTrench$1.asAutoTraj(routine);
+    AutoTrajectory returnFromTrench = ChoreoTraj.WaitThroughTrench$1.asAutoTraj(routine);
 
-        AutoTrajectory intakeFromBump = ChoreoTraj.WaitOverBump$0.asAutoTraj(routine);
-        AutoTrajectory returnFromBump = ChoreoTraj.WaitOverBump$1.asAutoTraj(routine);
+    AutoTrajectory intakeFromBump = ChoreoTraj.WaitOverBump$0.asAutoTraj(routine);
+    AutoTrajectory returnFromBump = ChoreoTraj.WaitOverBump$1.asAutoTraj(routine);
 
     registerSingleCycle(
         routine,
@@ -219,7 +218,7 @@ public class AutonomousRoutines {
         indexer,
         intake);
 
-        registerSingleCycle(
+    registerSingleCycle(
         routine,
         intakeFromBump,
         returnFromBump,
@@ -242,10 +241,9 @@ public class AutonomousRoutines {
                 goToWait.cmd(),
                 Commands.deferredProxy(
                     () -> {
-                        // TODO
-                        return Commands.waitSeconds(1);
-                    }
-                )));
+                      // TODO
+                      return Commands.waitSeconds(1);
+                    })));
 
     return routine;
   }

@@ -318,7 +318,7 @@ public class RobotContainer {
     Trigger spindexerBackspinBind = secondaryController.b();
     spindexerBackspinBind.whileTrue(indexer.backspinSpindexerCommand());
 
-    primaryController.a().onTrue(shooter.flywheelSysIdCommand(primaryController.a()));
+    primaryController.a().onTrue(intake.rollerSysIdCommand(primaryController.a()));
 
     //
     // Shooting

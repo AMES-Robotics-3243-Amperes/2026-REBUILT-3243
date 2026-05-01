@@ -42,6 +42,8 @@ public final class ChoreoVars {
         new Pose2d(6.14, 4.87, Rotation2d.fromRadians(-2));
     public static final Pose2d Shoot =
         new Pose2d(2.7916443, 7.207139, Rotation2d.fromRadians(-1.0490899));
+    public static final Pose2d SitAndWait =
+        new Pose2d(7.85, 7.42, Rotation2d.fromRadians(-1.5707963));
   }
 }
 // spotless:on

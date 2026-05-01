@@ -27,9 +27,9 @@ public record ChoreoTraj(
       new ChoreoTraj(
           "CollectDepot",
           OptionalInt.empty(),
-          5.30283,
+          5.30284,
           new Pose2d(3.58051, 4.03466, Rotation2d.fromRadians(3.14159)),
-          new Pose2d(2, 4.03466, Rotation2d.fromRadians(-0.01255)));
+          new Pose2d(2, 4.03466, Rotation2d.fromRadians(-0.01253)));
   public static final ChoreoTraj FirstCenterCollect =
       new ChoreoTraj(
           "FirstCenterCollect",
@@ -51,27 +51,34 @@ public record ChoreoTraj(
           2.3525500000000004,
           new Pose2d(7.81262, 4.92989, Rotation2d.fromRadians(-1.95)),
           new Pose2d(2.79164, 7.20714, Rotation2d.fromRadians(-1.04909)));
-  public static final ChoreoTraj FollowIntoCenter =
+  public static final ChoreoTraj FollowAndReturnBump =
       new ChoreoTraj(
-          "FollowIntoCenter",
+          "FollowAndReturnBump",
           OptionalInt.empty(),
           7.29987,
           new Pose2d(3.58051, 7.628, Rotation2d.fromRadians(-1.5708)),
           new Pose2d(2.20694, 4.01294, Rotation2d.fromRadians(0.0045)));
-  public static final ChoreoTraj FollowIntoCenter$0 =
+  public static final ChoreoTraj FollowAndReturnBump$0 =
       new ChoreoTraj(
-          "FollowIntoCenter",
+          "FollowAndReturnBump",
           OptionalInt.of(0),
           3.15201,
           new Pose2d(3.58051, 7.628, Rotation2d.fromRadians(-1.5708)),
           new Pose2d(6.60302, 3.85053, Rotation2d.fromRadians(-1.99742)));
-  public static final ChoreoTraj FollowIntoCenter$1 =
+  public static final ChoreoTraj FollowAndReturnBump$1 =
       new ChoreoTraj(
-          "FollowIntoCenter",
+          "FollowAndReturnBump",
           OptionalInt.of(1),
           4.14786,
           new Pose2d(6.60302, 3.85053, Rotation2d.fromRadians(-1.99742)),
           new Pose2d(2.20694, 4.01294, Rotation2d.fromRadians(0.0045)));
+  public static final ChoreoTraj GoToWait =
+      new ChoreoTraj(
+          "GoToWait",
+          OptionalInt.empty(),
+          1.68722,
+          new Pose2d(3.58051, 7.628, Rotation2d.fromRadians(-1.5708)),
+          new Pose2d(7.85, 7.42, Rotation2d.fromRadians(-1.5708)));
   public static final ChoreoTraj SecondCenterCollect =
       new ChoreoTraj(
           "SecondCenterCollect",
@@ -93,6 +100,27 @@ public record ChoreoTraj(
           2.4214100000000003,
           new Pose2d(6.77902, 4.75771, Rotation2d.fromRadians(-2.23909)),
           new Pose2d(2.79164, 7.20714, Rotation2d.fromRadians(-1.04909)));
+  public static final ChoreoTraj WaitOverBump =
+      new ChoreoTraj(
+          "WaitOverBump",
+          OptionalInt.empty(),
+          6.40182,
+          new Pose2d(7.85, 7.42, Rotation2d.fromRadians(-1.5708)),
+          new Pose2d(2.20694, 4.01294, Rotation2d.fromRadians(0.0045)));
+  public static final ChoreoTraj WaitOverBump$0 =
+      new ChoreoTraj(
+          "WaitOverBump",
+          OptionalInt.of(0),
+          2.26589,
+          new Pose2d(7.85, 7.42, Rotation2d.fromRadians(-1.5708)),
+          new Pose2d(6.60302, 3.85053, Rotation2d.fromRadians(-1.99742)));
+  public static final ChoreoTraj WaitOverBump$1 =
+      new ChoreoTraj(
+          "WaitOverBump",
+          OptionalInt.of(1),
+          4.13593,
+          new Pose2d(6.60302, 3.85053, Rotation2d.fromRadians(-1.99742)),
+          new Pose2d(2.20694, 4.01294, Rotation2d.fromRadians(0.0045)));
 
   /**
    * A map between trajectory names and their corresponding data. This allows for trajectory data to
@@ -104,12 +132,16 @@ public record ChoreoTraj(
           Map.entry("FirstCenterCollect", FirstCenterCollect),
           Map.entry("FirstCenterCollect$0", FirstCenterCollect$0),
           Map.entry("FirstCenterCollect$1", FirstCenterCollect$1),
-          Map.entry("FollowIntoCenter", FollowIntoCenter),
-          Map.entry("FollowIntoCenter$0", FollowIntoCenter$0),
-          Map.entry("FollowIntoCenter$1", FollowIntoCenter$1),
+          Map.entry("FollowAndReturnBump", FollowAndReturnBump),
+          Map.entry("FollowAndReturnBump$0", FollowAndReturnBump$0),
+          Map.entry("FollowAndReturnBump$1", FollowAndReturnBump$1),
+          Map.entry("GoToWait", GoToWait),
           Map.entry("SecondCenterCollect", SecondCenterCollect),
           Map.entry("SecondCenterCollect$0", SecondCenterCollect$0),
-          Map.entry("SecondCenterCollect$1", SecondCenterCollect$1));
+          Map.entry("SecondCenterCollect$1", SecondCenterCollect$1),
+          Map.entry("WaitOverBump", WaitOverBump),
+          Map.entry("WaitOverBump$0", WaitOverBump$0),
+          Map.entry("WaitOverBump$1", WaitOverBump$1));
 
   /**
    * Looks up the ChoreoTraj segment of the given overall ChoreoTraj. WARNING: will raise an

@@ -36,9 +36,9 @@ public class AutonomousRoutines {
 
     CommandScheduler.getInstance().schedule(autoFactory.warmupCmd());
 
-    LoggedNetworkNumber returnTimeChooserSeconds =
-        new LoggedNetworkNumber("Return Time Seconds", 10.0);
+    LoggedNetworkNumber miscPickerOne = new LoggedNetworkNumber("Misc 1", 10.0);
 
+    // double cycle
     autoChooser.addRoutine(
         "depot side two cycle",
         () -> depotSideTwoCycle(autoFactory, drivetrain, shooter, indexer, intake));
@@ -46,9 +46,10 @@ public class AutonomousRoutines {
         "outpost side two cycle",
         () -> outpostSideTwoCycle(autoFactory, drivetrain, shooter, indexer, intake));
 
+    // single cycle
     Time returnTimeInSinglePath = Seconds.of(3.85);
     autoChooser.addRoutine(
-        "depot side single",
+        "depot side single (time back through trench)",
         () ->
             singleCycle(
                 autoFactory,
@@ -57,10 +58,10 @@ public class AutonomousRoutines {
                 indexer,
                 intake,
                 returnTimeInSinglePath,
-                returnTimeChooserSeconds,
+                miscPickerOne,
                 false));
     autoChooser.addRoutine(
-        "outpost side single",
+        "outpost side single (time back through trench)",
         () ->
             singleCycle(
                 autoFactory,
@@ -69,35 +70,37 @@ public class AutonomousRoutines {
                 indexer,
                 intake,
                 returnTimeInSinglePath,
-                returnTimeChooserSeconds,
+                miscPickerOne,
                 true));
 
+    // follow return bump
     Time returnTimeInFollowPath = Seconds.of(5.0);
     autoChooser.addRoutine(
-        "depot side follow",
+        "depot side follow return bump (time back over bump)",
         () ->
-            follow(
+            followReturnBump(
                 autoFactory,
                 drivetrain,
                 shooter,
                 indexer,
                 intake,
                 returnTimeInFollowPath,
-                returnTimeChooserSeconds,
+                miscPickerOne,
                 false));
     autoChooser.addRoutine(
-        "outpost side follow",
+        "outpost side follow return bump (time back over bump)",
         () ->
-            follow(
+            followReturnBump(
                 autoFactory,
                 drivetrain,
                 shooter,
                 indexer,
                 intake,
                 returnTimeInFollowPath,
-                returnTimeChooserSeconds,
+                miscPickerOne,
                 true));
 
+    // center into depot
     autoChooser.addRoutine(
         "center depot cycle",
         () -> depotCollect(autoFactory, drivetrain, shooter, indexer, intake));
@@ -180,10 +183,10 @@ public class AutonomousRoutines {
   }
 
   //
-  // Follow
+  // Follow and Return Bump
   //
 
-  private static AutoRoutine follow(
+  private static AutoRoutine followReturnBump(
       AutoFactory autoFactory,
       SwerveSubsystem drivetrain,
       ShooterSubsystem shooter,
@@ -192,10 +195,10 @@ public class AutonomousRoutines {
       Time returnTimeInpath,
       LoggedNetworkNumber returnTimeChooserSeconds,
       boolean reflectY) {
-    AutoRoutine routine = autoFactory.newRoutine("follow");
+    AutoRoutine routine = autoFactory.newRoutine("follow return bump");
 
-    AutoTrajectory goIntoMiddle = ChoreoTraj.FollowIntoCenter$0.asAutoTraj(routine);
-    AutoTrajectory returnFromMiddle = ChoreoTraj.FollowIntoCenter$1.asAutoTraj(routine);
+    AutoTrajectory goIntoMiddle = ChoreoTraj.FollowAndReturnBump$0.asAutoTraj(routine);
+    AutoTrajectory returnFromMiddle = ChoreoTraj.FollowAndReturnBump$1.asAutoTraj(routine);
 
     if (reflectY) {
       goIntoMiddle = goIntoMiddle.mirrorY();

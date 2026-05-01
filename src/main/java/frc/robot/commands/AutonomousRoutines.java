@@ -15,6 +15,7 @@ import frc.robot.subsystems.drivetrain.SwerveSubsystem;
 import frc.robot.subsystems.indexer.IndexerSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
+import frc.robot.util.Container;
 import frc.robot.util.FuelTrajectoryCalculator.ShootTarget;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
@@ -37,6 +38,7 @@ public class AutonomousRoutines {
     CommandScheduler.getInstance().schedule(autoFactory.warmupCmd());
 
     LoggedNetworkNumber miscPickerOne = new LoggedNetworkNumber("Misc 1", 10.0);
+        LoggedNetworkNumber miscPickerTwo = new LoggedNetworkNumber("Misc 2", 10.0);
 
     // double cycle
     autoChooser.addRoutine(
@@ -47,7 +49,7 @@ public class AutonomousRoutines {
         () -> outpostSideTwoCycle(autoFactory, drivetrain, shooter, indexer, intake));
 
     // single cycle
-    Time returnTimeInSinglePath = Seconds.of(3.85);
+    Time returnTimeInSinglePath = Seconds.of(4.5);
     autoChooser.addRoutine(
         "depot side single (time back through trench)",
         () ->
@@ -183,6 +185,72 @@ public class AutonomousRoutines {
   }
 
   //
+  // Wait
+  //
+
+  private static AutoRoutine wait(
+      AutoFactory autoFactory,
+      SwerveSubsystem drivetrain,
+      ShooterSubsystem shooter,
+      IndexerSubsystem indexer,
+      IntakeSubsystem intake,
+      Time returnTimeInpath,
+      LoggedNetworkNumber getToWaitSeconds,
+      LoggedNetworkNumber returnTimeSeconds,
+      boolean reflectY) {
+    AutoRoutine routine = autoFactory.newRoutine("wait");
+
+    AutoTrajectory goToWait = ChoreoTraj.GoToWait.asAutoTraj(routine);
+
+    AutoTrajectory intakeFromTrench = ChoreoTraj.WaitThroughTrench$0.asAutoTraj(routine);
+        AutoTrajectory returnFromTrench = ChoreoTraj.WaitThroughTrench$1.asAutoTraj(routine);
+
+        AutoTrajectory intakeFromBump = ChoreoTraj.WaitOverBump$0.asAutoTraj(routine);
+        AutoTrajectory returnFromBump = ChoreoTraj.WaitOverBump$1.asAutoTraj(routine);
+
+    registerSingleCycle(
+        routine,
+        intakeFromTrench,
+        returnFromTrench,
+        Seconds.of(0.1),
+        Seconds.of(9),
+        drivetrain,
+        shooter,
+        indexer,
+        intake);
+
+        registerSingleCycle(
+        routine,
+        intakeFromBump,
+        returnFromBump,
+        Seconds.of(0.1),
+        Seconds.of(9),
+        drivetrain,
+        shooter,
+        indexer,
+        intake);
+
+    routine
+        .active()
+        .onTrue(
+            Commands.sequence(
+                goToWait.resetOdometry(),
+                Commands.deferredProxy(
+                    () ->
+                        Commands.waitSeconds(
+                            getToWaitSeconds.getAsDouble() - ChoreoTraj.GoToWait.totalTimeSecs())),
+                goToWait.cmd(),
+                Commands.deferredProxy(
+                    () -> {
+                        // TODO
+                        return Commands.waitSeconds(1);
+                    }
+                )));
+
+    return routine;
+  }
+
+  //
   // Follow and Return Bump
   //
 
@@ -245,8 +313,8 @@ public class AutonomousRoutines {
       boolean reflectY) {
     AutoRoutine routine = autoFactory.newRoutine("single cycle");
 
-    AutoTrajectory goIntoMiddle = ChoreoTraj.FirstCenterCollect$0.asAutoTraj(routine);
-    AutoTrajectory returnFromMiddle = ChoreoTraj.FirstCenterCollect$1.asAutoTraj(routine);
+    AutoTrajectory goIntoMiddle = ChoreoTraj.SingleCollect$0.asAutoTraj(routine);
+    AutoTrajectory returnFromMiddle = ChoreoTraj.SingleCollect$1.asAutoTraj(routine);
 
     if (reflectY) {
       goIntoMiddle = goIntoMiddle.mirrorY();

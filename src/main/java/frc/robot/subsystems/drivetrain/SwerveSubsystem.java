@@ -566,6 +566,10 @@ public class SwerveSubsystem extends SubsystemBase {
   // Driving Strategies & Commands
   //
 
+  public Command stop() {
+    return runOnce(() -> drive(new ChassisSpeeds()));
+  }
+
   public Command driveCommand(
       Supplier<Translation2d> linearStrategy, Supplier<AngularVelocity> angularStrategy) {
     return Commands.sequence(

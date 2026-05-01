@@ -51,6 +51,27 @@ public record ChoreoTraj(
           2.3525500000000004,
           new Pose2d(7.81262, 4.92989, Rotation2d.fromRadians(-1.95)),
           new Pose2d(2.79164, 7.20714, Rotation2d.fromRadians(-1.04909)));
+  public static final ChoreoTraj FirstCenterCollect_copy1 =
+      new ChoreoTraj(
+          "FirstCenterCollect_copy1",
+          OptionalInt.empty(),
+          4.7926,
+          new Pose2d(4.46316, 7.628, Rotation2d.fromRadians(-1.5708)),
+          new Pose2d(2.79164, 7.20714, Rotation2d.fromRadians(-1.04909)));
+  public static final ChoreoTraj FirstCenterCollect_copy1$0 =
+      new ChoreoTraj(
+          "FirstCenterCollect_copy1",
+          OptionalInt.of(0),
+          2.44005,
+          new Pose2d(4.46316, 7.628, Rotation2d.fromRadians(-1.5708)),
+          new Pose2d(7.81262, 4.92989, Rotation2d.fromRadians(-1.95)));
+  public static final ChoreoTraj FirstCenterCollect_copy1$1 =
+      new ChoreoTraj(
+          "FirstCenterCollect_copy1",
+          OptionalInt.of(1),
+          2.3525500000000004,
+          new Pose2d(7.81262, 4.92989, Rotation2d.fromRadians(-1.95)),
+          new Pose2d(2.79164, 7.20714, Rotation2d.fromRadians(-1.04909)));
   public static final ChoreoTraj FollowAndReturnBump =
       new ChoreoTraj(
           "FollowAndReturnBump",
@@ -76,7 +97,7 @@ public record ChoreoTraj(
       new ChoreoTraj(
           "GoToWait",
           OptionalInt.empty(),
-          1.68722,
+          2.9248,
           new Pose2d(3.58051, 7.628, Rotation2d.fromRadians(-1.5708)),
           new Pose2d(7.85, 7.42, Rotation2d.fromRadians(-1.5708)));
   public static final ChoreoTraj SecondCenterCollect =
@@ -100,27 +121,6 @@ public record ChoreoTraj(
           2.4214100000000003,
           new Pose2d(6.77902, 4.75771, Rotation2d.fromRadians(-2.23909)),
           new Pose2d(2.79164, 7.20714, Rotation2d.fromRadians(-1.04909)));
-  public static final ChoreoTraj WaitOverBump =
-      new ChoreoTraj(
-          "WaitOverBump",
-          OptionalInt.empty(),
-          6.47941,
-          new Pose2d(7.85, 7.42, Rotation2d.fromRadians(-1.5708)),
-          new Pose2d(2.20694, 4.01294, Rotation2d.fromRadians(0.0045)));
-  public static final ChoreoTraj WaitOverBump$0 =
-      new ChoreoTraj(
-          "WaitOverBump",
-          OptionalInt.of(0),
-          2.43588,
-          new Pose2d(7.85, 7.42, Rotation2d.fromRadians(-1.5708)),
-          new Pose2d(6.60302, 3.85053, Rotation2d.fromRadians(-2.18025)));
-  public static final ChoreoTraj WaitOverBump$1 =
-      new ChoreoTraj(
-          "WaitOverBump",
-          OptionalInt.of(1),
-          4.04353,
-          new Pose2d(6.60302, 3.85053, Rotation2d.fromRadians(-2.18025)),
-          new Pose2d(2.20694, 4.01294, Rotation2d.fromRadians(0.0045)));
   public static final ChoreoTraj SingleCollect =
       new ChoreoTraj(
           "SingleCollect",
@@ -142,6 +142,27 @@ public record ChoreoTraj(
           2.6248499999999995,
           new Pose2d(6.20239, 4.21867, Rotation2d.fromRadians(-2.07181)),
           new Pose2d(2.79164, 7.20714, Rotation2d.fromRadians(-1.04909)));
+  public static final ChoreoTraj WaitOverBump =
+      new ChoreoTraj(
+          "WaitOverBump",
+          OptionalInt.empty(),
+          6.47941,
+          new Pose2d(7.85, 7.42, Rotation2d.fromRadians(-1.5708)),
+          new Pose2d(2.20694, 4.01294, Rotation2d.fromRadians(0.0045)));
+  public static final ChoreoTraj WaitOverBump$0 =
+      new ChoreoTraj(
+          "WaitOverBump",
+          OptionalInt.of(0),
+          2.43588,
+          new Pose2d(7.85, 7.42, Rotation2d.fromRadians(-1.5708)),
+          new Pose2d(6.60302, 3.85053, Rotation2d.fromRadians(-2.18025)));
+  public static final ChoreoTraj WaitOverBump$1 =
+      new ChoreoTraj(
+          "WaitOverBump",
+          OptionalInt.of(1),
+          4.04353,
+          new Pose2d(6.60302, 3.85053, Rotation2d.fromRadians(-2.18025)),
+          new Pose2d(2.20694, 4.01294, Rotation2d.fromRadians(0.0045)));
   public static final ChoreoTraj WaitThroughTrench =
       new ChoreoTraj(
           "WaitThroughTrench",
@@ -174,6 +195,9 @@ public record ChoreoTraj(
           Map.entry("FirstCenterCollect", FirstCenterCollect),
           Map.entry("FirstCenterCollect$0", FirstCenterCollect$0),
           Map.entry("FirstCenterCollect$1", FirstCenterCollect$1),
+          Map.entry("FirstCenterCollect_copy1", FirstCenterCollect_copy1),
+          Map.entry("FirstCenterCollect_copy1$0", FirstCenterCollect_copy1$0),
+          Map.entry("FirstCenterCollect_copy1$1", FirstCenterCollect_copy1$1),
           Map.entry("FollowAndReturnBump", FollowAndReturnBump),
           Map.entry("FollowAndReturnBump$0", FollowAndReturnBump$0),
           Map.entry("FollowAndReturnBump$1", FollowAndReturnBump$1),
@@ -181,12 +205,12 @@ public record ChoreoTraj(
           Map.entry("SecondCenterCollect", SecondCenterCollect),
           Map.entry("SecondCenterCollect$0", SecondCenterCollect$0),
           Map.entry("SecondCenterCollect$1", SecondCenterCollect$1),
-          Map.entry("WaitOverBump", WaitOverBump),
-          Map.entry("WaitOverBump$0", WaitOverBump$0),
-          Map.entry("WaitOverBump$1", WaitOverBump$1),
           Map.entry("SingleCollect", SingleCollect),
           Map.entry("SingleCollect$0", SingleCollect$0),
           Map.entry("SingleCollect$1", SingleCollect$1),
+          Map.entry("WaitOverBump", WaitOverBump),
+          Map.entry("WaitOverBump$0", WaitOverBump$0),
+          Map.entry("WaitOverBump$1", WaitOverBump$1),
           Map.entry("WaitThroughTrench", WaitThroughTrench),
           Map.entry("WaitThroughTrench$0", WaitThroughTrench$0),
           Map.entry("WaitThroughTrench$1", WaitThroughTrench$1));

@@ -22,7 +22,7 @@ public class IndexerConstants {
   public static final int spindexerId = 1;
   public static final double spindexerReduction = 3.0;
 
-  public static final AngularVelocity spindexerIndexingSpeed = RPM.of(420);
+  public static final AngularVelocity spindexerIndexingSpeed = RPM.of(600);
   public static final AngularVelocity spindexerBackspinSpeed = RPM.of(240);
 
   public static final Time spindexerIndexTime = Seconds.of(2.6);

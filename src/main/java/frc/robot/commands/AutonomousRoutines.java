@@ -38,6 +38,7 @@ public class AutonomousRoutines {
 
     LoggedNetworkNumber miscPickerOne = new LoggedNetworkNumber("Misc 1", 10.0);
     LoggedNetworkNumber miscPickerTwo = new LoggedNetworkNumber("Misc 2", 10.0);
+    LoggedNetworkNumber miscPickerThree = new LoggedNetworkNumber("Misc 3", 10.0);
 
     // double cycle
     autoChooser.addRoutine(
@@ -99,6 +100,36 @@ public class AutonomousRoutines {
                 intake,
                 returnTimeInFollowPath,
                 miscPickerOne,
+                true));
+
+    // wait
+    autoChooser.addRoutine(
+        "depot side wait (get to wait, return from wait, < 10 for trench)",
+        () ->
+            wait(
+                autoFactory,
+                drivetrain,
+                shooter,
+                indexer,
+                intake,
+                returnTimeInFollowPath,
+                miscPickerOne,
+                miscPickerTwo,
+                miscPickerThree,
+                false));
+    autoChooser.addRoutine(
+        "outpost side wait (get to wait, return from wait, < 10 for trench)",
+        () ->
+            wait(
+                autoFactory,
+                drivetrain,
+                shooter,
+                indexer,
+                intake,
+                returnTimeInFollowPath,
+                miscPickerOne,
+                miscPickerTwo,
+                miscPickerThree,
                 true));
 
     // center into depot
@@ -196,6 +227,7 @@ public class AutonomousRoutines {
       Time returnTimeInpath,
       LoggedNetworkNumber getToWaitSeconds,
       LoggedNetworkNumber returnTimeSeconds,
+      LoggedNetworkNumber returnTypeToggle,
       boolean reflectY) {
     AutoRoutine routine = autoFactory.newRoutine("wait");
 
@@ -207,9 +239,20 @@ public class AutonomousRoutines {
     AutoTrajectory intakeFromBump = ChoreoTraj.WaitOverBump$0.asAutoTraj(routine);
     AutoTrajectory returnFromBump = ChoreoTraj.WaitOverBump$1.asAutoTraj(routine);
 
+    if (reflectY) {
+      goToWait = goToWait.mirrorY();
+      intakeFromTrench = intakeFromTrench.mirrorY();
+      returnFromTrench = returnFromTrench.mirrorY();
+      intakeFromBump = intakeFromBump.mirrorY();
+      returnFromBump = returnFromBump.mirrorY();
+    }
+
+    final AutoTrajectory intakeFromTrenchFinal = intakeFromTrench;
+    final AutoTrajectory intakeFromBumpFinal = intakeFromBump;
+
     registerSingleCycle(
         routine,
-        intakeFromTrench,
+        intakeFromTrenchFinal,
         returnFromTrench,
         Seconds.of(0.1),
         Seconds.of(9),
@@ -220,7 +263,7 @@ public class AutonomousRoutines {
 
     registerSingleCycle(
         routine,
-        intakeFromBump,
+        intakeFromBumpFinal,
         returnFromBump,
         Seconds.of(0.1),
         Seconds.of(9),
@@ -237,12 +280,25 @@ public class AutonomousRoutines {
                 Commands.deferredProxy(
                     () ->
                         Commands.waitSeconds(
-                            getToWaitSeconds.getAsDouble() - ChoreoTraj.GoToWait.totalTimeSecs())),
+                            Math.max(
+                                    getToWaitSeconds.getAsDouble(),
+                                    ChoreoTraj.GoToWait.totalTimeSecs())
+                                - ChoreoTraj.GoToWait.totalTimeSecs())),
                 goToWait.cmd(),
+                drivetrain.stop(),
                 Commands.deferredProxy(
                     () -> {
-                      // TODO
-                      return Commands.waitSeconds(1);
+                      boolean returnTrench = returnTypeToggle.get() < 10;
+                      double returnTime = returnTrench ? 3.8 : 4.3;
+
+                      return Commands.sequence(
+                          Commands.waitSeconds(
+                              Math.max(
+                                      returnTimeSeconds.getAsDouble(),
+                                      ChoreoTraj.GoToWait.totalTimeSecs())
+                                  - getToWaitSeconds.getAsDouble()
+                                  - returnTime),
+                          returnTrench ? intakeFromTrenchFinal.cmd() : intakeFromBumpFinal.cmd());
                     })));
 
     return routine;

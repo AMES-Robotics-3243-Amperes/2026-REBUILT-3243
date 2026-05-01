@@ -24,8 +24,8 @@ public class IntakeConstants {
 
   public static final ControlConstantsBuilder rollerControl =
       ControlConstantsBuilder.fromRadiansAndSeconds()
-          .pid(0.0044275, 0, 0)
-          .sva(0.25572, 0.03424, 0.0017386);
+          .pid(0.0006, 0, 0)
+          .sva(0.19678, 0.035458, 0.0036986);
 
   public static final int rollerStallLimit = 65;
   public static final int rollerFreeLimit = 30;
